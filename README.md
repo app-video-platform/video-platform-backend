@@ -1,6 +1,6 @@
 # Video Platform Backend
 
-A **Spring Boot** application deployed via **Dokku** on a DigitalOcean Droplet, using **PostgreSQL** as the database.
+A **Spring Boot** application deployed via **Dokku** on a **DigitalOcean Droplet**, using **PostgreSQL** as the database.
 
 ## Table of Contents
 1. [Overview](#overview)  
@@ -53,7 +53,7 @@ This project is a **Spring Boot** application designed to handle video platform 
 ---
 
 ## Configure PostgreSQL
-1. Install the Postgres plugin (if not already installed):
+1. Install the **Postgres plugin** (if not already installed):
   ```bash
   dokku plugin:install https://github.com/dokku/dokku-postgres.git
   ```
