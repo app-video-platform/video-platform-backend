@@ -10,5 +10,10 @@ public class HomeController {
     public String home() {
         return "Hello there! :)";
     }
+
+    @GetMapping("/testEndpoint")
+    public String testEndpoint() {
+        return "Still now working mate.";
+    }
 }
 
