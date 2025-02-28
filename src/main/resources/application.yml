@@ -10,6 +10,9 @@ spring:
     hibernate:
       ddl-auto: none
     show-sql: false
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    enabled: true
 
 server:
   forward-headers-strategy: native
