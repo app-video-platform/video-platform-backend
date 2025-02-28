@@ -37,14 +37,15 @@ public class AuthController {
      */
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
+        String link;
         try {
-            authService.register(request);
+            link = authService.register(request);
         }catch (Exception e){
             log.error(e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
 
-        return ResponseEntity.ok("User Registered Successfully! Check your email for verification link.");
+        return ResponseEntity.ok(link);
     }
 
     /**

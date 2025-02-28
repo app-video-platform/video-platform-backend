@@ -33,7 +33,7 @@ public class AuthService {
         this.verificationTokenService = verificationTokenService;
     }
 
-    public void register(RegisterRequest request) {
+    public String register(RegisterRequest request) {
         log.info("Register request: {}", request);
         User user = new User();
         user.setFirstName(request.getFirstName());
@@ -48,6 +48,6 @@ public class AuthService {
         userRepository.save(user);
         log.info("User registered and token will be sent : {}", user);
 
-        verificationTokenService.createAndSendToken(user);
+        return verificationTokenService.createAndSendToken(user);
     }
 }

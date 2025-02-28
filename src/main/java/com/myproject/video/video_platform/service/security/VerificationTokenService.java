@@ -36,7 +36,7 @@ public class VerificationTokenService {
         this.emailService = emailService;
     }
 
-    public void createAndSendToken(User user) {
+    public String createAndSendToken(User user) {
         String token = UUID.randomUUID().toString();
         VerificationToken verificationToken = new VerificationToken(
                 token,
@@ -47,7 +47,8 @@ public class VerificationTokenService {
         tokenRepository.save(verificationToken);
 
         String link = frontendUrl + "/verify-email?token=" + token;
-        emailService.sendVerificationEmail(user.getEmail(), link);
+        //emailService.sendVerificationEmail(user.getEmail(), link);
+        return link;
     }
 
     public void verifyToken(String token) throws TokenExpiredException {
