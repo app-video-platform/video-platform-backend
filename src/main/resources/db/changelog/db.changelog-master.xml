@@ -5,5 +5,11 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
     <include file="db/changelog/scripts/1-create-test-table.sql" />
+    <include file="db/changelog/scripts/2-create_users_table.sql" />
+    <include file="db/changelog/scripts/3-create_roles_table.sql" />
+    <include file="db/changelog/scripts/4-create_user_roles_table.sql" />
+    <include file="db/changelog/scripts/5-create_verification_tokens_table.sql" />
+    <include file="db/changelog/scripts/6-populate_roles.sql" />
+    <include file="db/changelog/scripts/7-add_name_columns_user.sql" />
 
 </databaseChangeLog>

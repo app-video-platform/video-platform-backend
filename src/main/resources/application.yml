@@ -16,3 +16,11 @@ spring:
 
 server:
   forward-headers-strategy: native
+
+app:
+  frontend:
+    url: "https://www.serious-debauchery.netlify.app"
+
+jwt:
+  secret: "MySuperSecretKey12345"
+  expiration: 900000
