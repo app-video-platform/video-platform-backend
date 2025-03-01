@@ -26,7 +26,7 @@ server:
 
 app:
   frontend:
-    url: "https://www.serious-debauchery.netlify.app"
+    url: "https://serious-debauchery.netlify.app"
 
 jwt:
   secret: "12345678901234567890123456789012"
