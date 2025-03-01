@@ -1,5 +1,6 @@
 package com.myproject.video.video_platform.service.security;
 
+import com.myproject.video.video_platform.dto.authetication.LoginResponse;
 import com.myproject.video.video_platform.dto.authetication.RegisterRequest;
 import com.myproject.video.video_platform.entity.Role;
 import com.myproject.video.video_platform.entity.User;
@@ -11,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Handles user registration and login logic.
@@ -55,7 +57,7 @@ public class AuthService {
         verificationTokenService.createAndSendToken(user);
     }
 
-    public String login(String email, String rawPassword) {
+    public LoginResponse login(String email, String rawPassword) {
         User user = userRepository.findByEmail(email).orElseThrow(
                 () -> new AuthenticationException("Invalid credentials") {});
 
@@ -65,6 +67,15 @@ public class AuthService {
         if (!user.isEnabled())
             throw new AuthenticationException("User account not verified");
 
-        return jwtProvider.generateToken(email);
+        List<String> roles = user.getRoles().stream().map(Role::getRoleName).toList();
+
+        return LoginResponse
+                .builder()
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .role(roles)
+                .token(jwtProvider.generateToken(email))
+                .build();
     }
 }
