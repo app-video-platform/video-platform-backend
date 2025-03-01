@@ -14,6 +14,13 @@ spring:
     change-log: classpath:db/changelog/db.changelog-master.xml
     enabled: true
 
+sendgrid:
+  api:
+    key: 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
+  mail:
+    from: "no-reply@serious-debauchery.click"
+
+
 server:
   forward-headers-strategy: native
 

@@ -3,7 +3,7 @@ package com.myproject.video.video_platform.controller.auth;
 import com.myproject.video.video_platform.dto.authetication.LoginRequest;
 import com.myproject.video.video_platform.dto.authetication.LoginResponse;
 import com.myproject.video.video_platform.dto.authetication.RegisterRequest;
-import com.myproject.video.video_platform.exception.TokenExpiredException;
+import com.myproject.video.video_platform.exception.auth.TokenExpiredException;
 import com.myproject.video.video_platform.service.security.AuthService;
 import com.myproject.video.video_platform.service.security.VerificationTokenService;
 import org.springframework.http.ResponseEntity;

@@ -2,7 +2,7 @@ package com.myproject.video.video_platform.service.security;
 
 import com.myproject.video.video_platform.entity.User;
 import com.myproject.video.video_platform.entity.VerificationToken;
-import com.myproject.video.video_platform.exception.TokenExpiredException;
+import com.myproject.video.video_platform.exception.auth.TokenExpiredException;
 import com.myproject.video.video_platform.repository.UserRepository;
 import com.myproject.video.video_platform.repository.VerificationTokenRepository;
 import com.myproject.video.video_platform.service.mail.EmailService;

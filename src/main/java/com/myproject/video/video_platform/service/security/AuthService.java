@@ -4,7 +4,7 @@ import com.myproject.video.video_platform.dto.authetication.LoginResponse;
 import com.myproject.video.video_platform.dto.authetication.RegisterRequest;
 import com.myproject.video.video_platform.entity.Role;
 import com.myproject.video.video_platform.entity.User;
-import com.myproject.video.video_platform.exception.AuthenticationException;
+import com.myproject.video.video_platform.exception.auth.AuthenticationException;
 import com.myproject.video.video_platform.repository.RoleRepository;
 import com.myproject.video.video_platform.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;

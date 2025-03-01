@@ -31,7 +31,6 @@ public class JwtProvider {
 
     /**
      * Generate a JWT token for the given email (subject).
-     * TODO: implement login and use this method
      */
     public String generateToken(String email) {
         return Jwts.builder()
