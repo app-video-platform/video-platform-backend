@@ -1,11 +1,11 @@
-package com.myproject.video.video_platform.controller;
+package com.myproject.video.video_platform.controller.auth;
 
-import com.myproject.video.video_platform.dto.RegisterRequest;
+import com.myproject.video.video_platform.dto.authetication.LoginRequest;
+import com.myproject.video.video_platform.dto.authetication.LoginResponse;
+import com.myproject.video.video_platform.dto.authetication.RegisterRequest;
 import com.myproject.video.video_platform.exception.TokenExpiredException;
 import com.myproject.video.video_platform.service.security.AuthService;
 import com.myproject.video.video_platform.service.security.VerificationTokenService;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
  * Controller for handling user registration, login, and email verification.
  */
 @RestController
-@Slf4j
 @RequestMapping("/api/auth")
 public class AuthController {
 
@@ -31,35 +30,21 @@ public class AuthController {
         this.verificationTokenService = verificationTokenService;
     }
 
-    /**
-     * Endpoint for user registration.
-     * @param request registration details (email, password)
-     */
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
-        String link;
-        try {
-            link = authService.register(request);
-        }catch (Exception e){
-            log.error(e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
-
-        return ResponseEntity.ok(link);
+        authService.register(request);
+        return ResponseEntity.ok("User registered successfully.");
     }
 
-    /**
-     * Endpoint for verifying email.
-     * e.g. GET /api/auth/verify?token=some_token
-     */
     @GetMapping("/verify")
-    public ResponseEntity<String> verifyAccount(@RequestParam("token") String token) {
-        try {
-            verificationTokenService.verifyToken(token);
-        } catch (TokenExpiredException e) {
-            log.error(e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
-        }
+    public ResponseEntity<String> verifyAccount(@RequestParam("token") String token) throws TokenExpiredException {
+        verificationTokenService.verifyToken(token);
         return ResponseEntity.ok("Account verified successfully!");
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
+        String token = authService.login(loginRequest.getEmail(), loginRequest.getPassword());
+        return ResponseEntity.ok(new LoginResponse(token));
     }
 }

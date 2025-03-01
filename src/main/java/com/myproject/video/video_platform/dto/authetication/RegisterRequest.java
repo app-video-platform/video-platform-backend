@@ -1,4 +1,4 @@
-package com.myproject.video.video_platform.dto;
+package com.myproject.video.video_platform.dto.authetication;
 
 import lombok.Data;
 
