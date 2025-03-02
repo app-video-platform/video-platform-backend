@@ -1,12 +1,12 @@
 package com.myproject.video.video_platform.controller.auth;
 
 import com.myproject.video.video_platform.dto.authetication.LoginRequest;
-import com.myproject.video.video_platform.dto.authetication.LoginResponse;
 import com.myproject.video.video_platform.dto.authetication.RegisterRequest;
 import com.myproject.video.video_platform.dto.authetication.TokenRequest;
 import com.myproject.video.video_platform.exception.auth.TokenExpiredException;
 import com.myproject.video.video_platform.service.security.AuthService;
 import com.myproject.video.video_platform.service.security.VerificationTokenService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,8 +45,14 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
-        LoginResponse loginResponse = authService.login(loginRequest.getEmail(), loginRequest.getPassword());
-        return ResponseEntity.ok(loginResponse);
+    public ResponseEntity<String> login(@Valid @RequestBody LoginRequest loginRequest, HttpServletResponse response) {
+        authService.login(loginRequest, response);
+        return ResponseEntity.ok("Login successful!");
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(HttpServletResponse response) {
+        authService.logout(response);
+        return ResponseEntity.ok("Logged out.");
     }
 }

@@ -25,6 +25,7 @@ server:
   forward-headers-strategy: native
 
 app:
+  domain: "www.serious-debauchery.click"
   frontend:
     url: "https://serious-debauchery.netlify.app"
 

@@ -1,8 +1,9 @@
-package com.myproject.video.video_platform.controller.auth;
+package com.myproject.video.video_platform.exception;
 
 import com.myproject.video.video_platform.dto.authetication.ErrorResponse;
 import com.myproject.video.video_platform.dto.authetication.ValidationErrorResponse;
 import com.myproject.video.video_platform.exception.auth.AuthenticationException;
+import com.myproject.video.video_platform.exception.auth.CsrfException;
 import com.myproject.video.video_platform.exception.auth.TokenExpiredException;
 import com.myproject.video.video_platform.exception.email.EmailSendingException;
 import org.springframework.http.HttpStatus;
@@ -62,6 +63,12 @@ public class GlobalExceptionHandler {
         );
 
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(CsrfException.class)
+    public ResponseEntity<ErrorResponse> handleCsrfException(CsrfException ex) {
+        ErrorResponse error = new ErrorResponse(ex.getMessage(), HttpStatus.FORBIDDEN.value());
+        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
 }
 

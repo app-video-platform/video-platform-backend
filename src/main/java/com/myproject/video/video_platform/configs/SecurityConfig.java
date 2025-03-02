@@ -1,5 +1,7 @@
 package com.myproject.video.video_platform.configs;
 
+import com.myproject.video.video_platform.service.security.CsrfFilter;
+import com.myproject.video.video_platform.service.security.JwtAuthenticationFilter;
 import com.myproject.video.video_platform.service.security.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -25,41 +27,37 @@ import java.util.List;
  * Main Security Configuration using SecurityFilterChain (no more WebSecurityConfigurerAdapter).
  */
 @Configuration
-@EnableMethodSecurity // Enables @PreAuthorize etc. if needed
+@EnableMethodSecurity // Enables @PreAuthorize etc.
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtProvider jwtProvider;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final CsrfFilter csrfFilter;
 
     /**
      * Primary Security Filter Chain definition.
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        // Enable CORS and disable CSRF (common for token-based APIs)
         http
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable) // We'll handle CSRF manually via CsrfFilter
                 .cors(Customizer.withDefaults())
-
                 // Handle auth errors
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 )
-
                 // We don't need sessions since we're using JWT
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-
                 // Define URL authorization rules
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll() // Registration, login, verify, etc.
                         .anyRequest().authenticated()            // Everything else requires login
                 )
-
-                // Add JWT filter
-                .addFilterBefore(jwtProvider.jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtProvider.jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(csrfFilter, JwtAuthenticationFilter.class);
 
         return http.build();
     }

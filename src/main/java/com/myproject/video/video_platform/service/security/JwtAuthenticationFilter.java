@@ -2,17 +2,20 @@ package com.myproject.video.video_platform.service.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
-class JwtAuthenticationFilter extends OncePerRequestFilter {
+@Component
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
 
@@ -26,22 +29,32 @@ class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
-            if (jwtProvider.validateToken(token)) {
-                String email = jwtProvider.getEmailFromJwt(token);
+        // 1) Get JWT from the cookie
+        String jwt = extractJwtFromCookie(request);
 
-                // Create an Authentication object
-                Authentication auth = new UsernamePasswordAuthenticationToken(
-                        email, // principal
-                        null,  // credentials
-                        new ArrayList<>() // authorities or roles
-                );
-                SecurityContextHolder.getContext().setAuthentication(auth);
+        if (jwt != null && jwtProvider.validateToken(jwt)) {
+            String email = jwtProvider.getEmailFromJwt(jwt);
+
+            // Build Authentication
+            Authentication auth = new UsernamePasswordAuthenticationToken(
+                    email,
+                    null,
+                    new ArrayList<>() // or fetch roles if needed
+            );
+            SecurityContextHolder.getContext().setAuthentication(auth);
+        }
+
+        filterChain.doFilter(request, response);
+    }
+
+    private String extractJwtFromCookie(HttpServletRequest request) {
+        if (request.getCookies() != null) {
+            for (Cookie c : request.getCookies()) {
+                if ("JWT_TOKEN".equals(c.getName())) {
+                    return c.getValue();
+                }
             }
         }
-        // Continue the filter chain
-        filterChain.doFilter(request, response);
+        return null;
     }
 }
