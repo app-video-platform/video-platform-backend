@@ -21,11 +21,15 @@ public class CsrfFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        // Only check CSRF for state-changing methods (POST, PUT, DELETE, etc.)
         String method = request.getMethod();
-        if ("POST".equalsIgnoreCase(method)
-                || "PUT".equalsIgnoreCase(method)
-                || "DELETE".equalsIgnoreCase(method)) {
+        String path = request.getRequestURI();
+        // We only check CSRF for state-changing methods
+        // AND we skip /api/auth/login (and optionally /api/auth/logout).
+        if ((method.equalsIgnoreCase("POST")
+                || method.equalsIgnoreCase("PUT")
+                || method.equalsIgnoreCase("DELETE"))
+                && !path.equals("/api/auth/login")
+                && !path.equals("/api/auth/logout")) {
 
             String csrfCookie = extractCookie(request);
             String csrfHeader = request.getHeader("X-XSRF-TOKEN");
