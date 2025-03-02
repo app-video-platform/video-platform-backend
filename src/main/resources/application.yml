@@ -27,7 +27,7 @@ server:
 app:
   domain: "serious-debauchery.click"
   frontend:
-    url: "https://serious-debauchery.netlify.app"
+    url: "https://www.serious-debauchery.netlify.app"
 
 jwt:
   secret: "12345678901234567890123456789012"
