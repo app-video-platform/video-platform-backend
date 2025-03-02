@@ -3,9 +3,11 @@ package com.myproject.video.video_platform.controller.auth;
 import com.myproject.video.video_platform.dto.authetication.LoginRequest;
 import com.myproject.video.video_platform.dto.authetication.LoginResponse;
 import com.myproject.video.video_platform.dto.authetication.RegisterRequest;
+import com.myproject.video.video_platform.dto.authetication.TokenRequest;
 import com.myproject.video.video_platform.exception.auth.TokenExpiredException;
 import com.myproject.video.video_platform.service.security.AuthService;
 import com.myproject.video.video_platform.service.security.VerificationTokenService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,19 +33,19 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest request) {
         authService.register(request);
         return ResponseEntity.ok("User registered successfully.");
     }
 
     @GetMapping("/verify")
-    public ResponseEntity<String> verifyAccount(@RequestParam("token") String token) throws TokenExpiredException {
+    public ResponseEntity<String> verifyAccount(@RequestParam("token") TokenRequest token) throws TokenExpiredException {
         verificationTokenService.verifyToken(token);
         return ResponseEntity.ok("Account verified successfully!");
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
         LoginResponse loginResponse = authService.login(loginRequest.getEmail(), loginRequest.getPassword());
         return ResponseEntity.ok(loginResponse);
     }

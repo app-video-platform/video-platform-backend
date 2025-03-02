@@ -1,5 +1,6 @@
 package com.myproject.video.video_platform.service.security;
 
+import com.myproject.video.video_platform.dto.authetication.TokenRequest;
 import com.myproject.video.video_platform.entity.User;
 import com.myproject.video.video_platform.entity.VerificationToken;
 import com.myproject.video.video_platform.exception.auth.TokenExpiredException;
@@ -50,8 +51,8 @@ public class VerificationTokenService {
         emailService.sendVerificationEmail(user.getEmail(), link);
     }
 
-    public void verifyToken(String token) throws TokenExpiredException {
-        Optional<VerificationToken> optionalToken = tokenRepository.findByToken(token);
+    public void verifyToken(TokenRequest token) throws TokenExpiredException {
+        Optional<VerificationToken> optionalToken = tokenRepository.findByToken(token.getToken());
         VerificationToken verificationToken = optionalToken.orElseThrow(
                 () -> new RuntimeException("Invalid token!")
         );
