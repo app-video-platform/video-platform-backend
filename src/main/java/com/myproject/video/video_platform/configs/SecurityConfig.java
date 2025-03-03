@@ -81,6 +81,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(List.of(
                 "https://serious-debauchery.netlify.app",
                 "https://app.serious-debauchery.click",
+                "https://www.app.serious-debauchery.click",
                 "https://www.serious-debauchery.click"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
