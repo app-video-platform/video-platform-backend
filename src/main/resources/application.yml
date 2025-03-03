@@ -25,7 +25,7 @@ server:
   forward-headers-strategy: native
 
 app:
-  domain: ".serious-debauchery.click"
+  domain: "serious-debauchery.click"
   frontend:
     url: "https://app.serious-debauchery.click"
 
