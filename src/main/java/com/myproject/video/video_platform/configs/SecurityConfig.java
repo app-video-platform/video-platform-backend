@@ -80,7 +80,7 @@ public class SecurityConfig {
         // Replace with the actual domain of your frontend
         configuration.setAllowedOrigins(List.of(
                 "https://serious-debauchery.netlify.app",
-                "https://api.serious-debauchery.click",
+                "https://app.serious-debauchery.click",
                 "https://www.serious-debauchery.click"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
