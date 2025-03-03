@@ -86,7 +86,7 @@ public class AuthService {
         jwtCookie.setPath("/");
         jwtCookie.setMaxAge(3600);
         jwtCookie.setDomain(appDomain);
-        jwtCookie.setAttribute("SameSite", "Lax");
+        jwtCookie.setAttribute("SameSite", "None");
 
         Cookie csrfCookie = new Cookie("XSRF-TOKEN", csrfToken);
         csrfCookie.setHttpOnly(false);
