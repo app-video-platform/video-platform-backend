@@ -78,7 +78,11 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // Replace with the actual domain of your frontend
-        configuration.setAllowedOrigins(List.of("https://serious-debauchery.netlify.app"));
+        configuration.setAllowedOrigins(List.of(
+                "https://serious-debauchery.netlify.app",
+                "https://api.serious-debauchery.click",
+                "https://www.serious-debauchery.click"
+        ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
