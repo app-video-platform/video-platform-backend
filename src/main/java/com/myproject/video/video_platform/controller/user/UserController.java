@@ -2,6 +2,7 @@ package com.myproject.video.video_platform.controller.user;
 
 import com.myproject.video.video_platform.dto.user.UserDto;
 import com.myproject.video.video_platform.service.user.UserService;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,7 +26,7 @@ public class UserController {
      * Endpoint to retrieve the authenticated user's basic info.
      * Requires a valid JWT, so Spring Security sets Authentication.
      */
-    @GetMapping("/userInfo")
+    @GetMapping(value = "/userInfo", produces= MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UserDto> getUserInfo(Authentication authentication) {
         UserDto userDto = userService.getUserInfo(authentication);
         return ResponseEntity.ok(userDto);

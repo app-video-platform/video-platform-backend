@@ -1,10 +1,12 @@
 package com.myproject.video.video_platform.dto.user;
 
 import lombok.Builder;
+import lombok.Data;
 
 import java.util.List;
 
 @Builder
+@Data
 public class UserDto {
     private String firstName;
     private String lastName;
