@@ -23,6 +23,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.List;
+
 /**
  * Main Security Configuration using SecurityFilterChain (no more WebSecurityConfigurerAdapter).
  */
@@ -53,7 +54,8 @@ public class SecurityConfig {
                 )
                 // Define URL authorization rules
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll() // Registration, login, verify, etc.
+                        .requestMatchers("/api/auth/**").permitAll()// Registration, login, verify, etc.
+                        .requestMatchers("/testEndpoint").permitAll()
                         .anyRequest().authenticated()            // Everything else requires login
                 )
                 .addFilterBefore(jwtProvider.jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
