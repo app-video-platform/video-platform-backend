@@ -25,9 +25,9 @@ server:
   forward-headers-strategy: native
 
 app:
-  domain: "serious-debauchery.click"
+  domain: "serious-debauchery.netlify.app"
   frontend:
-    url: "https://app.serious-debauchery.click"
+    url: "https://serious-debauchery.netlify.app"
 
 jwt:
   secret: "12345678901234567890123456789012"
