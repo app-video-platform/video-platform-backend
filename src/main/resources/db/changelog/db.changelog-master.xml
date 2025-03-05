@@ -11,5 +11,6 @@
     <include file="db/changelog/scripts/5-create_verification_tokens_table.sql" />
     <include file="db/changelog/scripts/6-populate_roles.sql" />
     <include file="db/changelog/scripts/7-add_name_columns_user.sql" />
+    <include file="db/changelog/scripts/8-create_refresh_tokens_table.sql" />
 
 </databaseChangeLog>

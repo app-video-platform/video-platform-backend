@@ -6,6 +6,7 @@ import com.myproject.video.video_platform.dto.authetication.TokenRequest;
 import com.myproject.video.video_platform.exception.auth.TokenExpiredException;
 import com.myproject.video.video_platform.service.security.AuthService;
 import com.myproject.video.video_platform.service.security.VerificationTokenService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -54,5 +55,16 @@ public class AuthController {
     public ResponseEntity<String> logout(HttpServletResponse response) {
         authService.logout(response);
         return ResponseEntity.ok("Logged out.");
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<String> refresh(HttpServletRequest request, HttpServletResponse response) {
+        String refreshToken = authService.extractCookie(request, "REFRESH_TOKEN");
+        if (refreshToken == null) {
+            return ResponseEntity.status(401).body("Missing refresh token");
+        }
+        authService.refreshTokens(response, refreshToken);
+
+        return ResponseEntity.ok("Refresh successful");
     }
 }

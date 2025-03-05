@@ -25,6 +25,7 @@ server:
   forward-headers-strategy: native
 
 app:
+  refresh-expiry-days: 7
   domain: "serious-debauchery.click"
   frontend:
     url: "https://app.serious-debauchery.click"
