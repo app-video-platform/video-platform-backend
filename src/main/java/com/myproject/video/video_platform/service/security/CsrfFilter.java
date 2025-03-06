@@ -27,9 +27,11 @@ public class CsrfFilter extends OncePerRequestFilter {
         // AND we skip /api/auth/login (and optionally /api/auth/logout).
         if ((method.equalsIgnoreCase("POST")
                 || method.equalsIgnoreCase("PUT")
-                || method.equalsIgnoreCase("DELETE"))
+                || method.equalsIgnoreCase("DELETE"
+        ))
                 && !path.equals("/api/auth/login")
-                && !path.equals("/api/auth/logout")) {
+                && !path.equals("/api/auth/logout")
+                && !path.equals("/api/auth/refresh")) {
 
             String csrfCookie = extractCookie(request);
             String csrfHeader = request.getHeader("X-XSRF-TOKEN");
