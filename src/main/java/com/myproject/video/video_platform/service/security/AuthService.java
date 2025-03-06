@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.util.Base64;
@@ -151,6 +152,7 @@ public class AuthService {
     /**
      * Called when user wants to refresh the JWT using the refresh token.
      */
+    @Transactional
     public void refreshTokens(HttpServletResponse response, String oldRefreshToken) {
         // 1) Validate refresh token from DB
         String userEmail = refreshTokenService.validateRefreshToken(oldRefreshToken);
