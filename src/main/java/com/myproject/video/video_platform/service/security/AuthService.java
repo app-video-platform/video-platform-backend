@@ -91,7 +91,7 @@ public class AuthService {
         jwtCookie.setHttpOnly(true);
         jwtCookie.setSecure(true);
         jwtCookie.setPath("/");
-        jwtCookie.setMaxAge(30);
+        jwtCookie.setMaxAge(3600);
         jwtCookie.setDomain(appDomain);
         jwtCookie.setAttribute("SameSite", "None");
 
@@ -108,7 +108,7 @@ public class AuthService {
         csrfCookie.setHttpOnly(false);
         csrfCookie.setSecure(true);
         csrfCookie.setPath("/");
-        csrfCookie.setMaxAge(30);
+        csrfCookie.setMaxAge(3600);
 
         response.addCookie(jwtCookie);
         response.addCookie(csrfCookie);
@@ -169,7 +169,7 @@ public class AuthService {
         jwtCookie.setHttpOnly(true);
         jwtCookie.setSecure(true);
         jwtCookie.setPath("/");
-        jwtCookie.setMaxAge(30);
+        jwtCookie.setMaxAge(3600);
         jwtCookie.setDomain(appDomain);
         jwtCookie.setAttribute("SameSite", "None");
         response.addCookie(jwtCookie);
@@ -188,7 +188,7 @@ public class AuthService {
         csrfCookie.setHttpOnly(false);
         csrfCookie.setSecure(true);
         csrfCookie.setPath("/");
-        csrfCookie.setMaxAge(30);
+        csrfCookie.setMaxAge(3600);
         response.addCookie(csrfCookie);
     }
 
