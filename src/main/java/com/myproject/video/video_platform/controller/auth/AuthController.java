@@ -76,10 +76,10 @@ public class AuthController {
     }
 
     @PostMapping("/googleSignIn")
-    public ResponseEntity<String> googleLogin(@RequestBody GoogleLoginRequest request,
+    public ResponseEntity<String> googleLogin(@RequestBody GoogleLoginRequest googleToken,
                                               HttpServletResponse response) {
         try {
-            googleSignInService.handleSignIn(request, response);
+            googleSignInService.handleSignIn(googleToken, response);
             return ResponseEntity.ok("Google sign-in successful");
         } catch (Exception ex) {
             log.error("Google login error: {}", ex.getMessage());

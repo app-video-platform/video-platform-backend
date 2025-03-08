@@ -3,7 +3,7 @@ package com.myproject.video.video_platform.service.security;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.json.gson.GsonFactory;
 import com.myproject.video.video_platform.dto.authetication.GoogleLoginRequest;
 import com.myproject.video.video_platform.entity.Role;
 import com.myproject.video.video_platform.entity.User;
@@ -43,13 +43,13 @@ public class GoogleSignInService {
     }
 
 
-    public void handleSignIn(GoogleLoginRequest request, HttpServletResponse response) {
+    public void handleSignIn(GoogleLoginRequest googleToken, HttpServletResponse response) {
         try {
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
-                    new NetHttpTransport(), JacksonFactory.getDefaultInstance()
+                    new NetHttpTransport(), GsonFactory.getDefaultInstance()
             ).setAudience(Collections.singletonList(googleClientId)).build();
 
-            GoogleIdToken idToken = verifier.verify(request.getIdToken());
+            GoogleIdToken idToken = verifier.verify(googleToken.getIdToken());
             if (idToken == null) {
                 log.error("Invalid Google ID token");
                 throw new AuthenticationException("Invalid Google token");
