@@ -80,7 +80,7 @@ public class AuthService {
 
         if (!user.isEnabled())
             throw new AuthenticationException("User account not verified");
-
+s
         setAuthCookies(response, user.getEmail());
     }
 
