@@ -14,6 +14,9 @@ spring:
     change-log: classpath:db/changelog/db.changelog-master.xml
     enabled: true
 
+google:
+  client-id: 253068752459-9fioj7h683qtkmrppeq9hsvus0o1kbp3.apps.googleusercontent.com
+
 sendgrid:
   api:
     key: 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

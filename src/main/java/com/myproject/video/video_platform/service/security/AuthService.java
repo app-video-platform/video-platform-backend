@@ -16,8 +16,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.SecureRandom;
-import java.util.Base64;
 import java.util.Collections;
 
 /**
@@ -36,21 +34,22 @@ public class AuthService {
     private final VerificationTokenService verificationTokenService;
     private final JwtProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
-
-    private static final SecureRandom secureRandom = new SecureRandom();
+    private final CsrfProvider csrfProvider;
 
     public AuthService(UserRepository userRepository,
                        RoleRepository roleRepository,
                        PasswordEncoder passwordEncoder,
                        VerificationTokenService verificationTokenService,
                        JwtProvider jwtProvider,
-                       RefreshTokenService refreshTokenService) {
+                       RefreshTokenService refreshTokenService,
+                       CsrfProvider csrfProvider) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.verificationTokenService = verificationTokenService;
         this.jwtProvider = jwtProvider;
         this.refreshTokenService = refreshTokenService;
+        this.csrfProvider = csrfProvider;
     }
 
     public void register(RegisterRequest request) {
@@ -69,6 +68,7 @@ public class AuthService {
         log.info("User registered and token will be sent : {}", user);
 
         verificationTokenService.createAndSendToken(user);
+        //TODO: send welcome email
     }
 
     public void login(LoginRequest request, HttpServletResponse response) {
@@ -81,47 +81,7 @@ public class AuthService {
         if (!user.isEnabled())
             throw new AuthenticationException("User account not verified");
 
-        String jwtToken = jwtProvider.generateToken(user.getEmail());
-        String refreshToken = refreshTokenService.createRefreshToken(user.getEmail());
-
-        String csrfToken = generateCsrfToken();
-
-
-        Cookie jwtCookie = new Cookie("JWT_TOKEN", jwtToken);
-        jwtCookie.setHttpOnly(true);
-        jwtCookie.setSecure(true);
-        jwtCookie.setPath("/");
-        jwtCookie.setMaxAge(3600);
-        jwtCookie.setDomain(appDomain);
-        jwtCookie.setAttribute("SameSite", "None");
-
-        Cookie refreshCookie = new Cookie("REFRESH_TOKEN", refreshToken);
-        refreshCookie.setHttpOnly(true);
-        refreshCookie.setSecure(true);
-        refreshCookie.setPath("/");
-        refreshCookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
-        refreshCookie.setDomain(appDomain);
-        refreshCookie.setAttribute("SameSite", "None");
-        response.addCookie(refreshCookie);
-
-        Cookie csrfCookie = new Cookie("XSRF-TOKEN", csrfToken);
-        csrfCookie.setHttpOnly(false);
-        csrfCookie.setSecure(true);
-        csrfCookie.setPath("/");
-        csrfCookie.setMaxAge(3600);
-
-        response.addCookie(jwtCookie);
-        response.addCookie(csrfCookie);
-    }
-
-    /**
-     * Generates a random token suitable for CSRF protection.
-     */
-    public String generateCsrfToken() {
-        byte[] tokenBytes = new byte[32];
-        secureRandom.nextBytes(tokenBytes);
-
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(tokenBytes);
+        setAuthCookies(response, user.getEmail());
     }
 
     public void logout(HttpServletResponse response) {
@@ -154,42 +114,9 @@ public class AuthService {
      */
     @Transactional
     public void refreshTokens(HttpServletResponse response, String oldRefreshToken) {
-        // 1) Validate refresh token from DB
         String userEmail = refreshTokenService.validateRefreshToken(oldRefreshToken);
-
-        // 2) Generate new short-lived JWT
-        String newAccessToken = jwtProvider.generateToken(userEmail);
-
-        // 3) Rotate refresh token, remove old from DB, create a new one:
         refreshTokenService.deleteRefreshToken(oldRefreshToken);
-        String newRefreshToken = refreshTokenService.createRefreshToken(userEmail);
-
-        // 4) Set new cookies
-        Cookie jwtCookie = new Cookie("JWT_TOKEN", newAccessToken);
-        jwtCookie.setHttpOnly(true);
-        jwtCookie.setSecure(true);
-        jwtCookie.setPath("/");
-        jwtCookie.setMaxAge(3600);
-        jwtCookie.setDomain(appDomain);
-        jwtCookie.setAttribute("SameSite", "None");
-        response.addCookie(jwtCookie);
-
-        Cookie refreshCookie = new Cookie("REFRESH_TOKEN", newRefreshToken);
-        refreshCookie.setHttpOnly(true);
-        refreshCookie.setSecure(true);
-        refreshCookie.setPath("/");
-        refreshCookie.setMaxAge(7 * 24 * 60 * 60);
-        refreshCookie.setDomain(appDomain);
-        refreshCookie.setAttribute("SameSite", "None");
-        response.addCookie(refreshCookie);
-
-        // Also update CSRF token if you want a new one
-        Cookie csrfCookie = new Cookie("XSRF-TOKEN", generateCsrfToken());
-        csrfCookie.setHttpOnly(false);
-        csrfCookie.setSecure(true);
-        csrfCookie.setPath("/");
-        csrfCookie.setMaxAge(3600);
-        response.addCookie(csrfCookie);
+        setAuthCookies(response, userEmail);
     }
 
     public String extractCookie(HttpServletRequest request, String cookieName) {
@@ -201,5 +128,41 @@ public class AuthService {
             }
         }
         return null;
+    }
+
+    public void setAuthCookies(HttpServletResponse response,
+                                String userEmail) {
+
+        String jwtToken = jwtProvider.generateToken(userEmail);
+        String csrfToken = csrfProvider.generateCsrfToken();
+        String refreshToken = refreshTokenService.createRefreshToken(userEmail);
+
+        // JWT Cookie
+        Cookie jwtCookie = new Cookie("JWT_TOKEN", jwtToken);
+        jwtCookie.setHttpOnly(true);
+        jwtCookie.setSecure(true);
+        jwtCookie.setPath("/");
+        jwtCookie.setMaxAge(3600);
+        jwtCookie.setDomain(appDomain);
+        jwtCookie.setAttribute("SameSite", "None");
+        response.addCookie(jwtCookie);
+
+        // Refresh Cookie
+        Cookie refreshCookie = new Cookie("REFRESH_TOKEN", refreshToken);
+        refreshCookie.setHttpOnly(true);
+        refreshCookie.setSecure(true);
+        refreshCookie.setPath("/");
+        refreshCookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
+        refreshCookie.setDomain(appDomain);
+        refreshCookie.setAttribute("SameSite", "None");
+        response.addCookie(refreshCookie);
+
+        // CSRF Cookie
+        Cookie csrfCookie = new Cookie("XSRF-TOKEN", csrfToken);
+        csrfCookie.setHttpOnly(false);
+        csrfCookie.setSecure(true);
+        csrfCookie.setPath("/");
+        csrfCookie.setMaxAge(3600);
+        response.addCookie(csrfCookie);
     }
 }

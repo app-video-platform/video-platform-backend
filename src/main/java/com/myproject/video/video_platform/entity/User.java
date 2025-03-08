@@ -36,7 +36,10 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    private boolean enabled = false; // Indicates if the account is verified
+    private boolean enabled = false;
+
+    @Column(name = "auth_provider", nullable = false)
+    private String authProvider = "LOCAL";
 
     private Instant createdAt = Instant.now();
 
