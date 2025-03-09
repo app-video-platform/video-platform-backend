@@ -31,7 +31,8 @@ public class CsrfFilter extends OncePerRequestFilter {
         ))
                 && !path.equals("/api/auth/login")
                 && !path.equals("/api/auth/logout")
-                && !path.equals("/api/auth/refresh")) {
+                && !path.equals("/api/auth/refresh")
+                && !path.equals("/api/auth/googleSignIn")) {
 
             String csrfCookie = extractCookie(request);
             String csrfHeader = request.getHeader("X-XSRF-TOKEN");
