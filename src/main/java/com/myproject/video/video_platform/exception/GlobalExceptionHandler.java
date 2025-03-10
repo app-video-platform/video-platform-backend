@@ -5,6 +5,7 @@ import com.myproject.video.video_platform.dto.authetication.ValidationErrorRespo
 import com.myproject.video.video_platform.exception.auth.AuthenticationException;
 import com.myproject.video.video_platform.exception.auth.CsrfException;
 import com.myproject.video.video_platform.exception.auth.TokenExpiredException;
+import com.myproject.video.video_platform.exception.auth.UserAlreadyExistingException;
 import com.myproject.video.video_platform.exception.email.EmailSendingException;
 import com.myproject.video.video_platform.exception.user.UserNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -75,6 +76,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CsrfException.class)
     public ResponseEntity<ErrorResponse> handleCsrfException(CsrfException ex) {
         ErrorResponse error = new ErrorResponse(ex.getMessage(), HttpStatus.FORBIDDEN.value());
+        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(UserAlreadyExistingException.class)
+    public ResponseEntity<ErrorResponse> handleUserAlreadyExistingException(UserAlreadyExistingException ex) {
+        ErrorResponse error = new ErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST.value());
         return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
 }

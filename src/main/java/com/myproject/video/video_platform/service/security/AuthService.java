@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
+import java.util.Optional;
 
 /**
  * Handles user registration and login logic.
@@ -54,21 +55,27 @@ public class AuthService {
 
     public void register(RegisterRequest request) {
         log.info("Register request: {}", request);
-        User user = new User();
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setEnabled(false);
 
-        Role userRole = roleRepository.findByRoleName("user");
-        user.setRoles(Collections.singleton(userRole));
+        Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
+        if (userOptional.isPresent()) {
+            throw new AuthenticationException("User already exists with same email: " + request.getEmail());
+        } else {
+            User user = new User();
+            user.setFirstName(request.getFirstName());
+            user.setLastName(request.getLastName());
+            user.setEmail(request.getEmail());
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+            user.setEnabled(false);
 
-        userRepository.save(user);
-        log.info("User registered and token will be sent : {}", user);
+            Role userRole = roleRepository.findByRoleName("user");
+            user.setRoles(Collections.singleton(userRole));
 
-        verificationTokenService.createAndSendToken(user);
-        //TODO: send welcome email
+            userRepository.save(user);
+            log.info("User registered and token will be sent : {}", user);
+
+            verificationTokenService.createAndSendToken(user);
+            //TODO: send welcome email
+        }
     }
 
     public void login(LoginRequest request, HttpServletResponse response) {
