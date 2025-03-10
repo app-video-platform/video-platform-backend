@@ -5,6 +5,7 @@ import com.myproject.video.video_platform.dto.authetication.RegisterRequest;
 import com.myproject.video.video_platform.entity.Role;
 import com.myproject.video.video_platform.entity.User;
 import com.myproject.video.video_platform.exception.auth.AuthenticationException;
+import com.myproject.video.video_platform.exception.user.UserNotFoundException;
 import com.myproject.video.video_platform.repository.RoleRepository;
 import com.myproject.video.video_platform.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
@@ -80,7 +81,7 @@ public class AuthService {
 
     public void login(LoginRequest request, HttpServletResponse response) {
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow(
-                () -> new AuthenticationException("Invalid credentials") {});
+                () -> new UserNotFoundException("No account with email: " + request.getEmail()) {});
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword()))
             throw new AuthenticationException("Invalid credentials");
