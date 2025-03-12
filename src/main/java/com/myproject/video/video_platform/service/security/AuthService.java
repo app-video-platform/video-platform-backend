@@ -2,12 +2,12 @@ package com.myproject.video.video_platform.service.security;
 
 import com.myproject.video.video_platform.dto.authetication.LoginRequest;
 import com.myproject.video.video_platform.dto.authetication.RegisterRequest;
-import com.myproject.video.video_platform.entity.Role;
-import com.myproject.video.video_platform.entity.User;
+import com.myproject.video.video_platform.entity.auth.Role;
+import com.myproject.video.video_platform.entity.auth.User;
 import com.myproject.video.video_platform.exception.auth.AuthenticationException;
 import com.myproject.video.video_platform.exception.user.UserNotFoundException;
-import com.myproject.video.video_platform.repository.RoleRepository;
-import com.myproject.video.video_platform.repository.UserRepository;
+import com.myproject.video.video_platform.repository.auth.RoleRepository;
+import com.myproject.video.video_platform.repository.auth.UserRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

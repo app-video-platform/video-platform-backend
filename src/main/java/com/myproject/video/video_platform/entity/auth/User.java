@@ -1,4 +1,4 @@
-package com.myproject.video.video_platform.entity;
+package com.myproject.video.video_platform.entity.auth;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

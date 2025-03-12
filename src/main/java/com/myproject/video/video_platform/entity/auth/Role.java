@@ -1,4 +1,4 @@
-package com.myproject.video.video_platform.entity;
+package com.myproject.video.video_platform.entity.auth;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,25 +11,21 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.Instant;
-
+/**
+ * Represents a role (e.g., ROLE_USER, ROLE_ADMIN).
+ */
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "refresh_tokens")
-public class RefreshToken {
+@Table(name = "roles")
+public class Role {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long roleId;
 
-    @Column(nullable = false, unique = true)
-    private String token;
-
-    @Column(nullable = false)
-    private String userEmail;
-
-    private Instant expiryDate;
+    @Column(unique = true, nullable = false)
+    private String roleName;
 }

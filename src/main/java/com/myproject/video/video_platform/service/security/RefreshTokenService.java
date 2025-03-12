@@ -1,8 +1,8 @@
 package com.myproject.video.video_platform.service.security;
 
-import com.myproject.video.video_platform.entity.RefreshToken;
+import com.myproject.video.video_platform.entity.auth.RefreshToken;
 import com.myproject.video.video_platform.exception.auth.AuthenticationException;
-import com.myproject.video.video_platform.repository.RefreshTokenRepository;
+import com.myproject.video.video_platform.repository.auth.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

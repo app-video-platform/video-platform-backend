@@ -1,11 +1,11 @@
 package com.myproject.video.video_platform.service.security;
 
 import com.myproject.video.video_platform.dto.authetication.TokenRequest;
-import com.myproject.video.video_platform.entity.User;
-import com.myproject.video.video_platform.entity.VerificationToken;
+import com.myproject.video.video_platform.entity.auth.User;
+import com.myproject.video.video_platform.entity.auth.VerificationToken;
 import com.myproject.video.video_platform.exception.auth.TokenExpiredException;
-import com.myproject.video.video_platform.repository.UserRepository;
-import com.myproject.video.video_platform.repository.VerificationTokenRepository;
+import com.myproject.video.video_platform.repository.auth.UserRepository;
+import com.myproject.video.video_platform.repository.auth.VerificationTokenRepository;
 import com.myproject.video.video_platform.service.mail.EmailService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

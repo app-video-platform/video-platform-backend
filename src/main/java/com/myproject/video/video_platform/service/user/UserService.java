@@ -1,10 +1,10 @@
 package com.myproject.video.video_platform.service.user;
 
 import com.myproject.video.video_platform.dto.user.UserDto;
-import com.myproject.video.video_platform.entity.Role;
-import com.myproject.video.video_platform.entity.User;
+import com.myproject.video.video_platform.entity.auth.Role;
+import com.myproject.video.video_platform.entity.auth.User;
 import com.myproject.video.video_platform.exception.user.UserNotFoundException;
-import com.myproject.video.video_platform.repository.UserRepository;
+import com.myproject.video.video_platform.repository.auth.UserRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 

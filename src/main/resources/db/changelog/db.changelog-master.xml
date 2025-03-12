@@ -13,5 +13,8 @@
     <include file="db/changelog/scripts/7-add_name_columns_user.sql" />
     <include file="db/changelog/scripts/8-create_refresh_tokens_table.sql" />
     <include file="db/changelog/scripts/9-add_authprovider_user.sql" />
+    <include file="db/changelog/scripts/10-create-download-products.sql" />
+    <include file="/db/changelog/scripts/11-create-sections_download_products.sql" />
+    <include file="db/changelog/scripts/12-create-files-download-products.sql" />
 
 </databaseChangeLog>
