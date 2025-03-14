@@ -7,11 +7,13 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@Slf4j
 @Component
 public class CsrfFilter extends OncePerRequestFilter {
 
@@ -36,6 +38,9 @@ public class CsrfFilter extends OncePerRequestFilter {
 
             String csrfCookie = extractCookie(request);
             String csrfHeader = request.getHeader("X-XSRF-TOKEN");
+
+            log.info("Csrf header: {}", csrfHeader);
+            log.info("Csrf cookie: {}", csrfCookie);
 
             if (csrfCookie == null || !csrfCookie.equals(csrfHeader)) {
                 throw new CsrfException("CSRF token mismatch or missing.");
