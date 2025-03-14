@@ -4,9 +4,11 @@ import com.myproject.video.video_platform.dto.authetication.ErrorResponse;
 import com.myproject.video.video_platform.dto.authetication.ValidationErrorResponse;
 import com.myproject.video.video_platform.exception.auth.AuthenticationException;
 import com.myproject.video.video_platform.exception.auth.CsrfException;
+import com.myproject.video.video_platform.exception.auth.InvalidTokenException;
 import com.myproject.video.video_platform.exception.auth.TokenExpiredException;
 import com.myproject.video.video_platform.exception.auth.UserAlreadyExistingException;
 import com.myproject.video.video_platform.exception.email.EmailSendingException;
+import com.myproject.video.video_platform.exception.product.InvalidProductTypeException;
 import com.myproject.video.video_platform.exception.user.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -83,6 +85,18 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleUserAlreadyExistingException(UserAlreadyExistingException ex) {
         ErrorResponse error = new ErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST.value());
         return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(InvalidProductTypeException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidProductTypeException(InvalidProductTypeException ex) {
+        ErrorResponse error = new ErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST.value());
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidTokenException(InvalidTokenException ex) {
+        ErrorResponse error = new ErrorResponse(ex.getMessage(), HttpStatus.UNAUTHORIZED.value());
+        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
     }
 }
 

@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -71,7 +72,9 @@ public class GoogleSignInService {
                 user = userOpt.get();
             } else {
                 user = new User();
+                user.setUserId(UUID.randomUUID());
                 user.setEmail(email);
+                user.setFirstName(name);
                 // store random password
                 user.setPassword(passwordEncoder.encode("GOOGLE_LOGIN_" + email));
                 user.setEnabled(true);

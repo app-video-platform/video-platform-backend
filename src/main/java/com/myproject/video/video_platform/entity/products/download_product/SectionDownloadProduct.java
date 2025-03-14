@@ -3,7 +3,6 @@ package com.myproject.video.video_platform.entity.products.download_product;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -23,7 +22,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class SectionDownloadProduct {
     @Id
-    @GeneratedValue
     private UUID id;
 
     private String title;

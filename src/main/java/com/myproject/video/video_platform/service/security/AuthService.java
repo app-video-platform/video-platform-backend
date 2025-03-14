@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Handles user registration and login logic.
@@ -62,6 +63,7 @@ public class AuthService {
             throw new AuthenticationException("User already exists with same email: " + request.getEmail());
         } else {
             User user = new User();
+            user.setUserId(UUID.randomUUID());
             user.setFirstName(request.getFirstName());
             user.setLastName(request.getLastName());
             user.setEmail(request.getEmail());

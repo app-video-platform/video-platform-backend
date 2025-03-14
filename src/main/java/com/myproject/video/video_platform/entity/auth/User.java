@@ -1,5 +1,7 @@
 package com.myproject.video.video_platform.entity.auth;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.myproject.video.video_platform.entity.products.Product;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,7 +9,9 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Represents a user in the system.
@@ -21,8 +25,7 @@ import java.util.Set;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userId;
+    private UUID userId;
 
     @Column(nullable = false)
     private String firstName;
@@ -48,6 +51,13 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY)
+    private List<Product> products;
 
     /**
      * Convenience constructor for minimal fields.

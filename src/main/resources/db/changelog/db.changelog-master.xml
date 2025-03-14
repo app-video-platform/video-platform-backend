@@ -16,5 +16,7 @@
     <include file="db/changelog/scripts/10-create-download-products.sql" />
     <include file="/db/changelog/scripts/11-create-sections_download_products.sql" />
     <include file="db/changelog/scripts/12-create-files-download-products.sql" />
+    <include file="db/changelog/scripts/13-change-user-id-to-uuid.sql" />
+    <include file="db/changelog/scripts/14-add-user-relation-to-download-product-table.sql" />
 
 </databaseChangeLog>
