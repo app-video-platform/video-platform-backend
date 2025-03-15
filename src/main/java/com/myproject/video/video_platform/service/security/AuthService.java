@@ -171,6 +171,8 @@ public class AuthService {
         Cookie csrfCookie = new Cookie("XSRF-TOKEN", csrfToken);
         csrfCookie.setHttpOnly(false);
         csrfCookie.setSecure(true);
+        csrfCookie.setAttribute("SameSite", "None");
+        csrfCookie.setDomain(appDomain);
         csrfCookie.setPath("/");
         csrfCookie.setMaxAge(3600);
         response.addCookie(csrfCookie);
