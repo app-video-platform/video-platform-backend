@@ -15,6 +15,7 @@ import com.myproject.video.video_platform.repository.products.download_product.D
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -66,4 +67,15 @@ public class ProductService {
     }
 
 
+    public List<AbstractProductResponseDto> getAllDownloadProductsForUser(String userId) {
+        Optional<User> userOptional = userRepository.findByUserId(UUID.fromString(userId));
+        if (userOptional.isEmpty()) {
+            throw new UserNotFoundException("User not found with id: " + userId);
+        }
+
+        return downloadProductRepository.findAllByUser(userOptional.get())
+                .stream()
+                .map(downloadProductConverter::mapDownloadProductToResponse)
+                .toList();
+    }
 }
