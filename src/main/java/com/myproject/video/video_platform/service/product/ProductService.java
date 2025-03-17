@@ -38,8 +38,6 @@ public class ProductService {
     public AbstractProductResponseDto createProduct(AbstractProductRequestDto dto) {
         // Polymorphic check
         if (dto instanceof DownloadProductRequestDto) {
-
-
             return createDownloadProduct((DownloadProductRequestDto) dto);
         } else if (dto instanceof CourseProductRequestDto) {
             //return createCourseProduct((CourseProductRequestDto) dto);
@@ -55,7 +53,7 @@ public class ProductService {
     private AbstractProductResponseDto createDownloadProduct(DownloadProductRequestDto dto) {
         log.info("Creating a DownloadProduct: {}", dto.getName());
 
-        Optional<User> userOptional = userRepository.findById(UUID.fromString(dto.getUserId()));
+        Optional<User> userOptional = userRepository.findByUserId(UUID.fromString(dto.getUserId()));
         if (userOptional.isEmpty()) {
             throw new UserNotFoundException("User not found with id: " + dto.getUserId());
         }

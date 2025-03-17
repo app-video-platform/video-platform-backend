@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
@@ -21,7 +20,6 @@ public class DownloadProductConverter {
 
     public DownloadProduct mapDownloadProductRequestDtoToEntity(DownloadProductRequestDto dto, User user) {
         DownloadProduct product = new DownloadProduct();
-        product.setId(UUID.randomUUID());
         product.setName(dto.getName());
         product.setDescription(dto.getDescription());
         product.setType(ProductType.DOWNLOAD);
@@ -34,14 +32,13 @@ public class DownloadProductConverter {
             List<SectionDownloadProduct> sections = dto.getSections().stream()
                     .map(secDto -> {
                         SectionDownloadProduct sec = new SectionDownloadProduct();
-                        sec.setId(UUID.randomUUID());
                         sec.setTitle(secDto.getTitle());
                         sec.setDescription(secDto.getDescription());
                         sec.setPosition(secDto.getPosition());
                         sec.setDownloadProduct(product);  // link back
                         return sec;
                     })
-                    .collect(Collectors.toList());
+                            .toList();
             product.setSectionDownloadProducts(sections);
         }
 

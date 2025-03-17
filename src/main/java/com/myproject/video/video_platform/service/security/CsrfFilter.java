@@ -39,9 +39,6 @@ public class CsrfFilter extends OncePerRequestFilter {
             String csrfCookie = extractCookie(request);
             String csrfHeader = request.getHeader("X-XSRF-TOKEN");
 
-            log.info("Csrf header: {}", csrfHeader);
-            log.info("Csrf cookie: {}", csrfCookie);
-
             if (csrfCookie == null || !csrfCookie.equals(csrfHeader)) {
                 throw new CsrfException("CSRF token mismatch or missing.");
             }
