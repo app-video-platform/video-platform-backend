@@ -27,6 +27,7 @@ public class UserService {
 
         return UserDto
                 .builder()
+                .userId(user.getUserId().toString())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .email(user.getEmail())

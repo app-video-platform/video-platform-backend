@@ -8,6 +8,7 @@ import java.util.List;
 @Builder
 @Data
 public class UserDto {
+    private String userId;
     private String firstName;
     private String lastName;
     private String email;
