@@ -36,6 +36,15 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<List<AbstractProductResponseDto>> getProducts(@RequestParam(name = "userId") String userId) {
         List<AbstractProductResponseDto> response = productService.getAllDownloadProductsForUser(userId);
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping(value = "/getProduct")
+    public ResponseEntity<AbstractProductResponseDto> getProductById(
+            @RequestParam(name = "productId") String productId,
+            @RequestParam(name = "type") String type) {
+
+        AbstractProductResponseDto response = productService.getProductByIdAndType(productId, type);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
