@@ -74,11 +74,13 @@ public class DownloadProductHandler implements ProductTypeHandler {
         Optional<DownloadProduct> downloadProductOptional =
                 downloadProductRepository.findById(UUID.fromString(dto.getId()));
         if (downloadProductOptional.isPresent()) {
-
             DownloadProduct updatedProduct = downloadProductConverter.mapDownloadProductUpdate(
                     downloadProductOptional.get(),
                     (DownloadProductRequestDto) dto
             );
+
+            updatedProduct = downloadProductRepository.save(updatedProduct);
+
             log.info("Updated succesfully a DownloadProduct: {}", dto.getName());
             return downloadProductConverter.mapDownloadProductToResponse(updatedProduct);
         } else
