@@ -8,6 +8,9 @@ import com.myproject.video.video_platform.repository.auth.UserRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+import java.util.UUID;
+
 @Service
 public class UserService {
 
@@ -33,5 +36,9 @@ public class UserService {
                 .email(user.getEmail())
                 .roles(user.getRoles().stream().map(Role::getRoleName).toList())
                 .build();
+    }
+
+    public Optional<User> findByUserId(UUID uuid) {
+        return userRepository.findById(uuid);
     }
 }

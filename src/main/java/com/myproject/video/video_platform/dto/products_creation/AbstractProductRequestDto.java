@@ -20,6 +20,7 @@ import lombok.Data;
         @JsonSubTypes.Type(value = ConsultationProductRequestDto.class, name = "CONSULTATION")
 })
 public abstract class AbstractProductRequestDto {
+    private String id;
     private String type;         // "DOWNLOAD", "COURSE", or "CONSULTATION" (upper-case)
     private String name;
     private String description;

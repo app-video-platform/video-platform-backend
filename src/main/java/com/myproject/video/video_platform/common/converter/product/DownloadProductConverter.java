@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
@@ -20,6 +21,12 @@ public class DownloadProductConverter {
 
     public DownloadProduct mapDownloadProductRequestDtoToEntity(DownloadProductRequestDto dto, User user) {
         DownloadProduct product = new DownloadProduct();
+
+        // In case is an update of product, we get the ID
+        if (dto.getId() != null && !dto.getUserId().isEmpty()) {
+            product.setId(UUID.fromString(dto.getId()));
+        }
+
         product.setName(dto.getName());
         product.setDescription(dto.getDescription());
         product.setType(ProductType.DOWNLOAD);

@@ -4,11 +4,7 @@ import com.myproject.video.video_platform.common.converter.product.DownloadProdu
 import com.myproject.video.video_platform.common.enums.products.ProductType;
 import com.myproject.video.video_platform.dto.products_creation.AbstractProductRequestDto;
 import com.myproject.video.video_platform.dto.products_creation.AbstractProductResponseDto;
-import com.myproject.video.video_platform.dto.products_creation.ConsultationProductRequestDto;
-import com.myproject.video.video_platform.dto.products_creation.CourseProductRequestDto;
-import com.myproject.video.video_platform.dto.products_creation.DownloadProductRequestDto;
 import com.myproject.video.video_platform.entity.auth.User;
-import com.myproject.video.video_platform.entity.products.download_product.DownloadProduct;
 import com.myproject.video.video_platform.exception.product.InvalidProductTypeException;
 import com.myproject.video.video_platform.exception.user.UserNotFoundException;
 import com.myproject.video.video_platform.repository.auth.UserRepository;
@@ -52,35 +48,17 @@ public class ProductService {
 
 
     public AbstractProductResponseDto createProduct(AbstractProductRequestDto dto) {
-        // Polymorphic check
-        if (dto instanceof DownloadProductRequestDto) {
-            return createDownloadProduct((DownloadProductRequestDto) dto);
-        } else if (dto instanceof CourseProductRequestDto) {
-            //return createCourseProduct((CourseProductRequestDto) dto);
-            throw new InvalidProductTypeException("Unknown product type: " + dto.getType());
-        } else if (dto instanceof ConsultationProductRequestDto) {
-            //return createConsultationProduct((ConsultationProductRequestDto) dto);
-            throw new InvalidProductTypeException("Unknown product type: " + dto.getType());
-        } else {
-            throw new InvalidProductTypeException("Unknown product type: " + dto.getType());
-        }
+        return getProductStrategyHandler(dto.getType()).createProduct(dto);
     }
 
-    private AbstractProductResponseDto createDownloadProduct(DownloadProductRequestDto dto) {
-        log.info("Creating a DownloadProduct: {}", dto.getName());
 
-        Optional<User> userOptional = userRepository.findByUserId(UUID.fromString(dto.getUserId()));
-        if (userOptional.isEmpty()) {
-            throw new UserNotFoundException("User not found with id: " + dto.getUserId());
-        }
-
-        DownloadProduct product = downloadProductConverter.mapDownloadProductRequestDtoToEntity(dto, userOptional.get());
-        DownloadProduct saved = downloadProductRepository.save(product);
-
-        log.info("Created succesfully a DownloadProduct: {}", dto.getName());
-        return downloadProductConverter.mapDownloadProductToResponse(saved);
+    public AbstractProductResponseDto getProductByIdAndType(String productId, String type) {
+        return getProductStrategyHandler(type).getProductById(productId);
     }
 
+    public AbstractProductResponseDto updateProduct(AbstractProductRequestDto dto) {
+        return getProductStrategyHandler(dto.getType()).updateProduct(dto);
+    }
 
     public List<AbstractProductResponseDto> getAllDownloadProductsForUser(String userId) {
         Optional<User> userOptional = userRepository.findByUserId(UUID.fromString(userId));
@@ -94,8 +72,9 @@ public class ProductService {
                 .toList();
     }
 
-    public AbstractProductResponseDto getProductByIdAndType(String productId, String typeStr) {
+    private ProductTypeHandler getProductStrategyHandler(String typeStr) {
         ProductType type;
+
         try {
             type = ProductType.valueOf(typeStr.toUpperCase());
         } catch (IllegalArgumentException e) {
@@ -106,7 +85,8 @@ public class ProductService {
         if (handler == null) {
             throw new InvalidProductTypeException("No handler for product type: " + type);
         }
-
-        return handler.getProductById(productId);
+        return handler;
     }
+
+
 }
