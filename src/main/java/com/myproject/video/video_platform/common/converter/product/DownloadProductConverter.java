@@ -95,4 +95,29 @@ public class DownloadProductConverter {
         }
         return new BigDecimal(priceStr);
     }
+
+    public DownloadProduct mapDownloadProductUpdate(DownloadProduct product, DownloadProductRequestDto dto) {
+        product.setName(dto.getName());
+        product.setDescription(dto.getDescription());
+        product.setType(ProductType.DOWNLOAD);
+        product.setStatus(parseStatus(dto.getStatus()));
+        product.setPrice(parsePrice(dto.getPrice()));
+
+        // Build sections
+        if (dto.getSections() != null) {
+            List<SectionDownloadProduct> sections = dto.getSections().stream()
+                    .map(secDto -> {
+                        SectionDownloadProduct sec = new SectionDownloadProduct();
+                        sec.setTitle(secDto.getTitle());
+                        sec.setDescription(secDto.getDescription());
+                        sec.setPosition(secDto.getPosition());
+                        sec.setDownloadProduct(product);  // link back
+                        return sec;
+                    })
+                    .toList();
+            product.setSectionDownloadProducts(sections);
+        }
+
+        return product;
+    }
 }

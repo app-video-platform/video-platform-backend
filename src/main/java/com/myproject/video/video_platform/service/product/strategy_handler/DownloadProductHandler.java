@@ -50,17 +50,6 @@ public class DownloadProductHandler implements ProductTypeHandler {
     public AbstractProductResponseDto createProduct(AbstractProductRequestDto dto) {
         log.info("Creating a DownloadProduct: {}", dto.getName());
 
-        return createOrUpdateProduct(dto);
-    }
-
-    @Override
-    public AbstractProductResponseDto updateProduct(AbstractProductRequestDto dto) {
-        log.info("Updating a download product: {}", dto.getName());
-
-        return createOrUpdateProduct(dto);
-    }
-
-    private AbstractProductResponseDto createOrUpdateProduct(AbstractProductRequestDto dto) {
         Optional<User> userOptional = userService.findByUserId(UUID.fromString(dto.getUserId()));
         if (userOptional.isEmpty()) {
             throw new UserNotFoundException("User not found with id: " + dto.getUserId());
@@ -72,5 +61,27 @@ public class DownloadProductHandler implements ProductTypeHandler {
 
         log.info("Created succesfully a DownloadProduct: {}", dto.getName());
         return downloadProductConverter.mapDownloadProductToResponse(saved);
+    }
+
+    @Override
+    public AbstractProductResponseDto updateProduct(AbstractProductRequestDto dto) {
+        log.info("Updating a download product: {}", dto.getName());
+        Optional<User> userOptional = userService.findByUserId(UUID.fromString(dto.getUserId()));
+        if (userOptional.isEmpty()) {
+            throw new UserNotFoundException("User not found with id: " + dto.getUserId());
+        }
+
+        Optional<DownloadProduct> downloadProductOptional =
+                downloadProductRepository.findById(UUID.fromString(dto.getId()));
+        if (downloadProductOptional.isPresent()) {
+
+            DownloadProduct updatedProduct = downloadProductConverter.mapDownloadProductUpdate(
+                    downloadProductOptional.get(),
+                    (DownloadProductRequestDto) dto
+            );
+            log.info("Updated succesfully a DownloadProduct: {}", dto.getName());
+            return downloadProductConverter.mapDownloadProductToResponse(updatedProduct);
+        } else
+            throw new ResourceNotFoundException("DownloadProduct not found for ID: " + dto.getId());
     }
 }

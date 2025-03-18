@@ -12,7 +12,8 @@ import lombok.Data;
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.EXISTING_PROPERTY,
-        property = "type"
+        property = "type",
+        visible = true
 )
 @JsonSubTypes({
         @JsonSubTypes.Type(value = DownloadProductRequestDto.class, name = "DOWNLOAD"),
