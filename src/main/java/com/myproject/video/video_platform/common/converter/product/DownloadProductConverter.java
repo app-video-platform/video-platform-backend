@@ -112,7 +112,7 @@ public class DownloadProductConverter {
         Map<UUID, SectionDownloadProduct> existingById = existingSections.stream()
                 .collect(Collectors.toMap(SectionDownloadProduct::getId, Function.identity()));
 
-        List<SectionDownloadProduct> updatedSections = new ArrayList<>();
+        List<SectionDownloadProduct> sectionsToKeep = new ArrayList<>();
 
         if (dto.getSections() != null) {
             for (SectionDownloadProductRequestDto secDto : dto.getSections()) {
@@ -127,7 +127,7 @@ public class DownloadProductConverter {
                     existingSec.setTitle(secDto.getTitle());
                     existingSec.setDescription(secDto.getDescription());
                     existingSec.setPosition(secDto.getPosition());
-                    updatedSections.add(existingSec);
+                    sectionsToKeep.add(existingSec);
                     existingById.remove(secId); // mark handled
                 } else {
                     // CREATE NEW
@@ -136,12 +136,13 @@ public class DownloadProductConverter {
                     newSec.setDescription(secDto.getDescription());
                     newSec.setPosition(secDto.getPosition());
                     newSec.setDownloadProduct(product);
-                    updatedSections.add(newSec);
+                    sectionsToKeep.add(newSec);
                 }
             }
         }
 
-        product.setSectionDownloadProducts(updatedSections);
+        existingSections.clear();
+        existingSections.addAll(sectionsToKeep);
         return product;
     }
 }
