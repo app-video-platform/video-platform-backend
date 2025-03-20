@@ -10,6 +10,7 @@ import com.myproject.video.video_platform.entity.products.download_product.Downl
 import com.myproject.video.video_platform.exception.product.ResourceNotFoundException;
 import com.myproject.video.video_platform.exception.user.UserNotFoundException;
 import com.myproject.video.video_platform.repository.products.download_product.DownloadProductRepository;
+import com.myproject.video.video_platform.repository.products.download_product.SectionDownloadProductRepository;
 import com.myproject.video.video_platform.service.user.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -23,13 +24,16 @@ public class DownloadProductHandler implements ProductTypeHandler {
 
     private final DownloadProductRepository downloadProductRepository;
     private final DownloadProductConverter downloadProductConverter;
+    private final SectionDownloadProductRepository sectionDownloadProductRepository;
     private final UserService userService;
 
     public DownloadProductHandler(DownloadProductRepository downloadProductRepository,
                                   DownloadProductConverter downloadProductConverter,
+                                  SectionDownloadProductRepository sectionDownloadProductRepository,
                                   UserService userService) {
         this.downloadProductRepository = downloadProductRepository;
         this.downloadProductConverter = downloadProductConverter;
+        this.sectionDownloadProductRepository = sectionDownloadProductRepository;
         this.userService = userService;
     }
 
@@ -74,8 +78,10 @@ public class DownloadProductHandler implements ProductTypeHandler {
         Optional<DownloadProduct> downloadProductOptional =
                 downloadProductRepository.findById(UUID.fromString(dto.getId()));
         if (downloadProductOptional.isPresent()) {
+            DownloadProduct downloadProduct = downloadProductOptional.get();
+
             DownloadProduct updatedProduct = downloadProductConverter.mapDownloadProductUpdate(
-                    downloadProductOptional.get(),
+                    downloadProduct,
                     (DownloadProductRequestDto) dto
             );
 

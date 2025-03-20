@@ -5,6 +5,7 @@ import com.myproject.video.video_platform.common.enums.products.ProductType;
 import com.myproject.video.video_platform.dto.products_creation.AbstractProductResponseDto;
 import com.myproject.video.video_platform.dto.products_creation.DownloadProductRequestDto;
 import com.myproject.video.video_platform.dto.products_creation.DownloadProductResponseDto;
+import com.myproject.video.video_platform.dto.products_creation.SectionDownloadProductRequestDto;
 import com.myproject.video.video_platform.dto.products_creation.SectionDownloadProductResponseDto;
 import com.myproject.video.video_platform.entity.auth.User;
 import com.myproject.video.video_platform.entity.products.download_product.DownloadProduct;
@@ -12,8 +13,12 @@ import com.myproject.video.video_platform.entity.products.download_product.Secti
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 public class DownloadProductConverter {
@@ -64,7 +69,7 @@ public class DownloadProductConverter {
         response.setUserId(product.getUser().getUserId());
 
         if (product.getSectionDownloadProducts() != null) {
-            List<SectionDownloadProductResponseDto> sectionResponses = product.getSectionDownloadProducts().stream().map(sec -> {
+            List<SectionDownloadProductResponseDto> sectionResponses =  product.getSectionDownloadProducts().stream().map(sec -> {
                 SectionDownloadProductResponseDto sr = new SectionDownloadProductResponseDto();
                 sr.setId(sec.getId());
                 sr.setTitle(sec.getTitle());
@@ -103,21 +108,40 @@ public class DownloadProductConverter {
         product.setStatus(parseStatus(dto.getStatus()));
         product.setPrice(parsePrice(dto.getPrice()));
 
-        // Build sections
+        List<SectionDownloadProduct> existingSections = product.getSectionDownloadProducts();
+        Map<UUID, SectionDownloadProduct> existingById = existingSections.stream()
+                .collect(Collectors.toMap(SectionDownloadProduct::getId, Function.identity()));
+
+        List<SectionDownloadProduct> updatedSections = new ArrayList<>();
+
         if (dto.getSections() != null) {
-            List<SectionDownloadProduct> sections = dto.getSections().stream()
-                    .map(secDto -> {
-                        SectionDownloadProduct sec = new SectionDownloadProduct();
-                        sec.setTitle(secDto.getTitle());
-                        sec.setDescription(secDto.getDescription());
-                        sec.setPosition(secDto.getPosition());
-                        sec.setDownloadProduct(product);  // link back
-                        return sec;
-                    })
-                    .toList();
-            product.setSectionDownloadProducts(sections);
+            for (SectionDownloadProductRequestDto secDto : dto.getSections()) {
+                UUID secId = null;
+                if (secDto.getId() != null && !secDto.getId().isEmpty()) {
+                    secId = UUID.fromString(secDto.getId());
+                }
+
+                if (secId != null && existingById.containsKey(secId)) {
+                    // UPDATE EXISTING
+                    SectionDownloadProduct existingSec = existingById.get(secId);
+                    existingSec.setTitle(secDto.getTitle());
+                    existingSec.setDescription(secDto.getDescription());
+                    existingSec.setPosition(secDto.getPosition());
+                    updatedSections.add(existingSec);
+                    existingById.remove(secId); // mark handled
+                } else {
+                    // CREATE NEW
+                    SectionDownloadProduct newSec = new SectionDownloadProduct();
+                    newSec.setTitle(secDto.getTitle());
+                    newSec.setDescription(secDto.getDescription());
+                    newSec.setPosition(secDto.getPosition());
+                    newSec.setDownloadProduct(product);
+                    updatedSections.add(newSec);
+                }
+            }
         }
 
+        product.setSectionDownloadProducts(updatedSections);
         return product;
     }
 }
