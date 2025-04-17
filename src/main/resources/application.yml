@@ -23,6 +23,17 @@ sendgrid:
   mail:
     from: "no-reply@serious-debauchery.click"
 
+digitalocean:
+  spaces:
+    accessKey: DO8019JA4FF362NEXM6N
+    secretKey: 4fGzkMbOtDNoS2AfnW9wQKninZXacgG6h7k3uIA/Tc4
+    originEndpointUrl: https://fra1.digitaloceanspaces.com
+    cdnEndpointUrl: https://video-platform.fra1.cdn.digitaloceanspaces.com
+    originEndpoint: video-platform.fra1.digitaloceanspaces.com
+    region: fra1
+    bucket-media: video-platform
+
+
 
 server:
   forward-headers-strategy: native
