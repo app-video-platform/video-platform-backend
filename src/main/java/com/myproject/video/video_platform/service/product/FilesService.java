@@ -48,12 +48,14 @@ public class FilesService {
     ) {
         SectionDownloadProduct section = authorizeSectionUpload(sectionIdStr);
         S3UploadFolder folder  = S3UploadFolder.fromString(folderTypeStr);
+        UUID fileId = UUID.randomUUID();
 
-        String key = buildKey(section, folder, filename);
+        String key = buildKey(section, folder, filename, fileId);
         String presigned = spacesS3Service.generatePresignedUrlForPut(key, expiration);
         String fileUrl   = cdnEndpointUrl + "/" + s3mediaBucket + "/" + key;
 
         PresignedUrlResponseDto dto = new PresignedUrlResponseDto();
+        dto.setFileId(fileId.toString());
         dto.setPresignedUrl(presigned);
         dto.setKey(key);
         dto.setFileUrl(fileUrl);
@@ -81,7 +83,7 @@ public class FilesService {
     /** place to construct S3 path for ANY upload type */
     private String buildKey(SectionDownloadProduct section,
                             S3UploadFolder folder,
-                            String filename) {
+                            String filename, UUID fileId) {
 
         String userId     = section.getDownloadProduct().getUser().getUserId().toString();
         String sectionId  = section.getId().toString();
@@ -91,7 +93,7 @@ public class FilesService {
                 userId,
                 folder.getFolderName(),
                 sectionId,
-                safeName
+                fileId + "_" + safeName
         );
     }
 

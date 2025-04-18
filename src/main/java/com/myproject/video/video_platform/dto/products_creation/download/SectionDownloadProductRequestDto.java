@@ -1,4 +1,4 @@
-package com.myproject.video.video_platform.dto.products_creation;
+package com.myproject.video.video_platform.dto.products_creation.download;
 
 import lombok.Data;
 

@@ -12,7 +12,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * Download Product extending from Product.
@@ -28,5 +29,5 @@ import java.util.List;
 public class DownloadProduct extends Product {
     @OneToMany(mappedBy = "downloadProduct", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("position ASC")
-    private List<SectionDownloadProduct> sectionDownloadProducts;
+    private Set<SectionDownloadProduct> sectionDownloadProducts = new LinkedHashSet<>();
 }

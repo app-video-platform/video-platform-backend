@@ -1,20 +1,13 @@
 package com.myproject.video.video_platform.entity.products.download_product;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -40,5 +33,6 @@ public class SectionDownloadProduct {
     private DownloadProduct downloadProduct;
 
     @OneToMany(mappedBy = "section", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<FileDownloadProduct> files;
+    @OrderBy("uploadedAt ASC")
+    private Set<FileDownloadProduct> files = new LinkedHashSet<>();
 }

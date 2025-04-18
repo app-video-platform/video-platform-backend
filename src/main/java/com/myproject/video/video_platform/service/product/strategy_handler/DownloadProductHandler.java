@@ -4,13 +4,12 @@ import com.myproject.video.video_platform.common.converter.product.DownloadProdu
 import com.myproject.video.video_platform.common.enums.products.ProductType;
 import com.myproject.video.video_platform.dto.products_creation.AbstractProductRequestDto;
 import com.myproject.video.video_platform.dto.products_creation.AbstractProductResponseDto;
-import com.myproject.video.video_platform.dto.products_creation.DownloadProductRequestDto;
+import com.myproject.video.video_platform.dto.products_creation.download.DownloadProductRequestDto;
 import com.myproject.video.video_platform.entity.auth.User;
 import com.myproject.video.video_platform.entity.products.download_product.DownloadProduct;
 import com.myproject.video.video_platform.exception.product.ResourceNotFoundException;
 import com.myproject.video.video_platform.exception.user.UserNotFoundException;
 import com.myproject.video.video_platform.repository.products.download_product.DownloadProductRepository;
-import com.myproject.video.video_platform.repository.products.download_product.SectionDownloadProductRepository;
 import com.myproject.video.video_platform.service.user.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -24,16 +23,13 @@ public class DownloadProductHandler implements ProductTypeHandler {
 
     private final DownloadProductRepository downloadProductRepository;
     private final DownloadProductConverter downloadProductConverter;
-    private final SectionDownloadProductRepository sectionDownloadProductRepository;
     private final UserService userService;
 
     public DownloadProductHandler(DownloadProductRepository downloadProductRepository,
                                   DownloadProductConverter downloadProductConverter,
-                                  SectionDownloadProductRepository sectionDownloadProductRepository,
                                   UserService userService) {
         this.downloadProductRepository = downloadProductRepository;
         this.downloadProductConverter = downloadProductConverter;
-        this.sectionDownloadProductRepository = sectionDownloadProductRepository;
         this.userService = userService;
     }
 
@@ -45,7 +41,7 @@ public class DownloadProductHandler implements ProductTypeHandler {
     @Override
     public AbstractProductResponseDto getProductById(String productId) {
         UUID id = UUID.fromString(productId);
-        DownloadProduct product = downloadProductRepository.findById(id)
+        DownloadProduct product = downloadProductRepository.findFullById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("DownloadProduct not found for ID: " + productId));
         return downloadProductConverter.mapDownloadProductToResponse(product);
     }

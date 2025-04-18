@@ -1,7 +1,8 @@
-package com.myproject.video.video_platform.dto.products_creation;
+package com.myproject.video.video_platform.dto.products_creation.download;
 
 import lombok.Data;
 
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -10,4 +11,5 @@ public class SectionDownloadProductResponseDto {
     private String title;
     private String description;
     private Integer position;
+    private List<FileDownloadProductResponseDto> files;
 }

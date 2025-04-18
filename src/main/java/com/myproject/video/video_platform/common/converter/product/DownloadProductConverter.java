@@ -3,25 +3,36 @@ package com.myproject.video.video_platform.common.converter.product;
 import com.myproject.video.video_platform.common.enums.products.ProductStatus;
 import com.myproject.video.video_platform.common.enums.products.ProductType;
 import com.myproject.video.video_platform.dto.products_creation.AbstractProductResponseDto;
-import com.myproject.video.video_platform.dto.products_creation.DownloadProductRequestDto;
-import com.myproject.video.video_platform.dto.products_creation.DownloadProductResponseDto;
-import com.myproject.video.video_platform.dto.products_creation.SectionDownloadProductRequestDto;
-import com.myproject.video.video_platform.dto.products_creation.SectionDownloadProductResponseDto;
+import com.myproject.video.video_platform.dto.products_creation.download.DownloadProductRequestDto;
+import com.myproject.video.video_platform.dto.products_creation.download.DownloadProductResponseDto;
+import com.myproject.video.video_platform.dto.products_creation.download.FileDownloadProductResponseDto;
+import com.myproject.video.video_platform.dto.products_creation.download.SectionDownloadProductRequestDto;
+import com.myproject.video.video_platform.dto.products_creation.download.SectionDownloadProductResponseDto;
 import com.myproject.video.video_platform.entity.auth.User;
 import com.myproject.video.video_platform.entity.products.download_product.DownloadProduct;
+import com.myproject.video.video_platform.entity.products.download_product.FileDownloadProduct;
 import com.myproject.video.video_platform.entity.products.download_product.SectionDownloadProduct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
 public class DownloadProductConverter {
+
+    @Value("${digitalocean.spaces.cdnEndpointUrl}")
+    private String cdnEndpoint;
+
+    @Value("${digitalocean.spaces.bucket-media}")
+    private String bucketName;
 
     public DownloadProduct mapDownloadProductRequestDtoToEntity(DownloadProductRequestDto dto, User user) {
         DownloadProduct product = new DownloadProduct();
@@ -38,7 +49,7 @@ public class DownloadProductConverter {
 
         // Build sections
         if (dto.getSections() != null) {
-            List<SectionDownloadProduct> sections = dto.getSections().stream()
+            Set<SectionDownloadProduct> sections = dto.getSections().stream()
                     .map(secDto -> {
                         SectionDownloadProduct sec = new SectionDownloadProduct();
                         // In case is an update of product, we get the ID
@@ -51,7 +62,7 @@ public class DownloadProductConverter {
                         sec.setDownloadProduct(product);  // link back
                         return sec;
                     })
-                            .toList();
+                            .collect(Collectors.toSet());
             product.setSectionDownloadProducts(sections);
         }
 
@@ -59,28 +70,51 @@ public class DownloadProductConverter {
     }
 
     public AbstractProductResponseDto mapDownloadProductToResponse(DownloadProduct product) {
-        DownloadProductResponseDto response = new DownloadProductResponseDto();
-        response.setId(product.getId());
-        response.setName(product.getName());
-        response.setDescription(product.getDescription());
-        response.setType(product.getType().name());
-        response.setStatus(product.getStatus().toString());
-        response.setPrice(product.getPrice().compareTo(BigDecimal.ZERO) == 0 ? "free" : product.getPrice().toString());
-        response.setUserId(product.getUser().getUserId());
+        DownloadProductResponseDto dto = new DownloadProductResponseDto();
+        dto.setId(product.getId());
+        dto.setName(product.getName());
+        dto.setDescription(product.getDescription());
+        dto.setType(product.getType().name());
+        dto.setStatus(product.getStatus().toString());
+        dto.setPrice(product.getPrice().compareTo(BigDecimal.ZERO) == 0 ? "free" : product.getPrice().toString());
+        dto.setUserId(product.getUser().getUserId());
 
         if (product.getSectionDownloadProducts() != null) {
-            List<SectionDownloadProductResponseDto> sectionResponses =  product.getSectionDownloadProducts().stream().map(sec -> {
-                SectionDownloadProductResponseDto sr = new SectionDownloadProductResponseDto();
-                sr.setId(sec.getId());
-                sr.setTitle(sec.getTitle());
-                sr.setDescription(sec.getDescription());
-                sr.setPosition(sec.getPosition());
-                return sr;
-            }).toList();
-            response.setSections(sectionResponses);
+            List<SectionDownloadProductResponseDto> sections = product.getSectionDownloadProducts()
+                    .stream()
+                    .sorted(Comparator.comparing(SectionDownloadProduct::getPosition))
+                    .map(this::mapSection)
+                    .toList();
+            dto.setSections(sections);
         }
 
-        return response;
+        return dto;
+    }
+
+    private SectionDownloadProductResponseDto mapSection(SectionDownloadProduct sec) {
+        SectionDownloadProductResponseDto dto = new SectionDownloadProductResponseDto();
+        dto.setId(sec.getId());
+        dto.setTitle(sec.getTitle());
+        dto.setDescription(sec.getDescription());
+        dto.setPosition(sec.getPosition());
+
+        List<FileDownloadProductResponseDto> fileDtos = sec.getFiles()
+                .stream()
+                .map(this::mapFile)
+                .toList();
+        dto.setFiles(fileDtos);
+        return dto;
+    }
+
+    private FileDownloadProductResponseDto mapFile(FileDownloadProduct f) {
+        FileDownloadProductResponseDto dto = new FileDownloadProductResponseDto();
+        dto.setId(f.getId());
+        dto.setFileName(f.getFileName());
+        dto.setSize(f.getSize());
+        dto.setFileType(f.getFileType());
+
+        dto.setUrl(String.format("%s/%s/%s", cdnEndpoint, bucketName, f.getPath()));
+        return dto;
     }
 
     private ProductStatus parseStatus(String statusStr) {
@@ -108,7 +142,7 @@ public class DownloadProductConverter {
         product.setStatus(parseStatus(dto.getStatus()));
         product.setPrice(parsePrice(dto.getPrice()));
 
-        List<SectionDownloadProduct> existingSections = product.getSectionDownloadProducts();
+        Set<SectionDownloadProduct> existingSections = product.getSectionDownloadProducts();
         Map<UUID, SectionDownloadProduct> existingById = existingSections.stream()
                 .collect(Collectors.toMap(SectionDownloadProduct::getId, Function.identity()));
 
