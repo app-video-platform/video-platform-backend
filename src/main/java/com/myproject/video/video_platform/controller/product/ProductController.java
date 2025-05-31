@@ -36,7 +36,7 @@ public class ProductController {
 
     @GetMapping
     public ResponseEntity<List<AbstractProductResponseDto>> getProducts(@RequestParam(name = "userId") String userId) {
-        List<AbstractProductResponseDto> response = productService.getAllDownloadProductsForUser(userId);
+        List<AbstractProductResponseDto> response = productService.getAllProductsForUser(userId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 

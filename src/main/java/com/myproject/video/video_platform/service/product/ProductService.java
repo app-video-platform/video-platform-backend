@@ -1,13 +1,16 @@
 package com.myproject.video.video_platform.service.product;
 
 import com.myproject.video.video_platform.common.converter.product.DownloadProductConverter;
+import com.myproject.video.video_platform.common.converter.product.ProductConverter;
 import com.myproject.video.video_platform.common.enums.products.ProductType;
 import com.myproject.video.video_platform.dto.products.AbstractProductRequestDto;
 import com.myproject.video.video_platform.dto.products.AbstractProductResponseDto;
 import com.myproject.video.video_platform.entity.auth.User;
+import com.myproject.video.video_platform.entity.products.Product;
 import com.myproject.video.video_platform.exception.product.InvalidProductTypeException;
 import com.myproject.video.video_platform.exception.user.UserNotFoundException;
 import com.myproject.video.video_platform.repository.auth.UserRepository;
+import com.myproject.video.video_platform.repository.products.ProductRepository;
 import com.myproject.video.video_platform.repository.products.download.DownloadProductRepository;
 import com.myproject.video.video_platform.service.product.strategy_handler.ProductTypeHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -28,15 +30,21 @@ public class ProductService {
     private final UserRepository userRepository;
     private final DownloadProductRepository downloadProductRepository;
     private final DownloadProductConverter downloadProductConverter;
+    private final ProductRepository productRepository;
     private final Map<ProductType, ProductTypeHandler> handlers;
+    private final ProductConverter productConverter;
 
     public ProductService(UserRepository userRepository,
                           DownloadProductRepository downloadProductRepository,
                           DownloadProductConverter downloadProductConverter,
-                          Set<ProductTypeHandler> handlerSet) {
+                          ProductRepository productRepository,
+                          Set<ProductTypeHandler> handlerSet,
+                          ProductConverter productConverter) {
         this.userRepository = userRepository;
         this.downloadProductRepository = downloadProductRepository;
+        this.productRepository = productRepository;
         this.downloadProductConverter = downloadProductConverter;
+        this.productConverter = productConverter;
 
         // Convert the set of handlers into a map: ProductType -> handler
         this.handlers = handlerSet.stream()
@@ -60,17 +68,17 @@ public class ProductService {
         return getProductStrategyHandler(dto.getType()).updateProduct(dto);
     }
 
-    public List<AbstractProductResponseDto> getAllDownloadProductsForUser(String userId) {
-        Optional<User> userOptional = userRepository.findByUserId(UUID.fromString(userId));
-        if (userOptional.isEmpty()) {
-            throw new UserNotFoundException("User not found with id: " + userId);
-        }
+    public List<AbstractProductResponseDto> getAllProductsForUser(String userId) {
+        User user = userRepository.findByUserId(UUID.fromString(userId))
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
 
-        return downloadProductRepository.findAllByUser(userOptional.get())
-                .stream()
-                .map(downloadProductConverter::mapDownloadProductToResponse)
+        List<Product> products = productRepository.findAllByUser(user);
+
+        return products.stream()
+                .map(productConverter::mapProductToResponse)
                 .toList();
     }
+
 
     private ProductTypeHandler getProductStrategyHandler(String typeStr) {
         ProductType type;
