@@ -1,0 +1,20 @@
+package com.myproject.video.video_platform.dto.products.course;
+
+import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
+
+@Data
+public class CourseLessonCreateRequestDto {
+    @NotBlank
+    private String title;
+
+    @NotBlank
+    private String type;     // "VIDEO", "ARTICLE", etc.
+
+    // we store the CDN URL here.
+    private String videoUrl;
+
+    private String content;
+
+    private Integer position;
+}
