@@ -91,20 +91,18 @@ public class CourseProductConverter {
         if (section.getLessons() != null) {
             List<CourseLessonResponseDto> lessonDtos = section.getLessons().stream()
                     .sorted(Comparator.comparing(CourseLesson::getPosition))
-                    .map(this::mapLesson)
+                    .map(this::mapLessonLazyLoad)
                     .toList();
             secDto.setLessons(lessonDtos);
         }
         return secDto;
     }
 
-    private CourseLessonResponseDto mapLesson(CourseLesson lesson) {
+    private CourseLessonResponseDto mapLessonLazyLoad(CourseLesson lesson) {
         CourseLessonResponseDto dto = new CourseLessonResponseDto();
         dto.setId(lesson.getId());
         dto.setTitle(lesson.getTitle());
         dto.setType(lesson.getType().name());
-        dto.setVideoUrl(lesson.getVideoUrl());
-        dto.setContent(lesson.getContent());
         dto.setPosition(lesson.getPosition());
         return dto;
     }
