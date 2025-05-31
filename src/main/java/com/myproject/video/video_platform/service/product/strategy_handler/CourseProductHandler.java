@@ -59,22 +59,16 @@ public class CourseProductHandler implements ProductTypeHandler {
     @Override
     @Transactional
     public AbstractProductResponseDto updateProduct(AbstractProductRequestDto baseDto) {
-//        CourseProductRequestDto dto = (CourseProductRequestDto) baseDto;
-//        log.info("Updating Course: {}", dto.getName());
-//
-//        UUID id = UUID.fromString(dto.getId());
-//        CourseProduct existing = courseRepo.findById(id)
-//                .orElseThrow(() -> new ResourceNotFoundException("Course not found: " + dto.getId()));
-//
-//        // Security: check that current user is owner
-//        String currentEmail = userService.getCurrentUserEmail();
-//        if (!existing.getUser().getEmail().equalsIgnoreCase(currentEmail)) {
-//            throw new RuntimeException("Access denied to update this course");
-//        }
-//
-//        converter.applyCourseUpdateDto(existing, dto);
-//        CourseProduct saved = courseRepo.save(existing);
- //       return converter.mapCourseToResponse(saved);
-        return null;
+        CourseProductRequestDto dto = (CourseProductRequestDto) baseDto;
+        log.info("Updating Course: {}", dto.getName());
+
+        UUID id = UUID.fromString(dto.getId());
+        CourseProduct existing = courseRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found: " + dto.getId()));
+
+
+        converter.applyCourseUpdateDto(existing, dto);
+        CourseProduct saved = courseRepo.save(existing);
+        return converter.mapCourseToResponse(saved);
     }
 }

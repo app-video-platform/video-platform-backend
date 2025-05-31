@@ -108,4 +108,18 @@ public class CourseProductConverter {
         dto.setPosition(lesson.getPosition());
         return dto;
     }
+
+    public void applyCourseUpdateDto(CourseProduct existing, CourseProductRequestDto dto) {
+        // 1) Update basic product fields:
+        existing.setName(dto.getName());
+        existing.setDescription(dto.getDescription());
+        existing.setStatus(ProductStatus.valueOf(dto.getStatus().toUpperCase()));
+
+        BigDecimal newPrice = (dto.getPrice() == null || dto.getPrice().equalsIgnoreCase("free"))
+                ? BigDecimal.ZERO
+                : new BigDecimal(dto.getPrice());
+        existing.setPrice(newPrice);
+
+
+    }
 }
