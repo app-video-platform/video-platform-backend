@@ -1,4 +1,4 @@
-package com.myproject.video.video_platform.entity.products.download_product;
+package com.myproject.video.video_platform.entity.products.download;
 
 import com.myproject.video.video_platform.entity.products.Product;
 import jakarta.persistence.CascadeType;

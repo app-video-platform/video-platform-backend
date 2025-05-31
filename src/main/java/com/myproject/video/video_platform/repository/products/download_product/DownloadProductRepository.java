@@ -1,7 +1,7 @@
 package com.myproject.video.video_platform.repository.products.download_product;
 
 import com.myproject.video.video_platform.entity.auth.User;
-import com.myproject.video.video_platform.entity.products.download_product.DownloadProduct;
+import com.myproject.video.video_platform.entity.products.download.DownloadProduct;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

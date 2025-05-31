@@ -9,9 +9,9 @@ import com.myproject.video.video_platform.dto.products_creation.download.FileDow
 import com.myproject.video.video_platform.dto.products_creation.download.SectionDownloadProductRequestDto;
 import com.myproject.video.video_platform.dto.products_creation.download.SectionDownloadProductResponseDto;
 import com.myproject.video.video_platform.entity.auth.User;
-import com.myproject.video.video_platform.entity.products.download_product.DownloadProduct;
-import com.myproject.video.video_platform.entity.products.download_product.FileDownloadProduct;
-import com.myproject.video.video_platform.entity.products.download_product.SectionDownloadProduct;
+import com.myproject.video.video_platform.entity.products.download.DownloadProduct;
+import com.myproject.video.video_platform.entity.products.download.FileDownloadProduct;
+import com.myproject.video.video_platform.entity.products.download.SectionDownloadProduct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 

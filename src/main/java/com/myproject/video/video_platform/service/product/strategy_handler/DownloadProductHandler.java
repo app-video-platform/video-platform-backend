@@ -6,7 +6,7 @@ import com.myproject.video.video_platform.dto.products_creation.AbstractProductR
 import com.myproject.video.video_platform.dto.products_creation.AbstractProductResponseDto;
 import com.myproject.video.video_platform.dto.products_creation.download.DownloadProductRequestDto;
 import com.myproject.video.video_platform.entity.auth.User;
-import com.myproject.video.video_platform.entity.products.download_product.DownloadProduct;
+import com.myproject.video.video_platform.entity.products.download.DownloadProduct;
 import com.myproject.video.video_platform.exception.product.ResourceNotFoundException;
 import com.myproject.video.video_platform.exception.user.UserNotFoundException;
 import com.myproject.video.video_platform.repository.products.download_product.DownloadProductRepository;

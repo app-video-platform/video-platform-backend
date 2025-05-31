@@ -9,4 +9,5 @@ import lombok.EqualsAndHashCode;
 @Data
 @JsonTypeName("COURSE")
 public class CourseProductRequestDto extends AbstractProductRequestDto {
+
 }
