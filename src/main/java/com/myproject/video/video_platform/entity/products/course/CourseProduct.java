@@ -30,5 +30,5 @@ public class CourseProduct extends Product {
             orphanRemoval = true
     )
     @OrderBy("position ASC")
-    private Set<com.myproject.video.video_platform.entity.products.course_product.CourseSection> sections = new LinkedHashSet<>();
+    private Set<CourseSection> sections = new LinkedHashSet<>();
 }

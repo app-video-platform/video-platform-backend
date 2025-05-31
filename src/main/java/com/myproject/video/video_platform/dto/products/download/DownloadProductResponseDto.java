@@ -1,7 +1,7 @@
-package com.myproject.video.video_platform.dto.products_creation.download;
+package com.myproject.video.video_platform.dto.products.download;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.myproject.video.video_platform.dto.products_creation.AbstractProductResponseDto;
+import com.myproject.video.video_platform.dto.products.AbstractProductResponseDto;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

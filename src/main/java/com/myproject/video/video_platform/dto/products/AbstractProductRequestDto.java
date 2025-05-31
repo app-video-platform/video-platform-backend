@@ -1,10 +1,10 @@
-package com.myproject.video.video_platform.dto.products_creation;
+package com.myproject.video.video_platform.dto.products;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.myproject.video.video_platform.dto.products_creation.consultation.ConsultationProductRequestDto;
-import com.myproject.video.video_platform.dto.products_creation.course.CourseProductRequestDto;
-import com.myproject.video.video_platform.dto.products_creation.download.DownloadProductRequestDto;
+import com.myproject.video.video_platform.dto.products.consultation.ConsultationProductRequestDto;
+import com.myproject.video.video_platform.dto.products.course.CourseProductRequestDto;
+import com.myproject.video.video_platform.dto.products.download.DownloadProductRequestDto;
 import lombok.Data;
 
 /**

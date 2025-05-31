@@ -2,12 +2,12 @@ package com.myproject.video.video_platform.common.converter.product;
 
 import com.myproject.video.video_platform.common.enums.products.ProductStatus;
 import com.myproject.video.video_platform.common.enums.products.ProductType;
-import com.myproject.video.video_platform.dto.products_creation.AbstractProductResponseDto;
-import com.myproject.video.video_platform.dto.products_creation.download.DownloadProductRequestDto;
-import com.myproject.video.video_platform.dto.products_creation.download.DownloadProductResponseDto;
-import com.myproject.video.video_platform.dto.products_creation.download.FileDownloadProductResponseDto;
-import com.myproject.video.video_platform.dto.products_creation.download.SectionDownloadProductRequestDto;
-import com.myproject.video.video_platform.dto.products_creation.download.SectionDownloadProductResponseDto;
+import com.myproject.video.video_platform.dto.products.AbstractProductResponseDto;
+import com.myproject.video.video_platform.dto.products.download.DownloadProductRequestDto;
+import com.myproject.video.video_platform.dto.products.download.DownloadProductResponseDto;
+import com.myproject.video.video_platform.dto.products.download.FileDownloadProductResponseDto;
+import com.myproject.video.video_platform.dto.products.download.SectionDownloadProductRequestDto;
+import com.myproject.video.video_platform.dto.products.download.SectionDownloadProductResponseDto;
 import com.myproject.video.video_platform.entity.auth.User;
 import com.myproject.video.video_platform.entity.products.download.DownloadProduct;
 import com.myproject.video.video_platform.entity.products.download.FileDownloadProduct;

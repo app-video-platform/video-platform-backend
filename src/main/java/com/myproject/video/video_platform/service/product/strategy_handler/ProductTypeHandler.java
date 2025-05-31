@@ -1,8 +1,8 @@
 package com.myproject.video.video_platform.service.product.strategy_handler;
 
 import com.myproject.video.video_platform.common.enums.products.ProductType;
-import com.myproject.video.video_platform.dto.products_creation.AbstractProductRequestDto;
-import com.myproject.video.video_platform.dto.products_creation.AbstractProductResponseDto;
+import com.myproject.video.video_platform.dto.products.AbstractProductRequestDto;
+import com.myproject.video.video_platform.dto.products.AbstractProductResponseDto;
 
 public interface ProductTypeHandler {
 

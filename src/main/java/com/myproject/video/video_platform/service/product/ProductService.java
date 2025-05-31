@@ -2,13 +2,13 @@ package com.myproject.video.video_platform.service.product;
 
 import com.myproject.video.video_platform.common.converter.product.DownloadProductConverter;
 import com.myproject.video.video_platform.common.enums.products.ProductType;
-import com.myproject.video.video_platform.dto.products_creation.AbstractProductRequestDto;
-import com.myproject.video.video_platform.dto.products_creation.AbstractProductResponseDto;
+import com.myproject.video.video_platform.dto.products.AbstractProductRequestDto;
+import com.myproject.video.video_platform.dto.products.AbstractProductResponseDto;
 import com.myproject.video.video_platform.entity.auth.User;
 import com.myproject.video.video_platform.exception.product.InvalidProductTypeException;
 import com.myproject.video.video_platform.exception.user.UserNotFoundException;
 import com.myproject.video.video_platform.repository.auth.UserRepository;
-import com.myproject.video.video_platform.repository.products.download_product.DownloadProductRepository;
+import com.myproject.video.video_platform.repository.products.download.DownloadProductRepository;
 import com.myproject.video.video_platform.service.product.strategy_handler.ProductTypeHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

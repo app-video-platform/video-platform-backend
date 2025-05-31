@@ -1,10 +1,10 @@
-package com.myproject.video.video_platform.dto.products_creation;
+package com.myproject.video.video_platform.dto.products;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.myproject.video.video_platform.dto.products_creation.consultation.ConsultationProductResponseDto;
-import com.myproject.video.video_platform.dto.products_creation.course.CourseProductResponseDto;
-import com.myproject.video.video_platform.dto.products_creation.download.DownloadProductResponseDto;
+import com.myproject.video.video_platform.dto.products.consultation.ConsultationProductResponseDto;
+import com.myproject.video.video_platform.dto.products.course.CourseProductResponseDto;
+import com.myproject.video.video_platform.dto.products.download.DownloadProductResponseDto;
 import lombok.Data;
 
 import java.util.UUID;

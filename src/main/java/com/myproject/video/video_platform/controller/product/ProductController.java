@@ -1,7 +1,7 @@
 package com.myproject.video.video_platform.controller.product;
 
-import com.myproject.video.video_platform.dto.products_creation.AbstractProductRequestDto;
-import com.myproject.video.video_platform.dto.products_creation.AbstractProductResponseDto;
+import com.myproject.video.video_platform.dto.products.AbstractProductRequestDto;
+import com.myproject.video.video_platform.dto.products.AbstractProductResponseDto;
 import com.myproject.video.video_platform.service.product.ProductService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

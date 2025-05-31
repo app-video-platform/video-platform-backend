@@ -18,5 +18,8 @@
     <include file="db/changelog/scripts/12-create-files-download-products.sql" />
     <include file="db/changelog/scripts/13-change-user-id-to-uuid.sql" />
     <include file="db/changelog/scripts/14-add-user-relation-to-download-product-table.sql" />
+    <include file="db/changelog/scripts/15-create_course_products.sql" />
+    <include file="db/changelog/scripts/16-create_course_sections.sql" />
+    <include file="db/changelog/scripts/17-create_course_lessons.sql" />
 
 </databaseChangeLog>
