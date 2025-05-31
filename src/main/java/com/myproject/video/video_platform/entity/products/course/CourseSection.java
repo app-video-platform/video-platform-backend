@@ -36,7 +36,7 @@ public class CourseSection {
     private Integer position;
 
     @ManyToOne
-    @JoinColumn(name = "course_id", nullable = false)
+    @JoinColumn(name = "course_product_id", nullable = false)
     private CourseProduct course;
 
     @OneToMany(
