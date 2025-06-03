@@ -65,7 +65,7 @@ public class CourseController {
     public ResponseEntity<String> deleteSection(
             @RequestParam(name = "userId") String userId,
             @RequestParam(name = "id") String id) {
-        lessonService.deleteLesson(userId, id);
+        sectionService.deleteSection(userId, id);
         return ResponseEntity.ok("Successful section delete.");
     }
 
@@ -73,7 +73,7 @@ public class CourseController {
     public ResponseEntity<String> deleteLesson(
             @RequestParam(name = "userId") String userId,
             @RequestParam(name = "id") String id) {
-        sectionService.deleteSection(userId, id);
+        lessonService.deleteLesson(userId, id);
         return ResponseEntity.ok("Successful lesson delete.");
     }
 }

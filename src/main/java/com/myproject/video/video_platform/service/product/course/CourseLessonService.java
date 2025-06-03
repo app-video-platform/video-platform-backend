@@ -51,7 +51,7 @@ public class CourseLessonService {
         lesson.setSection(section);
 
         section.getLessons().add(lesson);
-        sectionRepo.save(section); // cascade saves lesson
+        lessonRepo.save(lesson); // cascade saves lesson
 
         CourseLessonResponseDto resp = new CourseLessonResponseDto();
         resp.setId(lesson.getId().toString());
