@@ -8,13 +8,11 @@ import com.myproject.video.video_platform.dto.products.course.CourseSectionRespo
 import com.myproject.video.video_platform.dto.products.course.CourseSectionUpdateRequestDto;
 import com.myproject.video.video_platform.service.product.course.CourseLessonService;
 import com.myproject.video.video_platform.service.product.course.CourseSectionService;
-import com.myproject.video.video_platform.service.product.strategy_handler.CourseProductHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,58 +21,41 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/products/course")
 @RequiredArgsConstructor
 @Validated
 public class CourseController {
 
-    private final CourseProductHandler courseHandler;
     private final CourseSectionService sectionService;
     private final CourseLessonService lessonService;
 
-    //
-    // (1) & (2) are already in ProductController, so we only need (3)-(6) here:
-    //
-
-    // (3) Create a Section: POST /api/products/{productId}/sections
-    @PostMapping("/products/{productId}/sections")
+    @PostMapping("/section")
     public ResponseEntity<CourseSectionResponseDto> createSection(
-            @PathVariable String productId,
             @Validated @RequestBody CourseSectionCreateRequestDto dto) {
 
-        CourseSectionResponseDto resp = sectionService.createSection(productId, dto);
+        CourseSectionResponseDto resp = sectionService.createSection(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(resp);
     }
 
-    // (4) Update a Section: PUT /api/sections/{sectionId}
-    @PutMapping("/sections/{sectionId}")
-    public ResponseEntity<CourseSectionResponseDto> updateSection(
-            @PathVariable String sectionId,
+    @PutMapping("/section")
+    public ResponseEntity<String> updateSection(
             @Validated @RequestBody CourseSectionUpdateRequestDto dto) {
-
-        dto.setId(sectionId);
-        CourseSectionResponseDto resp = sectionService.updateSection(dto);
-        return ResponseEntity.ok(resp);
+        sectionService.updateSection(dto);
+        return ResponseEntity.ok("Successful section update.");
     }
 
-    // (5) Create a Lesson: POST /api/sections/{sectionId}/lessons
-    @PostMapping("/sections/{sectionId}/lessons")
+    @PostMapping("/section/lesson")
     public ResponseEntity<CourseLessonResponseDto> createLesson(
-            @PathVariable String sectionId,
             @Validated @RequestBody CourseLessonCreateRequestDto dto) {
 
-        CourseLessonResponseDto resp = lessonService.createLesson(sectionId, dto);
+        CourseLessonResponseDto resp = lessonService.createLesson(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(resp);
     }
 
-    // (6) Update a Lesson: PUT /api/lessons/{lessonId}
-    @PutMapping("/lessons/{lessonId}")
-    public ResponseEntity<CourseLessonResponseDto> updateLesson(
-            @PathVariable String lessonId,
+    @PutMapping("/section/lesson}")
+    public ResponseEntity<String> updateLesson(
             @Validated @RequestBody CourseLessonUpdateRequestDto dto) {
-
-        dto.setId(lessonId);
-        CourseLessonResponseDto resp = lessonService.updateLesson(dto);
-        return ResponseEntity.ok(resp);
+        lessonService.updateLesson(dto);
+        return ResponseEntity.ok("Successful lesson update.");
     }
 }

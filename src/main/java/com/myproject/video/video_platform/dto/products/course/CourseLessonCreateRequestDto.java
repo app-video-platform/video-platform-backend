@@ -7,14 +7,13 @@ import lombok.Data;
 public class CourseLessonCreateRequestDto {
     @NotBlank
     private String title;
-
     @NotBlank
-    private String type;     // "VIDEO", "ARTICLE", etc.
-
-    // we store the CDN URL here.
+    private String type;
+    @NotBlank
+    private String sectionId;
+    @NotBlank
+    private String userId;
     private String videoUrl;
-
     private String content;
-
     private Integer position;
 }

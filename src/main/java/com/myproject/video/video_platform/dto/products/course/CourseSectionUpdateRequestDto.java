@@ -7,9 +7,11 @@ import lombok.Data;
 public class CourseSectionUpdateRequestDto {
     @NotBlank
     private String id;
-
     @NotBlank
+    private String userId;
+    @NotBlank
+    private String productId;
     private String title;
-
+    private String description;
     private Integer position;
 }

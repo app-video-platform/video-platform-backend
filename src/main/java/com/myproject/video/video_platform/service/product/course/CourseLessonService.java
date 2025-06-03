@@ -30,13 +30,11 @@ public class CourseLessonService {
      * POST /api/sections/{sectionId}/lessons
      */
     @Transactional
-    public CourseLessonResponseDto createLesson(
-            String sectionIdStr,
-            CourseLessonCreateRequestDto dto) {
+    public CourseLessonResponseDto createLesson(CourseLessonCreateRequestDto dto) {
 
-        UUID sectionId = UUID.fromString(sectionIdStr);
+        UUID sectionId = UUID.fromString(dto.getSectionId());
         CourseSection section = sectionRepo.findById(sectionId)
-                .orElseThrow(() -> new ResourceNotFoundException("Section not found: " + sectionIdStr));
+                .orElseThrow(() -> new ResourceNotFoundException("Section not found: " + sectionId));
 
 
         CourseLesson lesson = new CourseLesson();
@@ -55,7 +53,7 @@ public class CourseLessonService {
         sectionRepo.save(section); // cascade saves lesson
 
         CourseLessonResponseDto resp = new CourseLessonResponseDto();
-        resp.setId(lesson.getId());
+        resp.setId(lesson.getId().toString());
         resp.setTitle(lesson.getTitle());
         resp.setType(lesson.getType().name());
         resp.setVideoUrl(lesson.getVideoUrl());
@@ -68,13 +66,10 @@ public class CourseLessonService {
      * PUT /api/lessons/{lessonId}
      */
     @Transactional
-    public CourseLessonResponseDto updateLesson(
-            CourseLessonUpdateRequestDto dto) {
-
+    public void updateLesson(CourseLessonUpdateRequestDto dto) {
         UUID lessonId = UUID.fromString(dto.getId());
         CourseLesson lesson = lessonRepo.findById(lessonId)
                 .orElseThrow(() -> new ResourceNotFoundException("Lesson not found: " + dto.getId()));
-
 
         lesson.setTitle(dto.getTitle());
         lesson.setType(LessonType.valueOf(dto.getType().toUpperCase()));
@@ -83,16 +78,6 @@ public class CourseLessonService {
         if (dto.getPosition() != null) {
             lesson.setPosition(dto.getPosition());
         }
-
-        CourseLesson saved = lessonRepo.save(lesson);
-
-        CourseLessonResponseDto resp = new CourseLessonResponseDto();
-        resp.setId(saved.getId());
-        resp.setTitle(saved.getTitle());
-        resp.setType(saved.getType().name());
-        resp.setVideoUrl(saved.getVideoUrl());
-        resp.setContent(saved.getContent());
-        resp.setPosition(saved.getPosition());
-        return resp;
+        lessonRepo.save(lesson);
     }
 }

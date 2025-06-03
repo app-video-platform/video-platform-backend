@@ -7,13 +7,11 @@ import lombok.Data;
 public class CourseLessonUpdateRequestDto {
     @NotBlank
     private String id;
-
-    @NotBlank
-    private String title;
-
     @NotBlank
     private String type;
-
+    @NotBlank
+    private String userId;
+    private String title;
     private String videoUrl;
     private String content;
     private Integer position;

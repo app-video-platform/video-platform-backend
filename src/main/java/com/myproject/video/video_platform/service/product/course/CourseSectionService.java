@@ -29,28 +29,28 @@ public class CourseSectionService {
      * POST /api/products/{productId}/sections
      */
     @Transactional
-    public CourseSectionResponseDto createSection(
-            String productIdStr,
-            CourseSectionCreateRequestDto dto) {
+    public CourseSectionResponseDto createSection(CourseSectionCreateRequestDto dto) {
 
-        UUID productId = UUID.fromString(productIdStr);
+        UUID productId = UUID.fromString(dto.getProductId());
         CourseProduct course = courseRepo.findFullById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("Course not found: " + productIdStr));
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found: " + productId));
 
 
         CourseSection section = new CourseSection();
         section.setTitle(dto.getTitle());
-        section.setPosition(course.getSections().size() + 1);
+        section.setDescription(dto.getDescription());
+        section.setPosition(dto.getPosition());
         section.setCourse(course);
 
         course.getSections().add(section);
         courseRepo.save(course); // cascade persists section
 
         CourseSectionResponseDto resp = new CourseSectionResponseDto();
-        resp.setId(section.getId());
+        resp.setId(section.getId().toString());
         resp.setTitle(section.getTitle());
-        resp.setPosition(section.getPosition());
-        // no lessons yet
+        resp.setDescription(section.getDescription());
+        resp.setProductId(course.getId().toString());
+        resp.setPosition(section.getPosition() != null ? section.getPosition() : course.getSections().size() +1);
         return resp;
     }
 
@@ -58,31 +58,23 @@ public class CourseSectionService {
      * PUT /api/sections/{sectionId}
      */
     @Transactional
-    public CourseSectionResponseDto updateSection(
+    public void updateSection(
             CourseSectionUpdateRequestDto dto) {
-//
-//        UUID sectionId = UUID.fromString(dto.getId());
-//        CourseSection section = sectionRepo.findById(sectionId)
-//                .orElseThrow(() -> new ResourceNotFoundException("Section not found: " + dto.getId()));
-//
+
+        UUID sectionId = UUID.fromString(dto.getId());
+        CourseSection section = sectionRepo.findById(sectionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Section not found: " + dto.getId()));
+
 //        // Ownership check:
 //        String currentEmail = userService.getCurrentUserEmail();
 //        if (!section.getCourse().getUser().getEmail().equalsIgnoreCase(currentEmail)) {
 //            throw new AccessDeniedException("Not authorized to update section");
 //        }
-//
-//        section.setTitle(dto.getTitle());
-//        if (dto.getPosition() != null) {
-//            section.setPosition(dto.getPosition());
-//        }
-//        CourseSection saved = sectionRepo.save(section);
-//
-//        CourseSectionResponseDto resp = new CourseSectionResponseDto();
-//        resp.setId(saved.getId());
-//        resp.setTitle(saved.getTitle());
-//        resp.setPosition(saved.getPosition());
-//        // We do not re-fetch lessons here; if FE needs lessons, it will GET the full course again.
-//        return resp;
-        return null;
+
+        section.setTitle(dto.getTitle());
+        if (dto.getPosition() != null) {
+            section.setPosition(dto.getPosition());
+        }
+        sectionRepo.save(section);
     }
 }
