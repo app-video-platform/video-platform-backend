@@ -71,4 +71,9 @@ public class CourseProductHandler implements ProductTypeHandler {
         CourseProduct saved = courseRepo.save(existing);
         return converter.mapCourseToResponse(saved);
     }
+
+    @Override
+    public void deleteProduct(String userId, String productId) {
+
+    }
 }

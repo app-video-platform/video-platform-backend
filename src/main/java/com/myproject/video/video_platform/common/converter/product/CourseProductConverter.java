@@ -84,23 +84,23 @@ public class CourseProductConverter {
 
     private CourseSectionResponseDto mapSection(CourseSection section) {
         CourseSectionResponseDto secDto = new CourseSectionResponseDto();
-        secDto.setId(section.getId());
+        secDto.setId(section.getId().toString());
         secDto.setTitle(section.getTitle());
         secDto.setPosition(section.getPosition());
 
-        if (section.getLessons() != null) {
-            List<CourseLessonResponseDto> lessonDtos = section.getLessons().stream()
-                    .sorted(Comparator.comparing(CourseLesson::getPosition))
-                    .map(this::mapLessonLazyLoad)
-                    .toList();
-            secDto.setLessons(lessonDtos);
-        }
+//        if (section.getLessons() != null) {
+//            List<CourseLessonResponseDto> lessonDtos = section.getLessons().stream()
+//                    .sorted(Comparator.comparing(CourseLesson::getPosition))
+//                    .map(this::mapLessonLazyLoad)
+//                    .toList();
+//            secDto.setLessons(lessonDtos);
+//        }
         return secDto;
     }
 
     private CourseLessonResponseDto mapLessonLazyLoad(CourseLesson lesson) {
         CourseLessonResponseDto dto = new CourseLessonResponseDto();
-        dto.setId(lesson.getId());
+        dto.setId(lesson.getId().toString());
         dto.setTitle(lesson.getTitle());
         dto.setType(lesson.getType().name());
         dto.setPosition(lesson.getPosition());

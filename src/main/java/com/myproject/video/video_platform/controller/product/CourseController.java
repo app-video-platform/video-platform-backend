@@ -54,7 +54,7 @@ public class CourseController {
         return ResponseEntity.status(HttpStatus.CREATED).body(resp);
     }
 
-    @PutMapping("/section/lesson}")
+    @PutMapping("/section/lesson")
     public ResponseEntity<String> updateLesson(
             @Validated @RequestBody CourseLessonUpdateRequestDto dto) {
         lessonService.updateLesson(dto);
