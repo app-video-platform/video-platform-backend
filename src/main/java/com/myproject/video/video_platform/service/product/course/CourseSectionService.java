@@ -44,7 +44,7 @@ public class CourseSectionService {
         section.setCourse(course);
 
         course.getSections().add(section);
-        courseRepo.save(course); // cascade persists section
+        section = sectionRepo.save(section);
 
         CourseSectionResponseDto resp = new CourseSectionResponseDto();
         resp.setId(section.getId().toString());
