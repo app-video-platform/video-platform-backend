@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -79,5 +80,15 @@ public class CourseLessonService {
             lesson.setPosition(dto.getPosition());
         }
         lessonRepo.save(lesson);
+    }
+
+    public void deleteLesson(String userId, String lessonId) {
+        Optional<CourseLesson> lessonOptional = lessonRepo.findById(UUID.fromString(lessonId));
+        if (lessonOptional.isPresent()) {
+            lessonRepo.delete(lessonOptional.get());
+            log.info("Deleted succesfully a Course lesson: {}", lessonId);
+        } else
+            throw new ResourceNotFoundException("Course lesson not found for ID: " + lessonId);
+
     }
 }

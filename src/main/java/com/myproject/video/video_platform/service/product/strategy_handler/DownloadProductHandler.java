@@ -88,4 +88,14 @@ public class DownloadProductHandler implements ProductTypeHandler {
         } else
             throw new ResourceNotFoundException("DownloadProduct not found for ID: " + dto.getId());
     }
+
+    @Override
+    public void deleteProduct(String userId, String productId) {
+        Optional<DownloadProduct> downloadProductOptional = downloadProductRepository.findById(UUID.fromString(productId));
+        if (downloadProductOptional.isPresent()) {
+            downloadProductRepository.delete(downloadProductOptional.get());
+            log.info("Deleted succesfully a DownloadProduct: {}", productId);
+        } else
+            throw new ResourceNotFoundException("DownloadProduct not found for ID: " + productId);
+    }
 }

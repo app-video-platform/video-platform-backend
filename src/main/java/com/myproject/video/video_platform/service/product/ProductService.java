@@ -97,4 +97,7 @@ public class ProductService {
     }
 
 
+    public void deleteProduct(String userId, String productId, String productType) {
+        getProductStrategyHandler(productType).deleteProduct(userId, productId);
+    }
 }

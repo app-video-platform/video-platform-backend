@@ -6,6 +6,7 @@ import com.myproject.video.video_platform.service.product.ProductService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -55,4 +56,15 @@ public class ProductController {
         AbstractProductResponseDto response = productService.updateProduct(request);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
+
+    @DeleteMapping()
+    public ResponseEntity<String> deleteProduct(
+            @RequestParam(name = "userId") String userId,
+            @RequestParam(name = "productType") String productType,
+            @RequestParam(name = "id") String id) {
+        log.info("Received delete product request: {}", id);
+        productService.deleteProduct(userId, id, productType);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body("Product deleted succesfully: " + id);
+    }
+
 }

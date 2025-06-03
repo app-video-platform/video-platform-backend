@@ -13,4 +13,6 @@ public interface ProductTypeHandler {
     AbstractProductResponseDto createProduct(AbstractProductRequestDto dto);
 
     AbstractProductResponseDto updateProduct(AbstractProductRequestDto dto);
+
+    void deleteProduct(String userId, String productId);
 }

@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -76,5 +77,15 @@ public class CourseSectionService {
             section.setPosition(dto.getPosition());
         }
         sectionRepo.save(section);
+    }
+
+    public void deleteSection(String userId, String id) {
+        Optional<CourseSection> sectionOptional = sectionRepo.findById(UUID.fromString(id));
+        if (sectionOptional.isPresent()) {
+            sectionRepo.delete(sectionOptional.get());
+            log.info("Deleted succesfully a Course section: {}", id);
+        } else
+            throw new ResourceNotFoundException("Course section not found for ID: " + id);
+
     }
 }

@@ -13,10 +13,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -57,5 +59,21 @@ public class CourseController {
             @Validated @RequestBody CourseLessonUpdateRequestDto dto) {
         lessonService.updateLesson(dto);
         return ResponseEntity.ok("Successful lesson update.");
+    }
+
+    @DeleteMapping("/section")
+    public ResponseEntity<String> deleteSection(
+            @RequestParam(name = "userId") String userId,
+            @RequestParam(name = "id") String id) {
+        lessonService.deleteLesson(userId, id);
+        return ResponseEntity.ok("Successful section delete.");
+    }
+
+    @DeleteMapping("/section/lesson")
+    public ResponseEntity<String> deleteLesson(
+            @RequestParam(name = "userId") String userId,
+            @RequestParam(name = "id") String id) {
+        sectionService.deleteSection(userId, id);
+        return ResponseEntity.ok("Successful lesson delete.");
     }
 }
