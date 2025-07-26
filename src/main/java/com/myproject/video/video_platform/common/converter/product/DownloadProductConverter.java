@@ -8,7 +8,7 @@ import com.myproject.video.video_platform.dto.products.download.DownloadProductR
 import com.myproject.video.video_platform.dto.products.download.FileDownloadProductResponseDto;
 import com.myproject.video.video_platform.dto.products.download.SectionDownloadProductRequestDto;
 import com.myproject.video.video_platform.dto.products.download.SectionDownloadProductResponseDto;
-import com.myproject.video.video_platform.entity.auth.User;
+import com.myproject.video.video_platform.entity.user.User;
 import com.myproject.video.video_platform.entity.products.download.DownloadProduct;
 import com.myproject.video.video_platform.entity.products.download.FileDownloadProduct;
 import com.myproject.video.video_platform.entity.products.download.SectionDownloadProduct;

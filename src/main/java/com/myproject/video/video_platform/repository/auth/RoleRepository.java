@@ -1,6 +1,6 @@
 package com.myproject.video.video_platform.repository.auth;
 
-import com.myproject.video.video_platform.entity.auth.Role;
+import com.myproject.video.video_platform.entity.user.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**

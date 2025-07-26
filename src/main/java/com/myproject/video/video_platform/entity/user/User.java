@@ -1,13 +1,23 @@
-package com.myproject.video.video_platform.entity.auth;
+package com.myproject.video.video_platform.entity.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.myproject.video.video_platform.entity.products.Product;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -41,6 +51,20 @@ public class User {
 
     private boolean enabled = false;
 
+    private String title;
+
+    private String bio;
+
+    private String taglineMission;
+
+    private String website;
+
+    private String city;
+
+    private String country;
+
+    private boolean onboardingCompleted;
+
     @Column(name = "auth_provider", nullable = false)
     private String authProvider = "LOCAL";
 
@@ -59,6 +83,14 @@ public class User {
             fetch = FetchType.LAZY)
     private List<Product> products;
 
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<SocialMediaLink> socialLinks = new ArrayList<>();
+
     /**
      * Convenience constructor for minimal fields.
      */
@@ -67,5 +99,15 @@ public class User {
         this.password = password;
         this.enabled = false;
         this.createdAt = Instant.now();
+    }
+
+    public void addSocialLink(SocialMediaLink link) {
+        socialLinks.add(link);
+        link.setUser(this);
+    }
+
+    public void removeSocialLink(SocialMediaLink link) {
+        socialLinks.remove(link);
+        link.setUser(null);
     }
 }

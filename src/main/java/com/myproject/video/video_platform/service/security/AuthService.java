@@ -2,8 +2,8 @@ package com.myproject.video.video_platform.service.security;
 
 import com.myproject.video.video_platform.dto.authetication.LoginRequest;
 import com.myproject.video.video_platform.dto.authetication.RegisterRequest;
-import com.myproject.video.video_platform.entity.auth.Role;
-import com.myproject.video.video_platform.entity.auth.User;
+import com.myproject.video.video_platform.entity.user.Role;
+import com.myproject.video.video_platform.entity.user.User;
 import com.myproject.video.video_platform.exception.auth.AuthenticationException;
 import com.myproject.video.video_platform.exception.user.UserNotFoundException;
 import com.myproject.video.video_platform.repository.auth.RoleRepository;

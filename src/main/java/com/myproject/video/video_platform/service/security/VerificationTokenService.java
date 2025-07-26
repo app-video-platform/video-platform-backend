@@ -1,7 +1,7 @@
 package com.myproject.video.video_platform.service.security;
 
 import com.myproject.video.video_platform.dto.authetication.TokenRequest;
-import com.myproject.video.video_platform.entity.auth.User;
+import com.myproject.video.video_platform.entity.user.User;
 import com.myproject.video.video_platform.entity.auth.VerificationToken;
 import com.myproject.video.video_platform.exception.auth.TokenExpiredException;
 import com.myproject.video.video_platform.repository.auth.UserRepository;

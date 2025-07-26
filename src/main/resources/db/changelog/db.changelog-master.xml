@@ -21,5 +21,7 @@
     <include file="db/changelog/scripts/15-create_course_products.sql" />
     <include file="db/changelog/scripts/16-create_course_sections.sql" />
     <include file="db/changelog/scripts/17-create_course_lessons.sql" />
+    <include file="db/changelog/scripts/18-add-users-details.sql" />
+    <include file="db/changelog/scripts/19-create-social-platform-table.sql" />
 
 </databaseChangeLog>

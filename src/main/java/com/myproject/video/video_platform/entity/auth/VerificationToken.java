@@ -1,5 +1,6 @@
 package com.myproject.video.video_platform.entity.auth;
 
+import com.myproject.video.video_platform.entity.user.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

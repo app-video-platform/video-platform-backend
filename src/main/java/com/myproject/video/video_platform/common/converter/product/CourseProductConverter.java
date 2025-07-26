@@ -5,7 +5,7 @@ import com.myproject.video.video_platform.dto.products.course.CourseLessonRespon
 import com.myproject.video.video_platform.dto.products.course.CourseProductRequestDto;
 import com.myproject.video.video_platform.dto.products.course.CourseProductResponseDto;
 import com.myproject.video.video_platform.dto.products.course.CourseSectionResponseDto;
-import com.myproject.video.video_platform.entity.auth.User;
+import com.myproject.video.video_platform.entity.user.User;
 import com.myproject.video.video_platform.entity.products.course.CourseLesson;
 import com.myproject.video.video_platform.entity.products.course.CourseProduct;
 import com.myproject.video.video_platform.entity.products.course.CourseSection;

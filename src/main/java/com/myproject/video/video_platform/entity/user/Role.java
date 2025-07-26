@@ -1,4 +1,4 @@
-package com.myproject.video.video_platform.entity.auth;
+package com.myproject.video.video_platform.entity.user;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
