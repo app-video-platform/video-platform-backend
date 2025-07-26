@@ -78,6 +78,7 @@ public class GoogleSignInService {
                 // store random password
                 user.setPassword(passwordEncoder.encode("GOOGLE_LOGIN_" + email));
                 user.setEnabled(true);
+                user.setOnboardingcompleted(false);
                 user.setAuthProvider("GOOGLE");
 
                 Role userRole = roleRepository.findByRoleName("user");

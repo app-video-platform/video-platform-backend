@@ -69,6 +69,7 @@ public class AuthService {
             user.setEmail(request.getEmail());
             user.setPassword(passwordEncoder.encode(request.getPassword()));
             user.setEnabled(false);
+            user.setOnboardingcompleted(false);
 
             Role userRole = roleRepository.findByRoleName("user");
             user.setRoles(Collections.singleton(userRole));

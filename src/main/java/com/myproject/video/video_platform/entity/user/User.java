@@ -63,7 +63,7 @@ public class User {
 
     private String country;
 
-    private boolean onboardingcompleted;
+    private boolean onboardingcompleted = false;
 
     @Column(name = "auth_provider", nullable = false)
     private String authProvider = "LOCAL";
