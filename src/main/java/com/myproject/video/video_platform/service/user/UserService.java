@@ -65,7 +65,7 @@ public class UserService {
                 .website(user.getWebsite())
                 .city(user.getCity())
                 .country(user.getCountry())
-                .onboardingCompleted(user.isOnboardingCompleted())
+                .onboardingCompleted(user.isOnboardingcompleted())
                 .socialLinks(linkResponses)
                 .createdAt(user.getCreatedAt())
                 .build();
