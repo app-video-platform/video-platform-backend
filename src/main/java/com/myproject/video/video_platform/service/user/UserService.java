@@ -10,6 +10,8 @@ import com.myproject.video.video_platform.entity.user.User;
 import com.myproject.video.video_platform.exception.product.ResourceNotFoundException;
 import com.myproject.video.video_platform.exception.user.UserNotFoundException;
 import com.myproject.video.video_platform.repository.auth.UserRepository;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +28,7 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
 
+    private static final Log log = LogFactory.getLog(UserService.class);
     private final UserRepository userRepository;
 
     public UserService(UserRepository userRepository) {
@@ -77,6 +80,8 @@ public class UserService {
         User user = userRepository.findById(UUID.fromString(req.getUserId()))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + req.getUserId()));
 
+        log.info("Updating user: " + req.getUserId());
+
         if (req.getTitle() != null)          user.setTitle(req.getTitle());
         if (req.getBio() != null)            user.setBio(req.getBio());
         if (req.getTaglineMission() != null) user.setTaglineMission(req.getTaglineMission());
@@ -124,6 +129,8 @@ public class UserService {
         }
 
         User saved = userRepository.save(user);
+
+        log.info("Saved user: " + saved.getUserId());
 
         // map to UserProfileResponse
         return getUserDto(saved);
