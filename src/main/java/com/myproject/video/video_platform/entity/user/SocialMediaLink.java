@@ -17,6 +17,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -42,7 +43,7 @@ public class SocialMediaLink {
     @Column(nullable = false)
     private String url;
 
-    @Column(nullable = false, updatable = false)
+    @CreationTimestamp
     private Instant createdAt = Instant.now();
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
