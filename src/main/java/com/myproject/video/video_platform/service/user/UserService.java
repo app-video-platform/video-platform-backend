@@ -38,10 +38,10 @@ public class UserService {
 
     public UserDto getUserInfo(Authentication authentication) {
         // Extract the user’s principal (email) from the Authentication object.
-        String email = (String) authentication.getPrincipal();
+        String userId = authentication.getPrincipal().toString();
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("User not found: " + email));
+        User user = userRepository.findByUserId(UUID.fromString(userId))
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + userId));
 
         return getUserDto(user);
     }
