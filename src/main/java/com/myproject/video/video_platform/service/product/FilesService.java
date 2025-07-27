@@ -10,11 +10,11 @@ import com.myproject.video.video_platform.exception.product.ResourceNotFoundExce
 import com.myproject.video.video_platform.repository.products.download.FileDownloadProductRepository;
 import com.myproject.video.video_platform.repository.products.download.SectionDownloadProductRepository;
 import com.myproject.video.video_platform.service.digitalocean.SpacesS3Service;
+import com.myproject.video.video_platform.service.user.CurrentUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -35,6 +35,7 @@ public class FilesService {
     private final SpacesS3Service spacesS3Service;
     private final SectionDownloadProductRepository sectionRepository;
     private final FileDownloadProductRepository fileRepository;
+    private final CurrentUserService currentUserService;
 
 
     /**
@@ -65,16 +66,16 @@ public class FilesService {
     /** throws if the current user isn’t owner of that section */
     private SectionDownloadProduct authorizeSectionUpload(String sectionIdStr) {
         UUID sectionId = UUID.fromString(sectionIdStr);
-        String email   = (String) SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getPrincipal();
+
+        UUID currentUserId = currentUserService.getCurrentUserId();
+        log.info("User id from context: {}", currentUserId);
+
 
         SectionDownloadProduct section = sectionRepository.findById(sectionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Section not found: " + sectionId));
 
-        String ownerEmail = section.getDownloadProduct().getUser().getEmail();
-        if (!ownerEmail.equalsIgnoreCase(email)) {
+        UUID ownerId = section.getDownloadProduct().getUser().getUserId();
+        if (!ownerId.equals(currentUserId)) {
             throw new AccessDeniedException("Not authorized for section " + sectionId);
         }
         return section;

@@ -52,7 +52,7 @@ public class ProductController {
 
     @PutMapping
     public ResponseEntity<AbstractProductResponseDto> updateProduct(@RequestBody AbstractProductRequestDto request) {
-        log.info("Received update product request: {}", request);
+        log.info("Received update product request: {}", request.toString());
         AbstractProductResponseDto response = productService.updateProduct(request);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }

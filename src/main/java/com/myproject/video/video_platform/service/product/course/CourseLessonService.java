@@ -9,9 +9,10 @@ import com.myproject.video.video_platform.entity.products.course.CourseSection;
 import com.myproject.video.video_platform.exception.product.ResourceNotFoundException;
 import com.myproject.video.video_platform.repository.products.course.CourseLessonRepository;
 import com.myproject.video.video_platform.repository.products.course.CourseSectionRepository;
-import com.myproject.video.video_platform.service.user.UserService;
+import com.myproject.video.video_platform.service.user.CurrentUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +26,7 @@ public class CourseLessonService {
 
     private final CourseSectionRepository sectionRepo;
     private final CourseLessonRepository lessonRepo;
-    private final UserService userService;
+    private final CurrentUserService currentUserService;
 
     /**
      * POST /api/sections/{sectionId}/lessons
@@ -36,6 +37,12 @@ public class CourseLessonService {
         UUID sectionId = UUID.fromString(dto.getSectionId());
         CourseSection section = sectionRepo.findById(sectionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Section not found: " + sectionId));
+
+        UUID currentUserId = currentUserService.getCurrentUserId();
+        log.info("User id from context: {}", currentUserId);
+
+        if (!section.getCourse().getUser().getUserId().equals(currentUserId))
+            throw new AccessDeniedException("You don’t own this product.");
 
 
         CourseLesson lesson = new CourseLesson();
@@ -72,6 +79,12 @@ public class CourseLessonService {
         CourseLesson lesson = lessonRepo.findById(lessonId)
                 .orElseThrow(() -> new ResourceNotFoundException("Lesson not found: " + dto.getId()));
 
+        UUID currentUserId = currentUserService.getCurrentUserId();
+        log.info("User id from context: {}", currentUserId);
+
+        if (!lesson.getSection().getCourse().getUser().getUserId().equals(currentUserId))
+            throw new AccessDeniedException("You don’t own this product.");
+
         lesson.setTitle(dto.getTitle());
         lesson.setType(LessonType.valueOf(dto.getType().toUpperCase()));
         lesson.setVideoUrl(dto.getVideoUrl());
@@ -85,6 +98,12 @@ public class CourseLessonService {
     public void deleteLesson(String userId, String lessonId) {
         Optional<CourseLesson> lessonOptional = lessonRepo.findById(UUID.fromString(lessonId));
         if (lessonOptional.isPresent()) {
+            UUID currentUserId = currentUserService.getCurrentUserId();
+            log.info("User id from context: {}", currentUserId);
+
+            if (!lessonOptional.get().getSection().getCourse().getUser().getUserId().equals(currentUserId))
+                throw new AccessDeniedException("You don’t own this product.");
+
             lessonRepo.delete(lessonOptional.get());
             log.info("Deleted succesfully a Course lesson: {}", lessonId);
         } else

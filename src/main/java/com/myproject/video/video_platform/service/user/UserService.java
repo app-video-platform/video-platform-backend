@@ -12,6 +12,7 @@ import com.myproject.video.video_platform.exception.user.UserNotFoundException;
 import com.myproject.video.video_platform.repository.auth.UserRepository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,9 +31,11 @@ public class UserService {
 
     private static final Log log = LogFactory.getLog(UserService.class);
     private final UserRepository userRepository;
+    private final CurrentUserService currentUserService;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, CurrentUserService currentUserService) {
         this.userRepository = userRepository;
+        this.currentUserService = currentUserService;
     }
 
 
@@ -79,6 +82,12 @@ public class UserService {
     public UserDto updateUserInfo(UpdateUserRequest req) {
         User user = userRepository.findById(UUID.fromString(req.getUserId()))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + req.getUserId()));
+
+        UUID currentUserId = currentUserService.getCurrentUserId();
+        log.info("User id from context: " + currentUserId);
+
+        if (!user.getUserId().equals(currentUserId))
+            throw new AccessDeniedException("Logged in user and user from request don't match.");
 
         log.info("Updating user: " + req.getUserId());
 

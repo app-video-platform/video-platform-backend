@@ -18,6 +18,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -54,6 +55,12 @@ public class CourseProductHandler implements ProductTypeHandler {
                 .findByUserId(UUID.fromString(dto.getUserId()))
                 .orElseThrow(() -> new UserNotFoundException("User not found: " + dto.getUserId()));
 
+        UUID currentUserId = currentUserService.getCurrentUserId();
+        log.info("User id from context: {}", currentUserId);
+
+        if (!owner.getUserId().equals(currentUserId))
+            throw new AccessDeniedException("You don’t own this product.");
+
         CourseProduct courseEntity = converter.mapCourseCreateDtoToEntity(dto, owner);
         CourseProduct saved = courseRepo.save(courseEntity);
         return converter.mapCourseToResponse(saved);
@@ -62,16 +69,15 @@ public class CourseProductHandler implements ProductTypeHandler {
     @Override
     @Transactional
     public AbstractProductResponseDto updateProduct(AbstractProductRequestDto baseDto) {
-        UUID currentUserId = currentUserService.getCurrentUserId();
-
-        log.info("User id from context: {}", currentUserId);
-
         CourseProductRequestDto dto = (CourseProductRequestDto) baseDto;
         log.info("Updating Course: {}", dto.getName());
 
         UUID id = UUID.fromString(dto.getId());
         CourseProduct existing = courseRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found: " + dto.getId()));
+
+        UUID currentUserId = currentUserService.getCurrentUserId();
+        log.info("User id from context: {}", currentUserId);
 
         if (!existing.getUser().getUserId().equals(currentUserId))
             throw new AccessDeniedException("You don’t own this product.");
@@ -84,6 +90,17 @@ public class CourseProductHandler implements ProductTypeHandler {
 
     @Override
     public void deleteProduct(String userId, String productId) {
+        UUID currentUserId = currentUserService.getCurrentUserId();
+        log.info("User id from context: {}", currentUserId);
 
+        Optional<CourseProduct> courseProductOptional = courseRepo.findById(UUID.fromString(productId));
+        if (courseProductOptional.isPresent()) {
+            if (!courseProductOptional.get().getUser().getUserId().equals(currentUserId))
+                throw new AccessDeniedException("You don’t own this product.");
+
+            courseRepo.delete(courseProductOptional.get());
+            log.info("Deleted succesfully a DownloadProduct: {}", productId);
+        } else
+            throw new ResourceNotFoundException("DownloadProduct not found for ID: " + productId);
     }
 }
