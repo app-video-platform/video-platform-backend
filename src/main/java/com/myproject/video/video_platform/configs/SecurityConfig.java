@@ -56,8 +56,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()// Registration, login, verify, etc.
                         .requestMatchers("/testEndpoint").permitAll()
-                        .requestMatchers("/api/products/**").permitAll()
-                        .requestMatchers("/api/files/**").permitAll()
+                   //     .requestMatchers("/api/products/**").permitAll()
+                    //    .requestMatchers("/api/files/**").permitAll()
                         .anyRequest().authenticated()            // Everything else requires login
                 )
                 .addFilterBefore(jwtProvider.jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)

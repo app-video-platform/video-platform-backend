@@ -41,6 +41,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String message = String.format("Invalid or expired token from IP=%s, token=%s", clientIp, jwt);
                 log.warn(message);
 
+                // clear stale cookie
+                Cookie empty = new Cookie("JWT_TOKEN", "");
+                empty.setPath("/");
+                empty.setMaxAge(0);
+                empty.setHttpOnly(true);
+                response.addCookie(empty);
+
                 throw new InvalidTokenException("Invalid or expired token.");
             }
 
@@ -55,6 +62,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        return path.startsWith("/api/auth/");
     }
 
     private String extractJwtFromCookie(HttpServletRequest request) {
