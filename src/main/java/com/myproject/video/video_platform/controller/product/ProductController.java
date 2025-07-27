@@ -2,6 +2,7 @@ package com.myproject.video.video_platform.controller.product;
 
 import com.myproject.video.video_platform.dto.products.AbstractProductRequestDto;
 import com.myproject.video.video_platform.dto.products.AbstractProductResponseDto;
+import com.myproject.video.video_platform.dto.products.ProductMinimised;
 import com.myproject.video.video_platform.service.product.ProductService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -39,6 +40,19 @@ public class ProductController {
     public ResponseEntity<List<AbstractProductResponseDto>> getProducts(@RequestParam(name = "userId") String userId) {
         List<AbstractProductResponseDto> response = productService.getAllProductsForUser(userId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/get-all-products-min")
+    public ResponseEntity<List<ProductMinimised>> getAllProductsMin(
+            @RequestParam(name = "userId", required = false) String userId
+    ) {
+        List<ProductMinimised> response;
+        if (userId != null) {
+            response = productService.getAllProductsMinimisedForUser(userId);
+        } else {
+            response = productService.getAllProductsMinimised();
+        }
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping(value = "/getProduct")

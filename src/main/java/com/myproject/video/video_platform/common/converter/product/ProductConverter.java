@@ -1,6 +1,7 @@
 package com.myproject.video.video_platform.common.converter.product;
 
 import com.myproject.video.video_platform.dto.products.AbstractProductResponseDto;
+import com.myproject.video.video_platform.dto.products.ProductMinimised;
 import com.myproject.video.video_platform.dto.products.course.CourseProductResponseDto;
 import com.myproject.video.video_platform.dto.products.download.DownloadProductResponseDto;
 import com.myproject.video.video_platform.entity.products.Product;
@@ -34,5 +35,17 @@ public class ProductConverter {
         dto.setType(product.getType().name());
 
         return dto;
+    }
+
+    public ProductMinimised mapProductMinimisedToResponse(Product p) {
+        return new ProductMinimised(
+                p.getId(),
+                p.getName(),
+                p.getType(),
+                p.getPrice(),
+                p.getUser().getUserId(),
+                p.getCreatedAt(),
+                p.getUpdatedAt()
+        );
     }
 }

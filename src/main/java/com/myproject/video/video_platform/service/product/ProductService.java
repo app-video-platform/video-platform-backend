@@ -5,6 +5,7 @@ import com.myproject.video.video_platform.common.converter.product.ProductConver
 import com.myproject.video.video_platform.common.enums.products.ProductType;
 import com.myproject.video.video_platform.dto.products.AbstractProductRequestDto;
 import com.myproject.video.video_platform.dto.products.AbstractProductResponseDto;
+import com.myproject.video.video_platform.dto.products.ProductMinimised;
 import com.myproject.video.video_platform.entity.user.User;
 import com.myproject.video.video_platform.entity.products.Product;
 import com.myproject.video.video_platform.exception.product.InvalidProductTypeException;
@@ -99,5 +100,24 @@ public class ProductService {
 
     public void deleteProduct(String userId, String productId, String productType) {
         getProductStrategyHandler(productType).deleteProduct(userId, productId);
+    }
+
+    public List<ProductMinimised> getAllProductsMinimised() {
+        List<Product> products = productRepository.findAll();
+
+        return products.stream()
+                .map(productConverter::mapProductMinimisedToResponse)
+                .toList();
+    }
+
+    public List<ProductMinimised> getAllProductsMinimisedForUser(String userId) {
+        User user = userRepository.findByUserId(UUID.fromString(userId))
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + userId));
+
+        List<Product> products = productRepository.findAllByUser(user);
+
+        return products.stream()
+                .map(productConverter::mapProductMinimisedToResponse)
+                .toList();
     }
 }
