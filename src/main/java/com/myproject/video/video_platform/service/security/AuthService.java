@@ -101,6 +101,7 @@ public class AuthService {
         jwtCookie.setHttpOnly(true);
         jwtCookie.setSecure(true);
         jwtCookie.setPath("/");
+        jwtCookie.setDomain(appDomain);
         jwtCookie.setMaxAge(0);
 
         Cookie refreshCookie = new Cookie("REFRESH_TOKEN", null);
@@ -108,11 +109,13 @@ public class AuthService {
         refreshCookie.setSecure(true);
         refreshCookie.setPath("/");
         refreshCookie.setMaxAge(0);
+        refreshCookie.setDomain(appDomain);
         response.addCookie(refreshCookie);
 
         Cookie csrfCookie = new Cookie("XSRF-TOKEN", null);
         csrfCookie.setHttpOnly(false);
         csrfCookie.setSecure(true);
+        csrfCookie.setDomain(appDomain);
         csrfCookie.setPath("/");
         csrfCookie.setMaxAge(0);
 
