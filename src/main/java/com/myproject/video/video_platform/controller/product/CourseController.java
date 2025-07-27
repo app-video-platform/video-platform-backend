@@ -65,7 +65,7 @@ public class CourseController {
     public ResponseEntity<String> deleteSection(
             @RequestParam(name = "userId") String userId,
             @RequestParam(name = "id") String id) {
-        sectionService.deleteSection(userId, id);
+        sectionService.deleteSection(id);
         return ResponseEntity.ok("Successful section delete.");
     }
 

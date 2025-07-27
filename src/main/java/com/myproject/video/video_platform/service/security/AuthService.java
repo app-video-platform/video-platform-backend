@@ -144,7 +144,10 @@ public class AuthService {
     public void setAuthCookies(HttpServletResponse response,
                                 String userEmail) {
 
-        String jwtToken = jwtProvider.generateToken(userEmail);
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new UserNotFoundException("No account with email: " + userEmail));
+
+        String jwtToken = jwtProvider.generateToken(user);
         String csrfToken = csrfProvider.generateCsrfToken();
         String refreshToken = refreshTokenService.createRefreshToken(userEmail);
 

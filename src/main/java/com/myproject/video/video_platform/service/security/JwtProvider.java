@@ -1,6 +1,7 @@
 package com.myproject.video.video_platform.service.security;
 
 
+import com.myproject.video.video_platform.entity.user.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -32,10 +33,15 @@ public class JwtProvider {
     /**
      * Generate a JWT token for the given email (subject).
      */
-    public String generateToken(String email) {
+    public String generateToken(User user) {
+        Date now    = new Date();
+        Date expiry = new Date(now.getTime() + jwtExpirationInMillis);
+
         return Jwts.builder()
-                .claim(Claims.SUBJECT, email)
-                .claim(Claims.EXPIRATION, new Date(System.currentTimeMillis() + jwtExpirationInMillis))
+                .subject(user.getUserId().toString())
+                .claim("email", user.getEmail())
+                .issuedAt(now)
+                .expiration(expiry)
                 .signWith(getSigningKey())
                 .compact();
     }
@@ -67,7 +73,7 @@ public class JwtProvider {
                 .parseSignedClaims(token)
                 .getPayload();
 
-        return claims.getSubject();
+        return claims.get("email", String.class);
     }
 
     /**
@@ -82,5 +88,17 @@ public class JwtProvider {
      */
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public Claims parseClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
+    public String getSubjectFromJwt(String token) {
+        return parseClaims(token).getSubject();
     }
 }

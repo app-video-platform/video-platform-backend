@@ -66,11 +66,6 @@ public class CourseSectionService {
         CourseSection section = sectionRepo.findById(sectionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Section not found: " + dto.getId()));
 
-//        // Ownership check:
-//        String currentEmail = userService.getCurrentUserEmail();
-//        if (!section.getCourse().getUser().getEmail().equalsIgnoreCase(currentEmail)) {
-//            throw new AccessDeniedException("Not authorized to update section");
-//        }
 
         section.setTitle(dto.getTitle());
         if (dto.getPosition() != null) {
@@ -79,7 +74,7 @@ public class CourseSectionService {
         sectionRepo.save(section);
     }
 
-    public void deleteSection(String userId, String id) {
+    public void deleteSection(String id) {
         Optional<CourseSection> sectionOptional = sectionRepo.findById(UUID.fromString(id));
         if (sectionOptional.isPresent()) {
             sectionRepo.delete(sectionOptional.get());

@@ -5,14 +5,16 @@ import com.myproject.video.video_platform.common.enums.products.ProductType;
 import com.myproject.video.video_platform.dto.products.AbstractProductRequestDto;
 import com.myproject.video.video_platform.dto.products.AbstractProductResponseDto;
 import com.myproject.video.video_platform.dto.products.course.CourseProductRequestDto;
-import com.myproject.video.video_platform.entity.user.User;
 import com.myproject.video.video_platform.entity.products.course.CourseProduct;
+import com.myproject.video.video_platform.entity.user.User;
 import com.myproject.video.video_platform.exception.product.ResourceNotFoundException;
 import com.myproject.video.video_platform.exception.user.UserNotFoundException;
 import com.myproject.video.video_platform.repository.products.course.CourseProductRepository;
+import com.myproject.video.video_platform.service.user.CurrentUserService;
 import com.myproject.video.video_platform.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,7 @@ public class CourseProductHandler implements ProductTypeHandler {
     private final CourseProductRepository courseRepo;
     private final CourseProductConverter converter;
     private final UserService userService;
+    private final CurrentUserService currentUserService;
 
     @Override
     public ProductType getSupportedType() {
@@ -59,12 +62,19 @@ public class CourseProductHandler implements ProductTypeHandler {
     @Override
     @Transactional
     public AbstractProductResponseDto updateProduct(AbstractProductRequestDto baseDto) {
+        UUID currentUserId = currentUserService.getCurrentUserId();
+
+        log.info("User id from context: {}", currentUserId);
+
         CourseProductRequestDto dto = (CourseProductRequestDto) baseDto;
         log.info("Updating Course: {}", dto.getName());
 
         UUID id = UUID.fromString(dto.getId());
         CourseProduct existing = courseRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found: " + dto.getId()));
+
+        if (!existing.getUser().getUserId().equals(currentUserId))
+            throw new AccessDeniedException("You don’t own this product.");
 
 
         converter.applyCourseUpdateDto(existing, dto);

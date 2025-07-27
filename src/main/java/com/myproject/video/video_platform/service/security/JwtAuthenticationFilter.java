@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collections;
 
 @Slf4j
 @Component
@@ -37,21 +37,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (jwt != null) {
             if (!jwtProvider.validateToken(jwt)) {
-                // 2a) Log the invalid token usage
                 String clientIp = request.getRemoteAddr();
                 String message = String.format("Invalid or expired token from IP=%s, token=%s", clientIp, jwt);
                 log.warn(message);
 
-                // 2b) Throw custom exception
                 throw new InvalidTokenException("Invalid or expired token.");
             }
 
-            // 3) If valid, set authentication
-            String email = jwtProvider.getEmailFromJwt(jwt);
+            String subject = jwtProvider.getSubjectFromJwt(jwt);
+
             Authentication auth = new UsernamePasswordAuthenticationToken(
-                    email,
+                    subject, // User's UUID
                     null,
-                    new ArrayList<>()
+                    Collections.emptyList()
             );
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
