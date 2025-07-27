@@ -7,6 +7,7 @@ import com.myproject.video.video_platform.dto.products.download.DownloadProductR
 import com.myproject.video.video_platform.entity.products.Product;
 import com.myproject.video.video_platform.entity.products.course.CourseProduct;
 import com.myproject.video.video_platform.entity.products.download.DownloadProduct;
+import com.myproject.video.video_platform.entity.user.User;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -38,12 +39,17 @@ public class ProductConverter {
     }
 
     public ProductMinimised mapProductMinimisedToResponse(Product p) {
+        User user = p.getUser();
+
+        String userFullName = user.getFirstName() + " " + user.getLastName();
         return new ProductMinimised(
                 p.getId(),
                 p.getName(),
                 p.getType(),
                 p.getPrice(),
                 p.getUser().getUserId(),
+                userFullName.trim(),
+                user.getTitle().trim(),
                 p.getCreatedAt(),
                 p.getUpdatedAt()
         );

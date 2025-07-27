@@ -11,7 +11,9 @@ public record ProductMinimised(
         String title,
         ProductType type,
         BigDecimal price,
-        UUID createdBy,
+        UUID createdById,
+        String createdByName,
+        String createdByTitle,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {}
