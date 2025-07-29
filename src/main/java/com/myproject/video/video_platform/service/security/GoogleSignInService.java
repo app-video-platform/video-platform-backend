@@ -59,6 +59,7 @@ public class GoogleSignInService {
             GoogleIdToken.Payload payload = idToken.getPayload();
             String email = payload.getEmail();
             boolean emailVerified = Boolean.TRUE.equals(payload.getEmailVerified());
+            log.info("Google payload: {}", payload);
             String name = (String) payload.get("name");
 
             if (!emailVerified) {
