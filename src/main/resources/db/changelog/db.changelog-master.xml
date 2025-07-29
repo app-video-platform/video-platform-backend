@@ -23,5 +23,6 @@
     <include file="db/changelog/scripts/17-create_course_lessons.sql" />
     <include file="db/changelog/scripts/18-add-users-details.sql" />
     <include file="db/changelog/scripts/19-create-social-platform-table.sql" />
+    <include file="db/changelog/scripts/20-add_search_indexes.sql" />
 
 </databaseChangeLog>

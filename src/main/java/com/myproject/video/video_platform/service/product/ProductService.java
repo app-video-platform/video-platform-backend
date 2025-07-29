@@ -6,8 +6,8 @@ import com.myproject.video.video_platform.common.enums.products.ProductType;
 import com.myproject.video.video_platform.dto.products.AbstractProductRequestDto;
 import com.myproject.video.video_platform.dto.products.AbstractProductResponseDto;
 import com.myproject.video.video_platform.dto.products.ProductMinimised;
-import com.myproject.video.video_platform.entity.user.User;
 import com.myproject.video.video_platform.entity.products.Product;
+import com.myproject.video.video_platform.entity.user.User;
 import com.myproject.video.video_platform.exception.product.InvalidProductTypeException;
 import com.myproject.video.video_platform.exception.user.UserNotFoundException;
 import com.myproject.video.video_platform.repository.auth.UserRepository;
@@ -15,6 +15,8 @@ import com.myproject.video.video_platform.repository.products.ProductRepository;
 import com.myproject.video.video_platform.repository.products.download.DownloadProductRepository;
 import com.myproject.video.video_platform.service.product.strategy_handler.ProductTypeHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -119,5 +121,24 @@ public class ProductService {
         return products.stream()
                 .map(productConverter::mapProductMinimisedToResponse)
                 .toList();
+    }
+
+    /** EXPLORE: all products by name or owner */
+    public Page<ProductMinimised> searchAllProducts(String term, Pageable pageable) {
+        String normalized = term.trim().toLowerCase();
+        return productRepository.searchByNameOrOwner(normalized, pageable)
+                .map(productConverter::mapProductMinimisedToResponse);
+    }
+
+    /** LIBRARY/TEACHER: this user’s products by name */
+    public Page<ProductMinimised> searchUserProducts(String userIdStr, String term, Pageable pageable) {
+        UUID userId = UUID.fromString(userIdStr);
+
+        userRepository.findByUserId(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + userIdStr));
+
+        String normalized = term.trim().toLowerCase();
+        return productRepository.searchByUserAndName(userId, normalized, pageable)
+                .map(productConverter::mapProductMinimisedToResponse);
     }
 }

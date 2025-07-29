@@ -5,10 +5,15 @@ import com.myproject.video.video_platform.dto.products.AbstractProductResponseDt
 import com.myproject.video.video_platform.dto.products.ProductMinimised;
 import com.myproject.video.video_platform.service.product.ProductService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -79,6 +84,32 @@ public class ProductController {
         log.info("Received delete product request: {}", id);
         productService.deleteProduct(userId, id, productType);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body("Product deleted succesfully: " + id);
+    }
+
+    /**
+     * EXPLORE endpoint
+     * GET /api/products/search?term=foo&page=0&size=20
+     */
+    @GetMapping("/search")
+    public Page<ProductMinimised> exploreSearch(
+            @RequestParam String term,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return productService.searchAllProducts(term, pageable);
+    }
+
+    /**
+     * LIBRARY / TEACHER endpoint
+     * GET /api/users/{userId}/products?term=foo&page=0&size=20
+     */
+    @GetMapping("/search/{userId}/products")
+    public Page<ProductMinimised> librarySearch(
+            @PathVariable String userId,
+            @RequestParam String term,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
+            Pageable pageable
+    ) {
+        return productService.searchUserProducts(userId, term, pageable);
     }
 
 }
