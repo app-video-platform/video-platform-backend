@@ -10,6 +10,8 @@ import com.myproject.video.video_platform.entity.products.download.DownloadProdu
 import com.myproject.video.video_platform.entity.user.User;
 import org.springframework.stereotype.Component;
 
+import java.util.StringJoiner;
+
 @Component
 public class ProductConverter {
 
@@ -41,14 +43,22 @@ public class ProductConverter {
     public ProductMinimised mapProductMinimisedToResponse(Product p) {
         User user = p.getUser();
 
-        String userFullName = user.getFirstName() + " " + user.getLastName();
+        StringJoiner sj = new StringJoiner(" ");
+        if (user.getFirstName() != null) {
+            sj.add(user.getFirstName().trim());
+        }
+        if (user.getLastName() != null) {
+            sj.add(user.getLastName().trim());
+        }
+        String fullName = sj.toString();
+
         return new ProductMinimised(
                 p.getId(),
                 p.getName(),
                 p.getType(),
                 p.getPrice(),
                 p.getUser().getUserId(),
-                userFullName.trim(),
+                fullName,
                 user.getTitle(),
                 p.getCreatedAt(),
                 p.getUpdatedAt()
