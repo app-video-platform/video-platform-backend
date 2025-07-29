@@ -75,14 +75,15 @@ public class GoogleSignInService {
                 user = new User();
                 user.setUserId(UUID.randomUUID());
                 user.setEmail(email);
-                user.setFirstName(name);
+                user.setFirstName((String) payload.get("given_name"));
+                user.setLastName((String) payload.get("family_name"));
                 // store random password
                 user.setPassword(passwordEncoder.encode("GOOGLE_LOGIN_" + email));
                 user.setEnabled(true);
                 user.setOnboardingcompleted(false);
                 user.setAuthProvider("GOOGLE");
 
-                Role userRole = roleRepository.findByRoleName("user");
+                Role userRole = roleRepository.findByRoleName("User");
                 if (userRole == null) {
                     log.warn("Default role 'user' not found, creating or handle error");
                 }
