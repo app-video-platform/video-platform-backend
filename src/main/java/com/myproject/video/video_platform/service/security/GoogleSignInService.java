@@ -59,19 +59,20 @@ public class GoogleSignInService {
             GoogleIdToken.Payload payload = idToken.getPayload();
             String email = payload.getEmail();
             boolean emailVerified = Boolean.TRUE.equals(payload.getEmailVerified());
-            log.info("Google payload: {}", payload);
-            String name = (String) payload.get("name");
+
 
             if (!emailVerified) {
                 log.error("Google email not verified: {}", email);
                 throw new AuthenticationException("Google email not verified");
             }
-
             Optional<User> userOpt = userRepository.findByEmail(email);
             User user;
             if (userOpt.isPresent()) {
                 user = userOpt.get();
             } else {
+                log.info("Register via Google, payload: {}", payload);
+                String name = (String) payload.get("name");
+
                 user = new User();
                 user.setUserId(UUID.randomUUID());
                 user.setEmail(email);
