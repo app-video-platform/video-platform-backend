@@ -49,7 +49,7 @@ public class ProductConverter {
                 p.getPrice(),
                 p.getUser().getUserId(),
                 userFullName.trim(),
-                user.getTitle().trim(),
+                user.getTitle(),
                 p.getCreatedAt(),
                 p.getUpdatedAt()
         );
