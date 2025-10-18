@@ -25,8 +25,8 @@ sendgrid:
 
 digitalocean:
   spaces:
-    accessKey: DO8019JA4FF362NEXM6N
-    secretKey: 4fGzkMbOtDNoS2AfnW9wQKninZXacgG6h7k3uIA/Tc4
+    accessKey: ${SPACES_AK}
+    secretKey: ${SPACES_SK}
     originEndpointUrl: https://fra1.digitaloceanspaces.com
     cdnEndpointUrl: https://video-platform.fra1.cdn.digitaloceanspaces.com
     originEndpoint: video-platform.fra1.digitaloceanspaces.com
@@ -43,6 +43,13 @@ app:
   domain: "serious-debauchery.click"
   frontend:
     url: "https://app.serious-debauchery.click"
+  calendar:
+    stateSecret: ${CALENDAR_SS}
+    cryptoSecret: ${CALENDAR_CS} # 32-byte key, base64-encoded
+    google:
+      clientId: ${CALENDAR_GOOGLE_CLIENT_ID}
+      clientSecret: ${CALENDAR_GOOGLE_CLIENT_SECRET}
+      redirectUri: "https://serious-debauchery.click/login/oauth2/code/google"
 
 jwt:
   secret: "12345678901234567890123456789012"

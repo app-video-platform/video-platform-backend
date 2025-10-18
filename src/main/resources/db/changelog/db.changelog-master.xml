@@ -24,5 +24,7 @@
     <include file="db/changelog/scripts/18-add-users-details.sql" />
     <include file="db/changelog/scripts/19-create-social-platform-table.sql" />
     <include file="db/changelog/scripts/20-add_search_indexes.sql" />
+    <include file="db/changelog/scripts/21-create-consultation-product-table.sql" />
+    <include file="db/changelog/scripts/22-create-consultation-connected-calendar-table.sql" />
 
 </databaseChangeLog>

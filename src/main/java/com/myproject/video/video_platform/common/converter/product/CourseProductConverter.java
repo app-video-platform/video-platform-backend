@@ -88,13 +88,13 @@ public class CourseProductConverter {
         secDto.setTitle(section.getTitle());
         secDto.setPosition(section.getPosition());
 
-//        if (section.getLessons() != null) {
-//            List<CourseLessonResponseDto> lessonDtos = section.getLessons().stream()
-//                    .sorted(Comparator.comparing(CourseLesson::getPosition))
-//                    .map(this::mapLessonLazyLoad)
-//                    .toList();
-//            secDto.setLessons(lessonDtos);
-//        }
+        if (section.getLessons() != null) {
+            List<CourseLessonResponseDto> lessonDtos = section.getLessons().stream()
+                    .sorted(Comparator.comparing(CourseLesson::getPosition))
+                    .map(this::mapLessonLazyLoad)
+                    .toList();
+            secDto.setLessons(lessonDtos);
+        }
         return secDto;
     }
 

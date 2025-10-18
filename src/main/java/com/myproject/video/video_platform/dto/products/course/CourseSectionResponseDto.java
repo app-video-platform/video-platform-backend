@@ -2,6 +2,8 @@ package com.myproject.video.video_platform.dto.products.course;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class CourseSectionResponseDto {
     private String id;
@@ -9,4 +11,5 @@ public class CourseSectionResponseDto {
     private String description;
     private String productId;
     private Integer position;
+    private List<CourseLessonResponseDto> lessons;
 }
