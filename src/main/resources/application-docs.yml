@@ -1,0 +1,9 @@
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui
+    # Disable "Try it out"
+    supported-submit-methods: []

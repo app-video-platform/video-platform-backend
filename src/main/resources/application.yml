@@ -14,6 +14,12 @@ spring:
     change-log: classpath:db/changelog/db.changelog-master.xml
     enabled: true
 
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
 google:
   client-id: 253068752459-9fioj7h683qtkmrppeq9hsvus0o1kbp3.apps.googleusercontent.com
 
@@ -32,8 +38,6 @@ digitalocean:
     originEndpoint: video-platform.fra1.digitaloceanspaces.com
     region: fra1
     bucket-media: video-platform
-
-
 
 server:
   forward-headers-strategy: native
