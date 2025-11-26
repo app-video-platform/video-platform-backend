@@ -61,8 +61,9 @@ public class ProductController {
     public ResponseEntity<AbstractProductResponseDto> createProduct(@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Product definition including type-specific fields",
             required = true,
             content = @Content(schema = @Schema(implementation = AbstractProductRequestDto.class),
-                    examples = @ExampleObject(name = "course",
-                            value = "{\n  \"type\": \"COURSE\",\n  \"name\": \"Foundations of Lifestyle Photography\",\n  \"description\": \"Step-by-step blueprint...\",\n  \"status\": \"DRAFT\",\n  \"price\": \"149.00\",\n  \"userId\": \"738297f1-45fb-4f5f-98a5-6d0eb0a8f542\"\n}"))) @RequestBody AbstractProductRequestDto request) {
+            examples = @ExampleObject(name = "course",
+            value = "{\n  \"type\": \"COURSE\",\n  \"name\": \"Foundations of Lifestyle Photography\",\n  \"description\": \"Step-by-step blueprint...\",\n  \"status\": \"DRAFT\",\n  \"price\": \"149.00\",\n  \"userId\": \"738297f1-45fb-4f5f-98a5-6d0eb0a8f542\"\n}")))
+            @RequestBody AbstractProductRequestDto request) {
         log.info("Received create product request: {}", request);
         AbstractProductResponseDto response = productService.createProduct(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);

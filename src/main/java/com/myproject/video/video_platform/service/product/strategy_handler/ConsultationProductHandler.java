@@ -6,7 +6,6 @@ import com.myproject.video.video_platform.dto.products.AbstractProductRequestDto
 import com.myproject.video.video_platform.dto.products.AbstractProductResponseDto;
 import com.myproject.video.video_platform.dto.products.consultation.ConsultationProductRequestDto;
 import com.myproject.video.video_platform.entity.products.consultation.ConsultationProduct;
-import com.myproject.video.video_platform.entity.products.course.CourseProduct;
 import com.myproject.video.video_platform.entity.user.User;
 import com.myproject.video.video_platform.exception.product.ResourceNotFoundException;
 import com.myproject.video.video_platform.exception.user.UserNotFoundException;
@@ -40,8 +39,6 @@ public class ConsultationProductHandler implements ProductTypeHandler {
     @Override
     @Transactional
     public AbstractProductResponseDto createProduct(AbstractProductRequestDto dto) {
-        log.info("Creating a new Consultation: {}", dto.getName());
-
         User owner = userService
                 .findByUserId(UUID.fromString(dto.getUserId()))
                 .orElseThrow(() -> new UserNotFoundException("User not found: " + dto.getUserId()));
@@ -69,8 +66,6 @@ public class ConsultationProductHandler implements ProductTypeHandler {
     @Override
     @Transactional
     public AbstractProductResponseDto updateProduct(AbstractProductRequestDto dto) {
-        log.info("Updating Consultation: {}", dto.getName());
-
         String id = dto.getId();
         ConsultationProduct existing = repo.findById(UUID.fromString(id))
                 .filter(p -> p.getUser().getUserId().equals(UUID.fromString(dto.getUserId())))
