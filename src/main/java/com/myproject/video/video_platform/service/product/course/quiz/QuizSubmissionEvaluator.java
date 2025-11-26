@@ -105,7 +105,7 @@ public class QuizSubmissionEvaluator {
                 : percentage.compareTo(BigDecimal.valueOf(quiz.getPassingScore())) >= 0;
 
         for (QuizQuestion question : quiz.getQuestions()) {
-            normalizedAnswers.computeIfAbsent(question.getId(), q -> Collections.emptyList());
+            normalizedAnswers.putIfAbsent(question.getId(), Collections.emptyList());
         }
 
         return new QuizSubmissionEvaluation(totalPossible, achieved, percentage, passed, questionResults, normalizedAnswers);

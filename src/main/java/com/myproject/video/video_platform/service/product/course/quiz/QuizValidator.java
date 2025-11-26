@@ -25,11 +25,10 @@ public class QuizValidator {
             errors.put("title", "Title is required");
         }
 
-        if (dto.getPassingScore() != null) {
-            if (dto.getPassingScore() < 0 || dto.getPassingScore() > 100) {
+        if (dto.getPassingScore() != null && (dto.getPassingScore() < 0 || dto.getPassingScore() > 100)) {
                 errors.put("passingScore", "Passing score must be between 0 and 100");
             }
-        }
+
 
         List<QuizQuestionDto> questions = dto.getQuestions();
         if (questions == null || questions.isEmpty()) {
