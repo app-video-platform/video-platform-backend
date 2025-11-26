@@ -1,0 +1,56 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:videoplatform;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+  liquibase:
+    enabled: false
+  sql:
+    init:
+      mode: never
+logging:
+  level:
+    org.hibernate.SQL: WARN
+
+digitalocean:
+  spaces:
+    cdnEndpointUrl: https://example.com
+    bucket-media: test
+    accessKey: test
+    secretKey: test
+    originEndpointUrl: https://example.com
+    originEndpoint: example.com
+    region: test
+
+jwt:
+  secret: "12345678901234567890123456789012"
+  expiration: 3600000
+
+sendgrid:
+  api:
+    key: test
+  mail:
+    from: test@example.com
+
+app:
+  domain: example.com
+  refresh-expiry-days: 7
+  frontend:
+    url: https://example.com
+  calendar:
+    stateSecret: test-state
+    cryptoSecret: MTIzNDU2Nzg5MDEyMzQ1Ng==
+    google:
+      clientId: test
+      clientSecret: test
+      redirectUri: https://example.com/oauth
+
+google:
+  client-id: test-client
+  client-secret: test-secret
