@@ -29,7 +29,7 @@ public class ConsultationProductConverter {
         ConsultationProduct entity = new ConsultationProduct();
         entity.setName(dto.getName());
         entity.setDescription(dto.getDescription());
-        entity.setStatus(ProductStatus.valueOf(dto.getStatus()));
+        entity.setStatus(ProductStatus.valueOf(dto.getStatus().toUpperCase()));
         entity.setPrice(
                 dto.getPrice() == null
                         ? BigDecimal.ZERO
@@ -40,7 +40,7 @@ public class ConsultationProductConverter {
         entity.setType(ProductType.CONSULTATION);
         entity.setUser(user);
         entity.setDurationMinutes(dto.getDurationMinutes());
-        entity.setMeetingMethod(ConsultationProduct.MeetingMethod.valueOf(dto.getMeetingMethod().name()));
+        entity.setMeetingMethod(dto.getMeetingMethod() != null ? ConsultationProduct.MeetingMethod.valueOf(dto.getMeetingMethod().name()) : null);
         entity.setCustomLocation(dto.getCustomLocation());
         entity.setBufferBeforeMinutes(dto.getBufferBeforeMinutes());
         entity.setBufferAfterMinutes(dto.getBufferAfterMinutes());
@@ -74,7 +74,7 @@ public class ConsultationProductConverter {
 
         dto.setDurationMinutes(entity.getDurationMinutes());
         dto.setMeetingMethod(
-                ConsultationProductResponseDto.MeetingMethod.valueOf(entity.getMeetingMethod().name())
+                entity.getMeetingMethod() != null ? ConsultationProductResponseDto.MeetingMethod.valueOf(entity.getMeetingMethod().name()) : null
         );
         dto.setCustomLocation(entity.getCustomLocation());
         dto.setBufferBeforeMinutes(entity.getBufferBeforeMinutes());
