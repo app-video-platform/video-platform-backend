@@ -47,9 +47,9 @@ public class CourseLessonService {
 
         CourseLesson lesson = new CourseLesson();
         lesson.setTitle(dto.getTitle());
-        lesson.setType(LessonType.valueOf(dto.getType().toUpperCase()));
-        lesson.setVideoUrl(dto.getVideoUrl());
-        lesson.setContent(dto.getContent());
+        LessonType lessonType = LessonType.valueOf(dto.getType().toUpperCase());
+        lesson.setType(lessonType);
+        applyLessonContent(lesson, lessonType, dto.getVideoUrl(), dto.getContent());
         lesson.setPosition(
                 dto.getPosition() == null
                         ? section.getLessons().size() + 1
@@ -86,9 +86,9 @@ public class CourseLessonService {
             throw new AccessDeniedException("You don’t own this product.");
 
         lesson.setTitle(dto.getTitle());
-        lesson.setType(LessonType.valueOf(dto.getType().toUpperCase()));
-        lesson.setVideoUrl(dto.getVideoUrl());
-        lesson.setContent(dto.getContent());
+        LessonType newType = LessonType.valueOf(dto.getType().toUpperCase());
+        lesson.setType(newType);
+        applyLessonContent(lesson, newType, dto.getVideoUrl(), dto.getContent());
         if (dto.getPosition() != null) {
             lesson.setPosition(dto.getPosition());
         }
@@ -109,5 +109,22 @@ public class CourseLessonService {
         } else
             throw new ResourceNotFoundException("Course lesson not found for ID: " + lessonId);
 
+}
+
+    private void applyLessonContent(CourseLesson lesson, LessonType type, String videoUrl, String content) {
+        switch (type) {
+            case VIDEO -> {
+                lesson.setVideoUrl(videoUrl);
+                lesson.setContent(null);
+            }
+            case ARTICLE -> {
+                lesson.setContent(content);
+                lesson.setVideoUrl(null);
+            }
+            case QUIZ -> {
+                lesson.setVideoUrl(null);
+                lesson.setContent(null);
+            }
+        }
     }
 }

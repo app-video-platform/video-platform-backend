@@ -9,6 +9,7 @@ import com.myproject.video.video_platform.exception.auth.TokenExpiredException;
 import com.myproject.video.video_platform.exception.auth.UserAlreadyExistingException;
 import com.myproject.video.video_platform.exception.email.EmailSendingException;
 import com.myproject.video.video_platform.exception.product.InvalidProductTypeException;
+import com.myproject.video.video_platform.exception.product.QuizValidationException;
 import com.myproject.video.video_platform.exception.product.ResourceNotFoundException;
 import com.myproject.video.video_platform.exception.user.UserNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -105,5 +106,13 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND.value());
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
-}
 
+    @ExceptionHandler(QuizValidationException.class)
+    public ResponseEntity<ValidationErrorResponse> handleQuizValidationException(QuizValidationException ex) {
+        ValidationErrorResponse response = new ValidationErrorResponse(
+                ex.getMessage(),
+                ex.getErrors()
+        );
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+}
