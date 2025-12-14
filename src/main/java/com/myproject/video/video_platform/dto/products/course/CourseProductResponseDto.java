@@ -10,7 +10,7 @@ import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-@JsonTypeName("CONSULTATION")
+@JsonTypeName("COURSE")
 @Schema(description = "Course product view including high-level section summaries.")
 public class CourseProductResponseDto extends AbstractProductResponseDto {
     @Schema(description = "Ordered sections attached to the course")

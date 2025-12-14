@@ -49,7 +49,7 @@ public class QuizMapper {
         questionDto.setType(question.getType().getValue());
         questionDto.setPoints(question.getPoints());
         questionDto.setExplanation(question.getExplanation());
-        questionDto.setSortOrder(question.getSortOrder());
+        questionDto.setPosition(question.getSortOrder());
 
         List<QuizOptionDto> optionDtos = question.getOptions().stream()
                 .sorted(Comparator.comparing(o -> o.getSortOrder() == null ? Integer.MAX_VALUE : o.getSortOrder()))
@@ -63,7 +63,7 @@ public class QuizMapper {
         QuizOptionDto optionDto = new QuizOptionDto();
         optionDto.setId(option.getId().toString());
         optionDto.setText(option.getText());
-        optionDto.setSortOrder(option.getSortOrder());
+        optionDto.setPosition(option.getSortOrder());
         if (includeCorrectness) {
             optionDto.setIsCorrect(option.isCorrect());
         }
@@ -91,8 +91,8 @@ public class QuizMapper {
             question.setType(QuizQuestionType.fromValue(questionDto.getType()));
             question.setPoints(questionDto.getPoints());
             question.setExplanation(questionDto.getExplanation());
-            Integer sortOrder = questionDto.getSortOrder() != null
-                    ? questionDto.getSortOrder()
+            Integer sortOrder = questionDto.getPosition() != null
+                    ? questionDto.getPosition()
                     : questionOrder.incrementAndGet();
             question.setSortOrder(sortOrder);
 
@@ -103,8 +103,8 @@ public class QuizMapper {
                 option.setId(resolveUuid(optionDto.getId(), null));
                 option.setText(optionDto.getText());
                 option.setCorrect(Boolean.TRUE.equals(optionDto.getIsCorrect()));
-                Integer optionSortOrder = optionDto.getSortOrder() != null
-                        ? optionDto.getSortOrder()
+                Integer optionSortOrder = optionDto.getPosition() != null
+                        ? optionDto.getPosition()
                         : optionOrder.incrementAndGet();
                 option.setSortOrder(optionSortOrder);
                 question.addOption(option);

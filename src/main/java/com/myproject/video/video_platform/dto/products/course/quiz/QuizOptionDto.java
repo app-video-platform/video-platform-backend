@@ -19,5 +19,5 @@ public class QuizOptionDto {
     private Boolean isCorrect;
 
     @Schema(description = "Relative ordering")
-    private Integer sortOrder;
+    private Integer position;
 }

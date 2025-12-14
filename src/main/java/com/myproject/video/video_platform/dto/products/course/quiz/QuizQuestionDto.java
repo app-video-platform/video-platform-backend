@@ -36,5 +36,5 @@ public class QuizQuestionDto {
     private List<QuizOptionDto> options = new ArrayList<>();
 
     @Schema(description = "Relative ordering")
-    private Integer sortOrder;
+    private Integer position;
 }
