@@ -6,13 +6,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.util.List;
-
 @EqualsAndHashCode(callSuper = true)
 @Data
 @JsonTypeName("COURSE")
-@Schema(description = "Course product view including high-level section summaries.")
+@Schema(description = "Course product view with details nested under product.details.")
 public class CourseProductResponseDto extends AbstractProductResponseDto {
-    @Schema(description = "Ordered sections attached to the course")
-    private List<CourseSectionResponseDto> sections;
+
+    @Schema(description = "Course-specific fields nested under product.details")
+    private CourseProductDetailsDto details;
 }

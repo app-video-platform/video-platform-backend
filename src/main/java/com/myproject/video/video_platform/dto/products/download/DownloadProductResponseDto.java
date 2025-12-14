@@ -6,13 +6,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.util.List;
-
 @EqualsAndHashCode(callSuper = true)
 @Data
 @JsonTypeName("DOWNLOAD")
-@Schema(description = "Download product view including nested file sections.")
+@Schema(description = "Download product view with details nested under product.details.")
 public class DownloadProductResponseDto extends AbstractProductResponseDto {
-    @Schema(description = "Ordered sections comprising the download product")
-    private List<SectionDownloadProductResponseDto> sections;
+
+    @Schema(description = "Download-specific fields nested under product.details")
+    private DownloadProductDetailsResponseDto details;
 }

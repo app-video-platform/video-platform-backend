@@ -21,20 +21,20 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ConsultationProduct extends Product {
 
-    @Column(name = "duration_minutes", nullable = false)
+    @Column(name = "duration_minutes")
     private Integer durationMinutes;
 
-    @Column(name = "meeting_method", length = 32, nullable = false)
+    @Column(name = "meeting_method", length = 32)
     @Enumerated(EnumType.STRING)
     private MeetingMethod meetingMethod;
 
     @Column(name = "custom_location")
     private String customLocation;
 
-    @Column(name = "buffer_before_minutes", nullable = false)
+    @Column(name = "buffer_before_minutes")
     private Integer bufferBeforeMinutes;
 
-    @Column(name = "buffer_after_minutes", nullable = false)
+    @Column(name = "buffer_after_minutes")
     private Integer bufferAfterMinutes;
 
     @Column(name = "max_sessions_per_day")
@@ -43,7 +43,7 @@ public class ConsultationProduct extends Product {
     @Column(name = "confirmation_message", columnDefinition = "TEXT")
     private String confirmationMessage;
 
-    @Column(name = "cancellation_policy", columnDefinition = "TEXT", nullable = false)
+    @Column(name = "cancellation_policy", columnDefinition = "TEXT")
     private String cancellationPolicy;
 
 

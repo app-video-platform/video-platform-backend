@@ -78,7 +78,8 @@ public class ProductService {
         List<Product> products = productRepository.findAllByUser(user);
 
         return products.stream()
-                .map(productConverter::mapProductToResponse)
+                .map(product -> getProductStrategyHandler(product.getType().name())
+                        .getProductById(product.getId().toString()))
                 .toList();
     }
 

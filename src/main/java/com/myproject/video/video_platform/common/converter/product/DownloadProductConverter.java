@@ -3,6 +3,8 @@ package com.myproject.video.video_platform.common.converter.product;
 import com.myproject.video.video_platform.common.enums.products.ProductStatus;
 import com.myproject.video.video_platform.common.enums.products.ProductType;
 import com.myproject.video.video_platform.dto.products.AbstractProductResponseDto;
+import com.myproject.video.video_platform.dto.products.download.DownloadProductDetailsRequestDto;
+import com.myproject.video.video_platform.dto.products.download.DownloadProductDetailsResponseDto;
 import com.myproject.video.video_platform.dto.products.download.DownloadProductRequestDto;
 import com.myproject.video.video_platform.dto.products.download.DownloadProductResponseDto;
 import com.myproject.video.video_platform.dto.products.download.FileDownloadProductResponseDto;
@@ -48,8 +50,9 @@ public class DownloadProductConverter {
         product.setUser(user);
 
         // Build sections
-        if (dto.getSections() != null) {
-            Set<SectionDownloadProduct> sections = dto.getSections().stream()
+        DownloadProductDetailsRequestDto details = dto.getDetails();
+        if (details != null && details.getSections() != null) {
+            Set<SectionDownloadProduct> sections = details.getSections().stream()
                     .map(secDto -> {
                         SectionDownloadProduct sec = new SectionDownloadProduct();
                         // In case is an update of product, we get the ID
@@ -85,7 +88,9 @@ public class DownloadProductConverter {
                     .sorted(Comparator.comparing(SectionDownloadProduct::getPosition))
                     .map(this::mapSection)
                     .toList();
-            dto.setSections(sections);
+            DownloadProductDetailsResponseDto details = new DownloadProductDetailsResponseDto();
+            details.setSections(sections);
+            dto.setDetails(details);
         }
 
         return dto;
@@ -136,42 +141,53 @@ public class DownloadProductConverter {
     }
 
     public DownloadProduct mapDownloadProductUpdate(DownloadProduct product, DownloadProductRequestDto dto) {
-        product.setName(dto.getName());
-        product.setDescription(dto.getDescription());
         product.setType(ProductType.DOWNLOAD);
-        product.setStatus(parseStatus(dto.getStatus()));
-        product.setPrice(parsePrice(dto.getPrice()));
+        if (dto.getName() != null) {
+            product.setName(dto.getName());
+        }
+        if (dto.getDescription() != null) {
+            product.setDescription(dto.getDescription());
+        }
+        if (dto.getStatus() != null) {
+            product.setStatus(parseStatus(dto.getStatus()));
+        }
+        if (dto.getPrice() != null) {
+            product.setPrice(parsePrice(dto.getPrice()));
+        }
+
+        DownloadProductDetailsRequestDto details = dto.getDetails();
+        if (details == null || details.getSections() == null) {
+            return product;
+        }
 
         Set<SectionDownloadProduct> existingSections = product.getSectionDownloadProducts();
         Map<UUID, SectionDownloadProduct> existingById = existingSections.stream()
+                .filter(section -> section.getId() != null)
                 .collect(Collectors.toMap(SectionDownloadProduct::getId, Function.identity()));
 
         List<SectionDownloadProduct> sectionsToKeep = new ArrayList<>();
+        for (SectionDownloadProductRequestDto secDto : details.getSections()) {
+            UUID secId = null;
+            if (secDto.getId() != null && !secDto.getId().isEmpty()) {
+                secId = UUID.fromString(secDto.getId());
+            }
 
-        if (dto.getSections() != null) {
-            for (SectionDownloadProductRequestDto secDto : dto.getSections()) {
-                UUID secId = null;
-                if (secDto.getId() != null && !secDto.getId().isEmpty()) {
-                    secId = UUID.fromString(secDto.getId());
-                }
-
-                if (secId != null && existingById.containsKey(secId)) {
-                    // UPDATE EXISTING
-                    SectionDownloadProduct existingSec = existingById.get(secId);
-                    existingSec.setTitle(secDto.getTitle());
-                    existingSec.setDescription(secDto.getDescription());
-                    existingSec.setPosition(secDto.getPosition());
-                    sectionsToKeep.add(existingSec);
-                    existingById.remove(secId); // mark handled
-                } else {
-                    // CREATE NEW
-                    SectionDownloadProduct newSec = new SectionDownloadProduct();
-                    newSec.setTitle(secDto.getTitle());
-                    newSec.setDescription(secDto.getDescription());
-                    newSec.setPosition(secDto.getPosition());
-                    newSec.setDownloadProduct(product);
-                    sectionsToKeep.add(newSec);
-                }
+            if (secId != null && existingById.containsKey(secId)) {
+                // UPDATE EXISTING
+                SectionDownloadProduct existingSec = existingById.get(secId);
+                existingSec.setTitle(secDto.getTitle());
+                existingSec.setDescription(secDto.getDescription());
+                existingSec.setPosition(secDto.getPosition());
+                sectionsToKeep.add(existingSec);
+                existingById.remove(secId); // mark handled
+            } else {
+                // CREATE NEW
+                SectionDownloadProduct newSec = new SectionDownloadProduct();
+                newSec.setTitle(secDto.getTitle());
+                newSec.setDescription(secDto.getDescription());
+                newSec.setPosition(secDto.getPosition());
+                newSec.setDownloadProduct(product);
+                sectionsToKeep.add(newSec);
             }
         }
 

@@ -68,9 +68,7 @@ public class ConsultationProductHandler implements ProductTypeHandler {
     public AbstractProductResponseDto updateProduct(AbstractProductRequestDto dto) {
         String id = dto.getId();
         ConsultationProduct existing = repo.findById(UUID.fromString(id))
-                .filter(p -> p.getUser().getUserId().equals(UUID.fromString(dto.getUserId())))
-                .orElseThrow(() -> new ResourceNotFoundException("Consultation not found or not owned: " + id));
-
+                .orElseThrow(() -> new ResourceNotFoundException("Consultation not found: " + id));
 
         UUID currentUserId = currentUserService.getCurrentUserId();
         log.info("User id from context: {}", currentUserId);

@@ -2,6 +2,7 @@ package com.myproject.video.video_platform.common.converter.product;
 
 import com.myproject.video.video_platform.common.enums.products.ProductStatus;
 import com.myproject.video.video_platform.dto.products.course.CourseLessonResponseDto;
+import com.myproject.video.video_platform.dto.products.course.CourseProductDetailsDto;
 import com.myproject.video.video_platform.dto.products.course.CourseProductRequestDto;
 import com.myproject.video.video_platform.dto.products.course.CourseProductResponseDto;
 import com.myproject.video.video_platform.dto.products.course.CourseSectionResponseDto;
@@ -20,6 +21,7 @@ import java.util.Set;
 @Component
 public class CourseProductConverter {
 
+    private static final ProductStatus DEFAULT_STATUS = ProductStatus.DRAFT;
 
     public CourseProduct mapCourseCreateDtoToEntity(
             CourseProductRequestDto dto,
@@ -29,14 +31,8 @@ public class CourseProductConverter {
         course.setName(dto.getName());
         course.setDescription(dto.getDescription());
         course.setType(com.myproject.video.video_platform.common.enums.products.ProductType.COURSE);
-        course.setStatus(ProductStatus.valueOf(dto.getStatus().toUpperCase()));
-        course.setPrice(
-                dto.getPrice() == null
-                        ? BigDecimal.ZERO
-                        : dto.getPrice().equalsIgnoreCase("free")
-                        ? BigDecimal.ZERO
-                        : new BigDecimal(dto.getPrice())
-        );
+        course.setStatus(parseStatus(dto.getStatus(), DEFAULT_STATUS));
+        course.setPrice(parsePrice(dto.getPrice(), BigDecimal.ZERO));
         course.setUser(owner);
 
         // ───► CREATE A NEW "DRAFT" SECTION BY DEFAULT ◄────────────
@@ -77,7 +73,9 @@ public class CourseProductConverter {
                     .sorted(Comparator.comparing(CourseSection::getPosition))
                     .map(this::mapSection)
                     .toList();
-            dto.setSections(sectionDtos);
+            CourseProductDetailsDto details = new CourseProductDetailsDto();
+            details.setSections(sectionDtos);
+            dto.setDetails(details);
         }
         return dto;
     }
@@ -108,16 +106,42 @@ public class CourseProductConverter {
     }
 
     public void applyCourseUpdateDto(CourseProduct existing, CourseProductRequestDto dto) {
-        // 1) Update basic product fields:
-        existing.setName(dto.getName());
-        existing.setDescription(dto.getDescription());
-        existing.setStatus(ProductStatus.valueOf(dto.getStatus().toUpperCase()));
+        if (dto.getName() != null) {
+            existing.setName(dto.getName());
+        }
+        if (dto.getDescription() != null) {
+            existing.setDescription(dto.getDescription());
+        }
+        if (dto.getStatus() != null) {
+            existing.setStatus(parseStatus(dto.getStatus(), existing.getStatus() != null ? existing.getStatus() : DEFAULT_STATUS));
+        }
+        if (dto.getPrice() != null) {
+            existing.setPrice(parsePrice(dto.getPrice(), existing.getPrice() != null ? existing.getPrice() : BigDecimal.ZERO));
+        }
+    }
 
-        BigDecimal newPrice = (dto.getPrice() == null || dto.getPrice().equalsIgnoreCase("free"))
-                ? BigDecimal.ZERO
-                : new BigDecimal(dto.getPrice());
-        existing.setPrice(newPrice);
+    private ProductStatus parseStatus(String statusStr, ProductStatus fallback) {
+        if (statusStr == null || statusStr.isBlank()) {
+            return fallback;
+        }
+        try {
+            return ProductStatus.valueOf(statusStr.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return fallback;
+        }
+    }
 
-
+    private BigDecimal parsePrice(String priceStr, BigDecimal fallback) {
+        if (priceStr == null || priceStr.isBlank()) {
+            return fallback;
+        }
+        if (priceStr.equalsIgnoreCase("free")) {
+            return BigDecimal.ZERO;
+        }
+        try {
+            return new BigDecimal(priceStr);
+        } catch (NumberFormatException e) {
+            return fallback;
+        }
     }
 }
