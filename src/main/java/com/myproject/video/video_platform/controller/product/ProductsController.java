@@ -37,11 +37,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/products")
 @Tag(name = "Products", description = "Create and manage course, download, and consultation products for sale.")
-public class ProductController {
+public class ProductsController {
 
     private final ProductService productService;
 
-    public ProductController(ProductService productService) {
+    public ProductsController(ProductService productService) {
         this.productService = productService;
     }
 

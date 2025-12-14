@@ -1,4 +1,4 @@
-package com.myproject.video.video_platform.controller.product;
+package com.myproject.video.video_platform.controller.product.download;
 
 import com.myproject.video.video_platform.dto.authetication.ErrorResponse;
 import com.myproject.video.video_platform.dto.authetication.ValidationErrorResponse;
@@ -34,7 +34,7 @@ import java.time.Duration;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Files", description = "DigitalOcean Spaces upload helpers for course and download assets.")
-public class FilesController {
+public class DownloadFilesController {
 
     private final FilesService filesService;
 

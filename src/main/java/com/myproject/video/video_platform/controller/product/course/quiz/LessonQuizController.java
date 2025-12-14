@@ -1,4 +1,4 @@
-package com.myproject.video.video_platform.controller.product;
+package com.myproject.video.video_platform.controller.product.course.quiz;
 
 import com.myproject.video.video_platform.dto.authetication.ErrorResponse;
 import com.myproject.video.video_platform.dto.authetication.ValidationErrorResponse;

@@ -1,4 +1,4 @@
-package com.myproject.video.video_platform.controller.product;
+package com.myproject.video.video_platform.controller.product.consultation;
 
 import com.myproject.video.video_platform.dto.authetication.ErrorResponse;
 import com.myproject.video.video_platform.dto.authetication.ValidationErrorResponse;
@@ -32,7 +32,7 @@ import java.util.UUID;
 @RequestMapping("/api/calendars")
 @RequiredArgsConstructor
 @Tag(name = "Calendars", description = "Connect external calendars to power consultation availability.")
-public class CalendarController {
+public class ConsultationCalendarsController {
 
     private final CalendarIntegrationService calendars;
 

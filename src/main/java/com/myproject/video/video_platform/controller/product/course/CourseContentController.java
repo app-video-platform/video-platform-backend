@@ -1,4 +1,4 @@
-package com.myproject.video.video_platform.controller.product;
+package com.myproject.video.video_platform.controller.product.course;
 
 import com.myproject.video.video_platform.dto.authetication.ErrorResponse;
 import com.myproject.video.video_platform.dto.authetication.ValidationErrorResponse;
@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Validated
 @Tag(name = "Courses", description = "Manage course sections and lessons belonging to a course product.")
-public class CourseController {
+public class CourseContentController {
 
     private final CourseSectionService sectionService;
     private final CourseLessonService lessonService;
