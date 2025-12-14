@@ -32,5 +32,5 @@ public class QuizOption {
     private boolean isCorrect;
 
     @Column(name = "sort_order")
-    private Integer sortOrder;
+    private Integer position;
 }

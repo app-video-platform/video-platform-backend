@@ -46,7 +46,7 @@ public class QuizQuestion {
     private String explanation;
 
     @Column(name = "sort_order")
-    private Integer sortOrder;
+    private Integer position;
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuizOption> options = new ArrayList<>();

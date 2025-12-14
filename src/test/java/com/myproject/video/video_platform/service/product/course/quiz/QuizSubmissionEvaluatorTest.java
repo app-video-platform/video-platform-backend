@@ -114,7 +114,7 @@ class QuizSubmissionEvaluatorTest {
         option.setId(UUID.randomUUID());
         option.setText(text);
         option.setCorrect(correct);
-        option.setSortOrder(1);
+        option.setPosition(1);
         return option;
     }
 }

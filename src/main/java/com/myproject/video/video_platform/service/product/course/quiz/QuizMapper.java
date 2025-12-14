@@ -35,7 +35,7 @@ public class QuizMapper {
         dto.setPassingScore(quiz.getPassingScore());
 
         List<QuizQuestionDto> questions = quiz.getQuestions().stream()
-                .sorted(Comparator.comparing(q -> q.getSortOrder() == null ? Integer.MAX_VALUE : q.getSortOrder()))
+                .sorted(Comparator.comparing(q -> q.getPosition() == null ? Integer.MAX_VALUE : q.getPosition()))
                 .map(question -> mapQuestion(question, includeCorrectness))
                 .collect(Collectors.toList());
         dto.setQuestions(questions);
@@ -49,10 +49,10 @@ public class QuizMapper {
         questionDto.setType(question.getType().getValue());
         questionDto.setPoints(question.getPoints());
         questionDto.setExplanation(question.getExplanation());
-        questionDto.setPosition(question.getSortOrder());
+        questionDto.setPosition(question.getPosition());
 
         List<QuizOptionDto> optionDtos = question.getOptions().stream()
-                .sorted(Comparator.comparing(o -> o.getSortOrder() == null ? Integer.MAX_VALUE : o.getSortOrder()))
+                .sorted(Comparator.comparing(o -> o.getPosition() == null ? Integer.MAX_VALUE : o.getPosition()))
                 .map(option -> mapOption(option, includeCorrectness))
                 .collect(Collectors.toList());
         questionDto.setOptions(optionDtos);
@@ -63,7 +63,7 @@ public class QuizMapper {
         QuizOptionDto optionDto = new QuizOptionDto();
         optionDto.setId(option.getId().toString());
         optionDto.setText(option.getText());
-        optionDto.setPosition(option.getSortOrder());
+        optionDto.setPosition(option.getPosition());
         if (includeCorrectness) {
             optionDto.setIsCorrect(option.isCorrect());
         }
@@ -91,10 +91,10 @@ public class QuizMapper {
             question.setType(QuizQuestionType.fromValue(questionDto.getType()));
             question.setPoints(questionDto.getPoints());
             question.setExplanation(questionDto.getExplanation());
-            Integer sortOrder = questionDto.getPosition() != null
+            Integer position = questionDto.getPosition() != null
                     ? questionDto.getPosition()
                     : questionOrder.incrementAndGet();
-            question.setSortOrder(sortOrder);
+            question.setPosition(position);
 
             question.getOptions().clear();
             AtomicInteger optionOrder = new AtomicInteger(0);
@@ -103,10 +103,10 @@ public class QuizMapper {
                 option.setId(resolveUuid(optionDto.getId(), null));
                 option.setText(optionDto.getText());
                 option.setCorrect(Boolean.TRUE.equals(optionDto.getIsCorrect()));
-                Integer optionSortOrder = optionDto.getPosition() != null
+                Integer optionPosition = optionDto.getPosition() != null
                         ? optionDto.getPosition()
                         : optionOrder.incrementAndGet();
-                option.setSortOrder(optionSortOrder);
+                option.setPosition(optionPosition);
                 question.addOption(option);
             }
 
