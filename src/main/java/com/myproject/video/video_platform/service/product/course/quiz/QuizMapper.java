@@ -48,6 +48,7 @@ public class QuizMapper {
         questionDto.setPoints(question.getPoints());
         questionDto.setExplanation(question.getExplanation());
         questionDto.setPosition(question.getPosition());
+        questionDto.setShuffle(question.isShuffle());
 
         List<QuizOptionDto> optionDtos = question.getOptions().stream()
                 .sorted(Comparator.comparing(o -> o.getPosition() == null ? Integer.MAX_VALUE : o.getPosition()))
@@ -87,6 +88,7 @@ public class QuizMapper {
             question.setType(QuizQuestionType.fromValue(questionDto.getType()));
             question.setPoints(questionDto.getPoints());
             question.setExplanation(questionDto.getExplanation());
+            question.setShuffle(Boolean.TRUE.equals(questionDto.getShuffle()));
             Integer position = questionDto.getPosition() != null
                     ? questionDto.getPosition()
                     : questionOrder.incrementAndGet();

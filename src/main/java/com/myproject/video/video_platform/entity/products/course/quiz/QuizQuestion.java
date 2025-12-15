@@ -51,6 +51,9 @@ public class QuizQuestion {
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuizOption> options = new ArrayList<>();
 
+    @Column(name = "shuffle", nullable = false)
+    private boolean shuffle;
+
     public void addOption(QuizOption option) {
         options.add(option);
         option.setQuestion(this);

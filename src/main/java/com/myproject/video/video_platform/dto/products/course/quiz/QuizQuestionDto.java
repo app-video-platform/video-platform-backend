@@ -35,6 +35,9 @@ public class QuizQuestionDto {
     @Schema(description = "Answer options")
     private List<QuizOptionDto> options = new ArrayList<>();
 
+    @Schema(description = "If true, frontend should shuffle options in UI", example = "false")
+    private Boolean shuffle;
+
     @Schema(description = "Relative ordering")
     private Integer position;
 }
