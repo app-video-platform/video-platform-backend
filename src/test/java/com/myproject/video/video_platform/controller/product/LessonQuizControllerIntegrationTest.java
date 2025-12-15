@@ -100,7 +100,6 @@ class LessonQuizControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(draft)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("Quiz"))
                 .andExpect(jsonPath("$.questions[0].options[0].isCorrect").value(true));
 
         mockMvc.perform(get("/api/lessons/{lessonId}/quiz", lesson.getId()))
@@ -179,7 +178,6 @@ class LessonQuizControllerIntegrationTest {
 
     private QuizDraftDto buildDraft() {
         QuizDraftDto dto = new QuizDraftDto();
-        dto.setTitle("Quiz");
         dto.setPassingScore(60);
 
         QuizQuestionDto question = new QuizQuestionDto();

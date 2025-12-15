@@ -21,10 +21,6 @@ public class QuizValidator {
     public void validateDraft(QuizDraftDto dto) {
         Map<String, String> errors = new HashMap<>();
 
-        if (!StringUtils.hasText(dto.getTitle())) {
-            errors.put("title", "Title is required");
-        }
-
         if (dto.getPassingScore() != null && (dto.getPassingScore() < 0 || dto.getPassingScore() > 100)) {
                 errors.put("passingScore", "Passing score must be between 0 and 100");
             }

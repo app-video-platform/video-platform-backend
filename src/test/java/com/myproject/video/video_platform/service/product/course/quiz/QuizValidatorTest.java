@@ -43,7 +43,6 @@ class QuizValidatorTest {
 
     private QuizDraftDto sampleQuiz() {
         QuizDraftDto dto = new QuizDraftDto();
-        dto.setTitle("Sample");
         dto.setPassingScore(70);
         QuizQuestionDto question = new QuizQuestionDto();
         question.setTitle("Question");

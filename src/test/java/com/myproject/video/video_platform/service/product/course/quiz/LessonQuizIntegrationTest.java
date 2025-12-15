@@ -111,7 +111,6 @@ class LessonQuizIntegrationTest {
 
     private QuizDraftDto buildDraft() {
         QuizDraftDto dto = new QuizDraftDto();
-        dto.setTitle("Quiz");
         dto.setPassingScore(60);
         QuizQuestionDto question = new QuizQuestionDto();
         question.setTitle("Question 1");

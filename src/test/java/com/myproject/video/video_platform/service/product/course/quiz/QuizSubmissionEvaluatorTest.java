@@ -90,7 +90,6 @@ class QuizSubmissionEvaluatorTest {
     private Quiz quizWithQuestion(QuizQuestionType type, int points, List<QuizOption> options) {
         Quiz quiz = new Quiz();
         quiz.setId(UUID.randomUUID());
-        quiz.setTitle("Quiz");
 
         QuizQuestion question = new QuizQuestion();
         question.setId(UUID.randomUUID());

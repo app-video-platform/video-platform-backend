@@ -28,5 +28,6 @@
     <include file="db/changelog/scripts/22-create-consultation-connected-calendar-table.sql" />
     <include file="db/changelog/scripts/23-remove-non-null-consultation-table.sql" />
     <include file="db/changelog/scripts/24-create_quiz_tables.sql" />
+    <include file="db/changelog/scripts/25-drop_quiz_title_description.sql" />
 
 </databaseChangeLog>

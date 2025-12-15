@@ -30,8 +30,6 @@ public class QuizMapper {
     private QuizDraftDto toDto(Quiz quiz, boolean includeCorrectness) {
         QuizDraftDto dto = new QuizDraftDto();
         dto.setId(quiz.getId().toString());
-        dto.setTitle(quiz.getTitle());
-        dto.setDescription(quiz.getDescription());
         dto.setPassingScore(quiz.getPassingScore());
 
         List<QuizQuestionDto> questions = quiz.getQuestions().stream()
@@ -78,8 +76,6 @@ public class QuizMapper {
         }
         quiz.setLesson(lesson);
         lesson.setQuiz(quiz);
-        quiz.setTitle(dto.getTitle());
-        quiz.setDescription(dto.getDescription());
         quiz.setPassingScore(dto.getPassingScore());
 
         quiz.getQuestions().clear();

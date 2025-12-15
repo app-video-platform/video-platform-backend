@@ -32,12 +32,6 @@ public class Quiz {
     @Id
     private UUID id;
 
-    @Column(nullable = false)
-    private String title;
-
-    @Column(columnDefinition = "TEXT")
-    private String description;
-
     @Column(name = "passing_score")
     private Integer passingScore;
 
