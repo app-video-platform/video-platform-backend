@@ -83,7 +83,6 @@ public class CalendarIntegrationService {
         String encRefresh = tokens.refreshToken() != null ? crypto.encrypt(tokens.refreshToken()) : null;
 
         ConnectedCalendar cc = new ConnectedCalendar();
-        cc.setId(UUID.randomUUID());
         cc.setTeacherId(userId);
         cc.setProvider(provider);
         cc.setOauthTokenEnc(encAccess);
