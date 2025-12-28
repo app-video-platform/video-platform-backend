@@ -88,7 +88,9 @@ public class CalendarIntegrationService {
         cc.setProvider(provider);
         cc.setOauthTokenEnc(encAccess);
         cc.setRefreshTokenEnc(encRefresh);
-        cc.setExpiresAt(ZonedDateTime.from(tokens.expiresAt()));
+        if (tokens.expiresAt() != null) {
+            cc.setExpiresAt(ZonedDateTime.ofInstant(tokens.expiresAt(), java.time.ZoneOffset.UTC));
+        }
         // createdAt/updatedAt by DB default or @PrePersist if you have it
 
         repo.save(cc);
