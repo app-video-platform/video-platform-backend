@@ -42,7 +42,7 @@ public class GoogleCalendarClient implements CalendarProviderClient {
                         "https://www.googleapis.com/auth/calendar.events"))
                 .queryParam("state", state);
         if (loginHint != null && !loginHint.isBlank()) b.queryParam("login_hint", loginHint);
-        return b.build(true).toUriString();
+        return b.build().toUriString();
     }
 
     @Override
