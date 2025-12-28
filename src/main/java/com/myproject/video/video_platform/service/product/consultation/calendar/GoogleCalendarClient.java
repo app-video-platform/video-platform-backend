@@ -1,11 +1,11 @@
 package com.myproject.video.video_platform.service.product.consultation.calendar;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
 import com.myproject.video.video_platform.exception.auth.OAuthErrorResponse;
 import com.myproject.video.video_platform.exception.auth.OAuthTokenExchangeException;
 import com.myproject.video.video_platform.service.security.calendar.CalendarProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
@@ -56,7 +56,7 @@ public class GoogleCalendarClient implements CalendarProviderClient {
         form.add("grant_type", "authorization_code");
 
         try {
-            GoogleTokenResponse token = web.post()
+            GoogleTokenDto token = web.post()
                     .uri(URI.create("https://oauth2.googleapis.com/token"))
                     .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                     .body(BodyInserters.fromFormData(form))
@@ -74,7 +74,7 @@ public class GoogleCalendarClient implements CalendarProviderClient {
                                         return new OAuthTokenExchangeException(
                                                 "Google token exchange failed: " + codeName);
                                     }))
-                    .bodyToMono(GoogleTokenResponse.class)
+                    .bodyToMono(GoogleTokenDto.class)
                     .timeout(TOKEN_TIMEOUT)
                     .block();
 
@@ -102,6 +102,27 @@ public class GoogleCalendarClient implements CalendarProviderClient {
 
     private static String truncate(String s, int max) {
         return (s == null ? "" : (s.length() <= max ? s : s.substring(0, max) + "…"));
+    }
+
+    private static class GoogleTokenDto {
+        @JsonProperty("access_token")
+        private String accessToken;
+        @JsonProperty("refresh_token")
+        private String refreshToken;
+        @JsonProperty("expires_in")
+        private Long expiresInSeconds;
+
+        public String getAccessToken() {
+            return accessToken;
+        }
+
+        public String getRefreshToken() {
+            return refreshToken;
+        }
+
+        public Long getExpiresInSeconds() {
+            return expiresInSeconds;
+        }
     }
 
     @Override
