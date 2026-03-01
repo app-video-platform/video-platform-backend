@@ -38,6 +38,8 @@ public class ProductConverter {
         dto.setPrice(product.getPrice().toPlainString());
         dto.setUserId(product.getUser().getUserId());
         dto.setType(product.getType().name());
+        dto.setCreatedAt(product.getCreatedAt());
+        dto.setUpdatedAt(product.getUpdatedAt() != null ? product.getUpdatedAt() : product.getCreatedAt());
 
         return dto;
     }

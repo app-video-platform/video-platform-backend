@@ -72,6 +72,8 @@ public class ConsultationProductConverter {
                 : entity.getPrice().toString());
         dto.setType(entity.getType() != null ? entity.getType().name() : ProductType.CONSULTATION.name());
         dto.setUserId(entity.getUser().getUserId());
+        dto.setCreatedAt(entity.getCreatedAt());
+        dto.setUpdatedAt(entity.getUpdatedAt() != null ? entity.getUpdatedAt() : entity.getCreatedAt());
 
         ConsultationProductDetailsDto details = new ConsultationProductDetailsDto();
         details.setDurationMinutes(entity.getDurationMinutes());

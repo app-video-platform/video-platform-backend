@@ -18,7 +18,8 @@ public interface CourseProductRepository extends JpaRepository<CourseProduct, UU
       SELECT DISTINCT cp
       FROM   CourseProduct cp
       LEFT   JOIN FETCH cp.sections sec
-      LEFT   JOIN FETCH sec.lessons
+      LEFT   JOIN FETCH sec.lessons lesson
+      LEFT   JOIN FETCH lesson.quiz
       WHERE  cp.id = :id
     """)
     Optional<CourseProduct> findFullById(@Param("id") UUID id);

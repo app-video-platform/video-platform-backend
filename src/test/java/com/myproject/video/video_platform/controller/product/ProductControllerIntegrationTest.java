@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.myproject.video.video_platform.dto.products.course.CourseLessonCreateRequestDto;
 import com.myproject.video.video_platform.dto.products.course.CourseProductRequestDto;
 import com.myproject.video.video_platform.dto.products.course.CourseSectionCreateRequestDto;
+import com.myproject.video.video_platform.dto.products.course.CourseSectionUpdateRequestDto;
 import com.myproject.video.video_platform.dto.products.download.DownloadProductDetailsRequestDto;
 import com.myproject.video.video_platform.dto.products.download.DownloadProductRequestDto;
 import com.myproject.video.video_platform.dto.products.download.SectionDownloadProductRequestDto;
@@ -34,6 +35,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -43,6 +45,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -454,6 +457,54 @@ class ProductControllerIntegrationTest {
         }
         assertNotNull(module1, "Expected Module 1 section in course details");
         assertEquals("Intro", module1.at("/lessons/0/title").asText());
+        assertTrue(product.hasNonNull("createdAt"));
+        assertTrue(product.hasNonNull("updatedAt"));
+    }
+
+    @Test
+    void getAllProductsForUser_courseUpdatedAt_changesWhenSectionChanges() throws Exception {
+        User owner = persistUser("owner@example.com");
+        currentUser.set(owner.getUserId());
+
+        UUID courseId = createCourseProduct(owner);
+
+        JsonNode firstFetch = getProductsForUser(owner).get(0);
+        LocalDateTime firstUpdatedAt = LocalDateTime.parse(firstFetch.get("updatedAt").asText());
+
+        CourseSectionCreateRequestDto createSectionDto = new CourseSectionCreateRequestDto();
+        createSectionDto.setTitle("Module");
+        createSectionDto.setDescription("Desc");
+        createSectionDto.setPosition(2);
+        createSectionDto.setProductId(courseId.toString());
+        createSectionDto.setUserId(owner.getUserId().toString());
+
+        MvcResult createSectionResult = mockMvc.perform(post("/api/products/course/section")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createSectionDto)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        String sectionId = objectMapper.readTree(createSectionResult.getResponse().getContentAsString())
+                .get("id")
+                .asText();
+
+        CourseSectionUpdateRequestDto updateSectionDto = new CourseSectionUpdateRequestDto();
+        updateSectionDto.setId(sectionId);
+        updateSectionDto.setTitle("Module Updated");
+        updateSectionDto.setDescription("Updated description");
+        updateSectionDto.setPosition(2);
+        updateSectionDto.setProductId(courseId.toString());
+        updateSectionDto.setUserId(owner.getUserId().toString());
+
+        mockMvc.perform(put("/api/products/course/section")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateSectionDto)))
+                .andExpect(status().isOk());
+
+        JsonNode secondFetch = getProductsForUser(owner).get(0);
+        LocalDateTime secondUpdatedAt = LocalDateTime.parse(secondFetch.get("updatedAt").asText());
+
+        assertFalse(secondUpdatedAt.isBefore(firstUpdatedAt));
     }
 
     @Test
@@ -564,6 +615,14 @@ class ProductControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
+        return objectMapper.readTree(result.getResponse().getContentAsString());
+    }
+
+    private JsonNode getProductsForUser(User owner) throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/products")
+                        .param("userId", owner.getUserId().toString()))
+                .andExpect(status().isOk())
+                .andReturn();
         return objectMapper.readTree(result.getResponse().getContentAsString());
     }
 

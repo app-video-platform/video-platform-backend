@@ -7,6 +7,7 @@ import com.myproject.video.video_platform.dto.s3_files.PresignedUrlResponseDto;
 import com.myproject.video.video_platform.entity.products.download.FileDownloadProduct;
 import com.myproject.video.video_platform.entity.products.download.SectionDownloadProduct;
 import com.myproject.video.video_platform.exception.product.ResourceNotFoundException;
+import com.myproject.video.video_platform.repository.products.download.DownloadProductRepository;
 import com.myproject.video.video_platform.repository.products.download.FileDownloadProductRepository;
 import com.myproject.video.video_platform.repository.products.download.SectionDownloadProductRepository;
 import com.myproject.video.video_platform.service.digitalocean.SpacesS3Service;
@@ -34,6 +35,7 @@ public class FilesService {
 
     private final SpacesS3Service spacesS3Service;
     private final SectionDownloadProductRepository sectionRepository;
+    private final DownloadProductRepository downloadProductRepository;
     private final FileDownloadProductRepository fileRepository;
     private final CurrentUserService currentUserService;
 
@@ -111,6 +113,8 @@ public class FilesService {
         fileEntity.setUploadedAt(LocalDateTime.now());
         fileEntity.setDownloadCount(0);
         fileEntity = fileRepository.save(fileEntity);
+        section.getDownloadProduct().setUpdatedAt(LocalDateTime.now());
+        downloadProductRepository.save(section.getDownloadProduct());
 
         FileS3UploadResponseDto resp = new FileS3UploadResponseDto();
         resp.setFileId  (fileEntity.getId().toString());

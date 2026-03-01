@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -43,4 +44,8 @@ public abstract class AbstractProductResponseDto {
     private String price;
     @Schema(description = "Owner user identifier", example = "738297f1-45fb-4f5f-98a5-6d0eb0a8f542")
     private UUID userId;
+    @Schema(description = "Creation timestamp", example = "2024-03-28T11:24:00")
+    private LocalDateTime createdAt;
+    @Schema(description = "Last product activity timestamp (includes child updates)", example = "2024-04-02T09:15:30")
+    private LocalDateTime updatedAt;
 }

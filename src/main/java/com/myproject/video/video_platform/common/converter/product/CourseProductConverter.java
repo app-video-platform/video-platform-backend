@@ -13,6 +13,9 @@ import com.myproject.video.video_platform.entity.products.course.CourseSection;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -66,6 +69,8 @@ public class CourseProductConverter {
                         ? "free"
                         : course.getPrice().toString()
         );
+        dto.setCreatedAt(course.getCreatedAt());
+        dto.setUpdatedAt(resolveLastUpdatedAt(course));
 
 
         if (course.getSections() != null) {
@@ -85,6 +90,8 @@ public class CourseProductConverter {
         secDto.setId(section.getId().toString());
         secDto.setTitle(section.getTitle());
         secDto.setPosition(section.getPosition());
+        secDto.setDescription(section.getDescription());
+        secDto.setProductId(section.getCourse().getId().toString());
 
         if (section.getLessons() != null) {
             List<CourseLessonResponseDto> lessonDtos = section.getLessons().stream()
@@ -103,6 +110,48 @@ public class CourseProductConverter {
         dto.setType(lesson.getType().name());
         dto.setPosition(lesson.getPosition());
         return dto;
+    }
+
+    private LocalDateTime resolveLastUpdatedAt(CourseProduct course) {
+        LocalDateTime lastUpdated = latest(course.getCreatedAt(), course.getUpdatedAt());
+
+        if (course.getSections() == null) {
+            return lastUpdated;
+        }
+
+        for (CourseSection section : course.getSections()) {
+            lastUpdated = latest(lastUpdated, section.getCreatedAt(), section.getUpdatedAt());
+
+            if (section.getLessons() == null) {
+                continue;
+            }
+            for (CourseLesson lesson : section.getLessons()) {
+                lastUpdated = latest(lastUpdated, lesson.getCreatedAt(), lesson.getUpdatedAt());
+                if (lesson.getQuiz() != null) {
+                    lastUpdated = latest(
+                            lastUpdated,
+                            asLocalDateTime(lesson.getQuiz().getCreatedAt()),
+                            asLocalDateTime(lesson.getQuiz().getUpdatedAt())
+                    );
+                }
+            }
+        }
+
+        return lastUpdated;
+    }
+
+    private LocalDateTime latest(LocalDateTime base, LocalDateTime... candidates) {
+        LocalDateTime latest = base;
+        for (LocalDateTime candidate : candidates) {
+            if (candidate != null && (latest == null || candidate.isAfter(latest))) {
+                latest = candidate;
+            }
+        }
+        return latest;
+    }
+
+    private LocalDateTime asLocalDateTime(Instant timestamp) {
+        return timestamp == null ? null : LocalDateTime.ofInstant(timestamp, ZoneOffset.UTC);
     }
 
     public void applyCourseUpdateDto(CourseProduct existing, CourseProductRequestDto dto) {

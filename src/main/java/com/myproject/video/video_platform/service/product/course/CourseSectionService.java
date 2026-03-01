@@ -15,6 +15,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -52,6 +53,7 @@ public class CourseSectionService {
 
         course.getSections().add(section);
         section = sectionRepo.save(section);
+        touchProductUpdatedAt(course);
 
         CourseSectionResponseDto resp = new CourseSectionResponseDto();
         resp.setId(section.getId().toString());
@@ -86,6 +88,7 @@ public class CourseSectionService {
             section.setPosition(dto.getPosition());
         }
         sectionRepo.save(section);
+        touchProductUpdatedAt(section.getCourse());
     }
 
     public void deleteSection(String id) {
@@ -96,10 +99,17 @@ public class CourseSectionService {
             if (!sectionOptional.get().getCourse().getUser().getUserId().equals(currentUserId))
                 throw new AccessDeniedException("You don’t own this product.");
 
+            CourseProduct course = sectionOptional.get().getCourse();
             sectionRepo.delete(sectionOptional.get());
+            touchProductUpdatedAt(course);
             log.info("Deleted succesfully a Course section: {}", id);
         } else
             throw new ResourceNotFoundException("Course section not found for ID: " + id);
 
+    }
+
+    private void touchProductUpdatedAt(CourseProduct course) {
+        course.setUpdatedAt(LocalDateTime.now());
+        courseRepo.save(course);
     }
 }

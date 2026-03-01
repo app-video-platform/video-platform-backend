@@ -3,9 +3,11 @@ package com.myproject.video.video_platform.service.product.course.quiz;
 import com.myproject.video.video_platform.common.enums.products.course.LessonType;
 import com.myproject.video.video_platform.dto.products.course.quiz.QuizDraftDto;
 import com.myproject.video.video_platform.entity.products.course.CourseLesson;
+import com.myproject.video.video_platform.entity.products.course.CourseProduct;
 import com.myproject.video.video_platform.entity.products.course.quiz.Quiz;
 import com.myproject.video.video_platform.exception.product.QuizValidationException;
 import com.myproject.video.video_platform.exception.product.ResourceNotFoundException;
+import com.myproject.video.video_platform.repository.products.course.CourseProductRepository;
 import com.myproject.video.video_platform.repository.products.course.CourseLessonRepository;
 import com.myproject.video.video_platform.repository.products.course.quiz.QuizRepository;
 import com.myproject.video.video_platform.service.user.CurrentUserService;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -22,6 +25,7 @@ import java.util.UUID;
 public class LessonQuizAuthoringService {
 
     private final CourseLessonRepository lessonRepository;
+    private final CourseProductRepository courseRepository;
     private final QuizRepository quizRepository;
     private final CurrentUserService currentUserService;
     private final QuizValidator quizValidator;
@@ -59,6 +63,9 @@ public class LessonQuizAuthoringService {
         quizMapper.applyDraft(quiz, dto, lesson);
         Quiz saved = quizRepository.save(quiz);
         lesson.setQuiz(saved);
+        lesson.setUpdatedAt(LocalDateTime.now());
+        lessonRepository.save(lesson);
+        touchProductUpdatedAt(lesson.getSection().getCourse());
         return quizMapper.toAuthoringDto(saved);
     }
 
@@ -73,7 +80,10 @@ public class LessonQuizAuthoringService {
             throw new ResourceNotFoundException("Quiz not found for lesson " + lessonId);
         }
         lesson.setQuiz(null);
+        lesson.setUpdatedAt(LocalDateTime.now());
+        lessonRepository.save(lesson);
         quizRepository.delete(quiz);
+        touchProductUpdatedAt(lesson.getSection().getCourse());
     }
 
     private CourseLesson requireLesson(UUID lessonId) {
@@ -95,5 +105,10 @@ public class LessonQuizAuthoringService {
                     "lessonId", "Lesson is not of type QUIZ")
             );
         }
+    }
+
+    private void touchProductUpdatedAt(CourseProduct course) {
+        course.setUpdatedAt(LocalDateTime.now());
+        courseRepository.save(course);
     }
 }

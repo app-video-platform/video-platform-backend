@@ -4,9 +4,11 @@ import com.myproject.video.video_platform.common.enums.products.course.LessonTyp
 import com.myproject.video.video_platform.dto.products.course.CourseLessonCreateRequestDto;
 import com.myproject.video.video_platform.dto.products.course.CourseLessonResponseDto;
 import com.myproject.video.video_platform.dto.products.course.CourseLessonUpdateRequestDto;
+import com.myproject.video.video_platform.entity.products.course.CourseProduct;
 import com.myproject.video.video_platform.entity.products.course.CourseLesson;
 import com.myproject.video.video_platform.entity.products.course.CourseSection;
 import com.myproject.video.video_platform.exception.product.ResourceNotFoundException;
+import com.myproject.video.video_platform.repository.products.course.CourseProductRepository;
 import com.myproject.video.video_platform.repository.products.course.CourseLessonRepository;
 import com.myproject.video.video_platform.repository.products.course.CourseSectionRepository;
 import com.myproject.video.video_platform.service.user.CurrentUserService;
@@ -16,6 +18,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,6 +27,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CourseLessonService {
 
+    private final CourseProductRepository courseRepo;
     private final CourseSectionRepository sectionRepo;
     private final CourseLessonRepository lessonRepo;
     private final CurrentUserService currentUserService;
@@ -59,6 +63,7 @@ public class CourseLessonService {
 
         section.getLessons().add(lesson);
         lessonRepo.save(lesson); // cascade saves lesson
+        touchProductUpdatedAt(section.getCourse());
 
         CourseLessonResponseDto resp = new CourseLessonResponseDto();
         resp.setId(lesson.getId().toString());
@@ -93,6 +98,7 @@ public class CourseLessonService {
             lesson.setPosition(dto.getPosition());
         }
         lessonRepo.save(lesson);
+        touchProductUpdatedAt(lesson.getSection().getCourse());
     }
 
     public void deleteLesson(String userId, String lessonId) {
@@ -104,7 +110,9 @@ public class CourseLessonService {
             if (!lessonOptional.get().getSection().getCourse().getUser().getUserId().equals(currentUserId))
                 throw new AccessDeniedException("You don’t own this product.");
 
+            CourseProduct course = lessonOptional.get().getSection().getCourse();
             lessonRepo.delete(lessonOptional.get());
+            touchProductUpdatedAt(course);
             log.info("Deleted succesfully a Course lesson: {}", lessonId);
         } else
             throw new ResourceNotFoundException("Course lesson not found for ID: " + lessonId);
@@ -126,5 +134,10 @@ public class CourseLessonService {
                 lesson.setContent(null);
             }
         }
+    }
+
+    private void touchProductUpdatedAt(CourseProduct course) {
+        course.setUpdatedAt(LocalDateTime.now());
+        courseRepo.save(course);
     }
 }

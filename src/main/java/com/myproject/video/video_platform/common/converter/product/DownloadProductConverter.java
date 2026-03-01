@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -81,6 +82,8 @@ public class DownloadProductConverter {
         dto.setStatus(product.getStatus().toString());
         dto.setPrice(product.getPrice().compareTo(BigDecimal.ZERO) == 0 ? "free" : product.getPrice().toString());
         dto.setUserId(product.getUser().getUserId());
+        dto.setCreatedAt(product.getCreatedAt());
+        dto.setUpdatedAt(resolveLastUpdatedAt(product));
 
         if (product.getSectionDownloadProducts() != null) {
             List<SectionDownloadProductResponseDto> sections = product.getSectionDownloadProducts()
@@ -120,6 +123,28 @@ public class DownloadProductConverter {
 
         dto.setUrl(String.format("%s/%s/%s", cdnEndpoint, bucketName, f.getPath()));
         return dto;
+    }
+
+    private LocalDateTime resolveLastUpdatedAt(DownloadProduct product) {
+        LocalDateTime lastUpdated =
+                product.getUpdatedAt() != null ? product.getUpdatedAt() : product.getCreatedAt();
+
+        if (product.getSectionDownloadProducts() == null) {
+            return lastUpdated;
+        }
+
+        for (SectionDownloadProduct section : product.getSectionDownloadProducts()) {
+            if (section.getFiles() == null) {
+                continue;
+            }
+            for (FileDownloadProduct file : section.getFiles()) {
+                LocalDateTime uploadedAt = file.getUploadedAt();
+                if (uploadedAt != null && (lastUpdated == null || uploadedAt.isAfter(lastUpdated))) {
+                    lastUpdated = uploadedAt;
+                }
+            }
+        }
+        return lastUpdated;
     }
 
     private ProductStatus parseStatus(String statusStr) {
