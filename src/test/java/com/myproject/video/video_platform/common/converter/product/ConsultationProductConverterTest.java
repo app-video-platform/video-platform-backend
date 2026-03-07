@@ -20,6 +20,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ConsultationProductConverterTest {
 
@@ -154,5 +155,32 @@ class ConsultationProductConverterTest {
         assertEquals(cal.getId().toString(), dto.getDetails().getConnectedCalendars().get(0).getId());
         assertEquals("GOOGLE", dto.getDetails().getConnectedCalendars().get(0).getProvider());
     }
-}
 
+    @Test
+    void meetingMethod_fromJson_supportsAllKnownAliases() {
+        assertEquals(ConsultationProductDetailsDto.MeetingMethod.ZOOM,
+                ConsultationProductDetailsDto.MeetingMethod.fromJson("ZOOM"));
+        assertEquals(ConsultationProductDetailsDto.MeetingMethod.ZOOM,
+                ConsultationProductDetailsDto.MeetingMethod.fromJson("zoom_meeting"));
+
+        assertEquals(ConsultationProductDetailsDto.MeetingMethod.GOOGLE_MEET,
+                ConsultationProductDetailsDto.MeetingMethod.fromJson("GOOGLE"));
+        assertEquals(ConsultationProductDetailsDto.MeetingMethod.GOOGLE_MEET,
+                ConsultationProductDetailsDto.MeetingMethod.fromJson("google_meet"));
+
+        assertEquals(ConsultationProductDetailsDto.MeetingMethod.PHONE,
+                ConsultationProductDetailsDto.MeetingMethod.fromJson("PHONE"));
+        assertEquals(ConsultationProductDetailsDto.MeetingMethod.PHONE,
+                ConsultationProductDetailsDto.MeetingMethod.fromJson("telephone"));
+
+        assertEquals(ConsultationProductDetailsDto.MeetingMethod.OTHER,
+                ConsultationProductDetailsDto.MeetingMethod.fromJson("OTHER"));
+        assertEquals(ConsultationProductDetailsDto.MeetingMethod.OTHER,
+                ConsultationProductDetailsDto.MeetingMethod.fromJson("custom"));
+
+        assertNull(ConsultationProductDetailsDto.MeetingMethod.fromJson(null));
+        assertNull(ConsultationProductDetailsDto.MeetingMethod.fromJson(" "));
+        assertThrows(IllegalArgumentException.class,
+                () -> ConsultationProductDetailsDto.MeetingMethod.fromJson("TEAMS"));
+    }
+}

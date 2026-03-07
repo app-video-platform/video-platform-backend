@@ -1,5 +1,6 @@
 package com.myproject.video.video_platform.dto.products.consultation;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.myproject.video.video_platform.dto.products.AbstractProductRequestDto;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -13,5 +14,6 @@ import lombok.EqualsAndHashCode;
 public class ConsultationProductRequestDto extends AbstractProductRequestDto {
 
     @Schema(description = "Consultation-specific fields nested under product.details")
+    @JsonAlias("consultationDetails")
     private ConsultationProductDetailsDto details;
 }

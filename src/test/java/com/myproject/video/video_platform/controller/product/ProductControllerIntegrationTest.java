@@ -2,6 +2,7 @@ package com.myproject.video.video_platform.controller.product;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.myproject.video.video_platform.dto.products.course.CourseLessonCreateRequestDto;
 import com.myproject.video.video_platform.dto.products.course.CourseProductRequestDto;
 import com.myproject.video.video_platform.dto.products.course.CourseSectionCreateRequestDto;
@@ -426,6 +427,45 @@ class ProductControllerIntegrationTest {
                 .andExpect(jsonPath("$.name").value("Consult updated"))
                 .andExpect(jsonPath("$.details.durationMinutes").value(60))
                 .andExpect(jsonPath("$.details.meetingMethod").value("ZOOM"));
+    }
+
+    @Test
+    void updateConsultationProduct_withConsultationDetailsAlias_persistsDetails() throws Exception {
+        User owner = persistUser("owner@example.com");
+        currentUser.set(owner.getUserId());
+        UUID consultationId = createConsultationProduct(owner);
+
+        ObjectNode update = objectMapper.createObjectNode();
+        update.put("id", consultationId.toString());
+        update.put("type", "CONSULTATION");
+        update.put("name", "Call?");
+        update.put("description", "");
+        update.put("price", "free");
+        update.put("status", "DRAFT");
+        update.put("userId", owner.getUserId().toString());
+
+        ObjectNode consultationDetails = objectMapper.createObjectNode();
+        consultationDetails.put("bufferAfterMinutes", 69);
+        consultationDetails.put("bufferBeforeMinutes", 69);
+        consultationDetails.put("cancellationPolicy", "full_24h");
+        consultationDetails.put("confirmationMessage", "Helllo!!");
+        consultationDetails.put("customLocation", "");
+        consultationDetails.put("durationMinutes", 65);
+        consultationDetails.put("maxSessionsPerDay", 69);
+        consultationDetails.put("meetingMethod", "GOOGLE");
+        update.set("consultationDetails", consultationDetails);
+
+        mockMvc.perform(put("/api/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(update)))
+                .andExpect(status().isAccepted())
+                .andExpect(jsonPath("$.details.durationMinutes").value(65))
+                .andExpect(jsonPath("$.details.meetingMethod").value("GOOGLE_MEET"))
+                .andExpect(jsonPath("$.details.bufferBeforeMinutes").value(69))
+                .andExpect(jsonPath("$.details.bufferAfterMinutes").value(69))
+                .andExpect(jsonPath("$.details.maxSessionsPerDay").value(69))
+                .andExpect(jsonPath("$.details.confirmationMessage").value("Helllo!!"))
+                .andExpect(jsonPath("$.details.cancellationPolicy").value("full_24h"));
     }
 
     @Test
