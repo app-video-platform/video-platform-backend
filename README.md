@@ -9,10 +9,11 @@ A **Spring Boot** application deployed via **Dokku** on a **DigitalOcean Droplet
 4. [Install Dokku](#install-dokku)  
 5. [Configure PostgreSQL](#configure-postgresql)  
 6. [Deploying the App](#deploying-the-app)  
-7. [Port Mapping & Nginx](#port-mapping--nginx)  
-8. [Common Issues](#common-issues)  
-9. [Local Development](#local-development)  
-10. [License](#license)
+7. [GitHub Actions Auto Deploy](#github-actions-auto-deploy)  
+8. [Port Mapping & Nginx](#port-mapping--nginx)  
+9. [Common Issues](#common-issues)  
+10. [Local Development](#local-development)  
+11. [License](#license)
 
 ---
 
@@ -90,6 +91,34 @@ This project is a **Spring Boot** application designed to handle video platform 
   # system.properties
   java.runtime.version=17
   ```
+
+---
+
+## GitHub Actions Auto Deploy
+This repository includes a CI/CD workflow at `.github/workflows/ci-cd-dokku.yml`.
+
+- On `push` and `pull_request` to `main`, it runs `./mvnw -B -ntp test`.
+- On `push` to `main`, it deploys to Dokku only if tests pass.
+
+Set these repository **Secrets** in GitHub:
+- `DOKKU_HOST` (example: `123.45.67.89`)
+- `DOKKU_APP_NAME` (example: `video-platform`)
+- `DOKKU_SSH_PRIVATE_KEY` (private key content used by GitHub Actions)
+- `DOKKU_SSH_PORT` (optional, default `22`)
+
+Optional repository **Variable**:
+- `DOKKU_DEPLOY_BRANCH` (default is `main`)
+
+Example key setup:
+```bash
+# Generate a dedicated deploy key pair (run locally)
+ssh-keygen -t ed25519 -C "github-actions-dokku" -f dokku_ci_key -N ""
+
+# Add the public key to Dokku (run on your server)
+dokku ssh-keys:add github-actions "$(cat dokku_ci_key.pub)"
+```
+
+Then copy the content of `dokku_ci_key` into GitHub secret `DOKKU_SSH_PRIVATE_KEY`.
 
 ---
 
