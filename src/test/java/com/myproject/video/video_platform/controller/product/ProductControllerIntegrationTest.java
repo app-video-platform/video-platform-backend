@@ -466,6 +466,15 @@ class ProductControllerIntegrationTest {
                 .andExpect(jsonPath("$.details.maxSessionsPerDay").value(69))
                 .andExpect(jsonPath("$.details.confirmationMessage").value("Helllo!!"))
                 .andExpect(jsonPath("$.details.cancellationPolicy").value("full_24h"));
+
+        mockMvc.perform(get("/api/products/getProduct")
+                        .param("productId", consultationId.toString())
+                        .param("type", "CONSULTATION"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.details.meetingMethod").value("GOOGLE_MEET"))
+                .andExpect(jsonPath("$.details.durationMinutes").value(65))
+                .andExpect(jsonPath("$.details.bufferBeforeMinutes").value(69))
+                .andExpect(jsonPath("$.details.bufferAfterMinutes").value(69));
     }
 
     @Test
