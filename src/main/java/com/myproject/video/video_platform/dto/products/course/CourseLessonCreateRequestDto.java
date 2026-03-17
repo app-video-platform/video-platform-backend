@@ -23,6 +23,8 @@ public class CourseLessonCreateRequestDto {
     private String videoUrl;
     @Schema(description = "Rich text content when the lesson is ARTICLE", example = "<p>Outline your talking points...</p>")
     private String content;
+    @Schema(description = "Lesson description", example = "Outline the objective of this lesson.")
+    private String description;
     @Schema(description = "Optional explicit ordering", example = "1")
     private Integer position;
 }

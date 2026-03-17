@@ -102,6 +102,9 @@ class CourseProductConverterTest {
         lesson.setId(UUID.randomUUID());
         lesson.setTitle("Lesson");
         lesson.setType(LessonType.VIDEO);
+        lesson.setVideoUrl("https://cdn.example.com/video.mp4");
+        lesson.setContent(null);
+        lesson.setDescription("Lesson description");
         lesson.setPosition(1);
         lesson.setSection(section);
         section.setLessons(Set.of(lesson));
@@ -118,9 +121,9 @@ class CourseProductConverterTest {
         assertEquals(1, dto.getDetails().getSections().get(0).getLessons().size());
         assertEquals("Lesson", dto.getDetails().getSections().get(0).getLessons().get(0).getTitle());
         assertEquals("VIDEO", dto.getDetails().getSections().get(0).getLessons().get(0).getType());
-        assertNull(dto.getDetails().getSections().get(0).getLessons().get(0).getVideoUrl(), "Course response maps lesson summaries only");
-        assertNull(dto.getDetails().getSections().get(0).getLessons().get(0).getContent(), "Course response maps lesson summaries only");
+        assertEquals("https://cdn.example.com/video.mp4", dto.getDetails().getSections().get(0).getLessons().get(0).getVideoUrl());
+        assertNull(dto.getDetails().getSections().get(0).getLessons().get(0).getContent());
+        assertEquals("Lesson description", dto.getDetails().getSections().get(0).getLessons().get(0).getDescription());
         assertTrue(dto.getPrice().equals("10") || dto.getPrice().equals("10.0") || dto.getPrice().equals("10.00"));
     }
 }
-

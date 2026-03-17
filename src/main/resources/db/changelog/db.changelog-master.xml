@@ -31,5 +31,6 @@
     <include file="db/changelog/scripts/25-drop_quiz_title_description.sql" />
     <include file="db/changelog/scripts/26-add_quiz_shuffle.sql" />
     <include file="db/changelog/scripts/27-add-course-content-timestamps.sql" />
+    <include file="db/changelog/scripts/28-add-course-lesson-description.sql" />
 
 </databaseChangeLog>

@@ -22,6 +22,8 @@ public class CourseLessonUpdateRequestDto {
     private String videoUrl;
     @Schema(description = "Lesson article content when applicable", example = "<p>Outline your talking points...</p>")
     private String content;
+    @Schema(description = "Lesson description", example = "Outline the objective of this lesson.")
+    private String description;
     @Schema(description = "Relative ordering inside the section", example = "1")
     private Integer position;
 }

@@ -47,6 +47,9 @@ public class CourseLesson {
     @Column(columnDefinition = "TEXT")
     private String content;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
     private Integer position;
 
     @CreationTimestamp

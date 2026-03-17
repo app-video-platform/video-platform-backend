@@ -16,6 +16,8 @@ public class CourseLessonResponseDto {
     private String videoUrl;
     @Schema(description = "Lesson article content when type is ARTICLE", example = "<p>Outline your talking points...</p>")
     private String content;
+    @Schema(description = "Lesson description shown in the editor", example = "Outline the objective of this lesson.")
+    private String description;
     @Schema(description = "Relative ordering inside the section", example = "1")
     private Integer position;
 }

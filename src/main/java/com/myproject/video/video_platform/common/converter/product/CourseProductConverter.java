@@ -108,6 +108,9 @@ public class CourseProductConverter {
         dto.setId(lesson.getId().toString());
         dto.setTitle(lesson.getTitle());
         dto.setType(lesson.getType().name());
+        dto.setVideoUrl(lesson.getVideoUrl());
+        dto.setContent(lesson.getContent());
+        dto.setDescription(lesson.getDescription());
         dto.setPosition(lesson.getPosition());
         return dto;
     }

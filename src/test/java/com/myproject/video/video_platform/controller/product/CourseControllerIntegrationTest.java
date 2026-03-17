@@ -112,6 +112,7 @@ class CourseControllerIntegrationTest {
         create.setUserId(owner.getUserId().toString());
         create.setVideoUrl("https://cdn.example.com/video.mp4");
         create.setContent("<p>ignored</p>");
+        create.setDescription("Initial description");
 
         MvcResult created = mockMvc.perform(post("/api/products/course/section/lesson")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -123,11 +124,13 @@ class CourseControllerIntegrationTest {
         UUID lessonId = UUID.fromString(createdJson.get("id").asText());
         assertEquals("VIDEO", createdJson.get("type").asText());
         assertEquals("https://cdn.example.com/video.mp4", createdJson.get("videoUrl").asText());
+        assertEquals("Initial description", createdJson.get("description").asText());
         assertTrue(createdJson.path("content").isMissingNode() || createdJson.path("content").isNull());
 
         CourseLesson lessonEntity = courseLessonRepository.findById(lessonId).orElseThrow();
         assertNotNull(lessonEntity.getVideoUrl());
         assertNull(lessonEntity.getContent());
+        assertEquals("Initial description", lessonEntity.getDescription());
 
         CourseLessonUpdateRequestDto update = new CourseLessonUpdateRequestDto();
         update.setId(lessonId.toString());
@@ -136,6 +139,7 @@ class CourseControllerIntegrationTest {
         update.setType("ARTICLE");
         update.setContent("<p>Hello</p>");
         update.setVideoUrl("https://should.be.cleared");
+        update.setDescription("Updated description");
 
         mockMvc.perform(put("/api/products/course/section/lesson")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -147,6 +151,7 @@ class CourseControllerIntegrationTest {
         assertEquals("ARTICLE", updatedEntity.getType().name());
         assertEquals("<p>Hello</p>", updatedEntity.getContent());
         assertNull(updatedEntity.getVideoUrl());
+        assertEquals("Updated description", updatedEntity.getDescription());
     }
 
     @Test

@@ -54,6 +54,7 @@ public class CourseLessonService {
         LessonType lessonType = LessonType.valueOf(dto.getType().toUpperCase());
         lesson.setType(lessonType);
         applyLessonContent(lesson, lessonType, dto.getVideoUrl(), dto.getContent());
+        lesson.setDescription(dto.getDescription());
         lesson.setPosition(
                 dto.getPosition() == null
                         ? section.getLessons().size() + 1
@@ -71,6 +72,7 @@ public class CourseLessonService {
         resp.setType(lesson.getType().name());
         resp.setVideoUrl(lesson.getVideoUrl());
         resp.setContent(lesson.getContent());
+        resp.setDescription(lesson.getDescription());
         resp.setPosition(lesson.getPosition());
         return resp;
     }
@@ -94,6 +96,7 @@ public class CourseLessonService {
         LessonType newType = LessonType.valueOf(dto.getType().toUpperCase());
         lesson.setType(newType);
         applyLessonContent(lesson, newType, dto.getVideoUrl(), dto.getContent());
+        lesson.setDescription(dto.getDescription());
         if (dto.getPosition() != null) {
             lesson.setPosition(dto.getPosition());
         }

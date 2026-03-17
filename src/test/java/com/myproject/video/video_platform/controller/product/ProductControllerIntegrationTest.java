@@ -138,6 +138,37 @@ class ProductControllerIntegrationTest {
     }
 
     @Test
+    void getProduct_courseIncludesLessonDescriptionInDetails() throws Exception {
+        User owner = persistUser("owner@example.com");
+        currentUser.set(owner.getUserId());
+
+        UUID courseId = createCourseProduct(owner);
+        UUID draftSectionId = getDraftSectionId(courseId);
+
+        CourseLessonCreateRequestDto create = new CourseLessonCreateRequestDto();
+        create.setTitle("Article lesson");
+        create.setType("ARTICLE");
+        create.setSectionId(draftSectionId.toString());
+        create.setUserId(owner.getUserId().toString());
+        create.setContent("<p>Hello</p>");
+        create.setDescription("Returned from getProduct");
+
+        mockMvc.perform(post("/api/products/course/section/lesson")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(create)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/products/getProduct")
+                        .param("productId", courseId.toString())
+                        .param("type", "COURSE"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.details.sections[0].lessons", hasSize(1)))
+                .andExpect(jsonPath("$.details.sections[0].lessons[0].title").value("Article lesson"))
+                .andExpect(jsonPath("$.details.sections[0].lessons[0].description").value("Returned from getProduct"))
+                .andExpect(jsonPath("$.details.sections[0].lessons[0].content").value("<p>Hello</p>"));
+    }
+
+    @Test
     void createDownloadProduct_withSections_persistsAndReturnsDetails() throws Exception {
         User owner = persistUser("owner@example.com");
         currentUser.set(owner.getUserId());
@@ -655,6 +686,14 @@ class ProductControllerIntegrationTest {
 
         JsonNode json = objectMapper.readTree(result.getResponse().getContentAsString());
         return UUID.fromString(json.get("id").asText());
+    }
+
+    private UUID getDraftSectionId(UUID courseId) {
+        return courseSectionRepository.findAll().stream()
+                .filter(section -> section.getCourse().getId().equals(courseId))
+                .findFirst()
+                .map(section -> section.getId())
+                .orElseThrow();
     }
 
     private JsonNode getProduct(UUID productId, String type) throws Exception {
