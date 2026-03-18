@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -45,11 +46,19 @@ public class ProductsController implements ProductsApiDoc {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping
+    @GetMapping(params = "userId")
     @Override
     public ResponseEntity<List<AbstractProductResponseDto>> getProducts(@RequestParam(name = "userId") String userId) {
         List<AbstractProductResponseDto> response = productService.getAllProductsForUser(userId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping(params = "ownerId")
+    public ResponseEntity<List<ProductMinimised>> getProductsSummary(
+            @RequestParam(name = "ownerId") String ownerId
+    ) {
+        List<ProductMinimised> response = productService.getProductSummariesForOwner(ownerId);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/get-all-products-min")
@@ -76,12 +85,29 @@ public class ProductsController implements ProductsApiDoc {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @GetMapping("/{productId}")
+    public ResponseEntity<AbstractProductResponseDto> getProductById(
+            @PathVariable("productId") String productId
+    ) {
+        AbstractProductResponseDto response = productService.getProductById(productId);
+        return ResponseEntity.ok(response);
+    }
+
     @PutMapping
     @Override
     public ResponseEntity<AbstractProductResponseDto> updateProduct(@RequestBody AbstractProductRequestDto request) {
         log.info("Received update product request: {}", request.toString());
         AbstractProductResponseDto response = productService.updateProduct(request);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+    }
+
+    @PatchMapping("/{productId}")
+    public ResponseEntity<AbstractProductResponseDto> patchProduct(
+            @PathVariable("productId") String productId,
+            @RequestBody(required = false) com.fasterxml.jackson.databind.JsonNode request
+    ) {
+        AbstractProductResponseDto response = productService.patchProduct(productId, request);
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping()
@@ -93,6 +119,12 @@ public class ProductsController implements ProductsApiDoc {
         log.info("Received delete product request: {}", id);
         productService.deleteProduct(userId, id, productType);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body("Product deleted succesfully: " + id);
+    }
+
+    @DeleteMapping("/{productId}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable("productId") String productId) {
+        productService.deleteProductById(productId);
+        return ResponseEntity.noContent().build();
     }
 
     /**

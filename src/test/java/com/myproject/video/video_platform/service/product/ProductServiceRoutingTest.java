@@ -1,5 +1,6 @@
 package com.myproject.video.video_platform.service.product;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.myproject.video.video_platform.common.converter.product.DownloadProductConverter;
 import com.myproject.video.video_platform.common.converter.product.ProductConverter;
 import com.myproject.video.video_platform.common.enums.products.ProductType;
@@ -46,6 +47,8 @@ class ProductServiceRoutingTest {
     private ProductRepository productRepository;
     @Mock
     private ProductConverter productConverter;
+    @Mock
+    private ObjectMapper objectMapper;
 
     @Mock
     private ProductTypeHandler courseHandler;
@@ -68,7 +71,8 @@ class ProductServiceRoutingTest {
                 downloadProductConverter,
                 productRepository,
                 Set.of(courseHandler, downloadHandler, consultationHandler),
-                productConverter
+                productConverter,
+                objectMapper
         );
 
         Mockito.clearInvocations(courseHandler, downloadHandler, consultationHandler);
