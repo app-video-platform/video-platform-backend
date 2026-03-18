@@ -397,6 +397,30 @@ class ProductControllerIntegrationTest {
     }
 
     @Test
+    void patchProductById_updatesCourseMetadataWithoutWipingSectionsAndLessons() throws Exception {
+        User owner = persistUser("owner@example.com");
+        currentUser.set(owner.getUserId());
+
+        UUID courseId = createCourseProduct(owner);
+        UUID sectionId = getDraftSectionId(courseId);
+        createCourseLesson(owner, sectionId, "Intro", "VIDEO");
+
+        ObjectNode patchBody = objectMapper.createObjectNode();
+        patchBody.put("name", "Course renamed");
+        patchBody.put("description", "Updated description");
+
+        mockMvc.perform(patch("/api/products/{productId}", courseId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(patchBody)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Course renamed"))
+                .andExpect(jsonPath("$.details.sections", hasSize(1)))
+                .andExpect(jsonPath("$.details.sections[0].title").value("Draft"))
+                .andExpect(jsonPath("$.details.sections[0].lessons", hasSize(1)))
+                .andExpect(jsonPath("$.details.sections[0].lessons[0].title").value("Intro"));
+    }
+
+    @Test
     void updateDownloadProduct_withEmptySections_clearsSections() throws Exception {
         User owner = persistUser("owner@example.com");
         currentUser.set(owner.getUserId());
@@ -437,6 +461,20 @@ class ProductControllerIntegrationTest {
         mockMvc.perform(get("/api/products/getProduct")
                         .param("productId", courseId.toString())
                         .param("type", "COURSE"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deleteProductById_removesConsultationEntity() throws Exception {
+        User owner = persistUser("owner@example.com");
+        currentUser.set(owner.getUserId());
+
+        UUID consultationId = createConsultationProduct(owner);
+
+        mockMvc.perform(delete("/api/products/{productId}", consultationId))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/products/{productId}", consultationId))
                 .andExpect(status().isNotFound());
     }
 
@@ -690,6 +728,40 @@ class ProductControllerIntegrationTest {
     }
 
     @Test
+    void canonicalSectionEndpoint_onConsultationProduct_returnsConflict() throws Exception {
+        User owner = persistUser("owner@example.com");
+        currentUser.set(owner.getUserId());
+
+        UUID consultationId = createConsultationProduct(owner);
+
+        ObjectNode createBody = objectMapper.createObjectNode();
+        createBody.put("title", "Should fail");
+
+        mockMvc.perform(post("/api/products/{productId}/sections", consultationId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createBody)))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void canonicalSectionEndpoint_rejectsSectionFromDifferentDownloadProduct() throws Exception {
+        User owner = persistUser("owner@example.com");
+        currentUser.set(owner.getUserId());
+
+        UUID firstDownloadId = createDownloadProduct(owner, "Files A");
+        UUID secondDownloadId = createDownloadProduct(owner, "Files B");
+        UUID firstSectionId = getDownloadSectionId(firstDownloadId);
+
+        ObjectNode updateBody = objectMapper.createObjectNode();
+        updateBody.put("title", "Wrong product");
+
+        mockMvc.perform(patch("/api/products/{productId}/sections/{sectionId}", secondDownloadId, firstSectionId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateBody)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void canonicalCourseLessonCrud_supportsCourseProducts() throws Exception {
         User owner = persistUser("owner@example.com");
         currentUser.set(owner.getUserId());
@@ -738,6 +810,26 @@ class ProductControllerIntegrationTest {
     }
 
     @Test
+    void canonicalLessonEndpoint_rejectsSectionFromDifferentCourse() throws Exception {
+        User owner = persistUser("owner@example.com");
+        currentUser.set(owner.getUserId());
+
+        UUID firstCourseId = createCourseProduct(owner);
+        UUID secondCourseId = createCourseProduct(owner);
+        UUID firstSectionId = getDraftSectionId(firstCourseId);
+
+        ObjectNode createBody = objectMapper.createObjectNode();
+        createBody.put("title", "Wrong course lesson");
+        createBody.put("type", "VIDEO");
+        createBody.put("videoUrl", "https://cdn.example.com/video.mp4");
+
+        mockMvc.perform(post("/api/products/{productId}/sections/{sectionId}/lessons", secondCourseId, firstSectionId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createBody)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void canonicalLessonEndpoint_onDownloadProduct_returnsConflict() throws Exception {
         User owner = persistUser("owner@example.com");
         currentUser.set(owner.getUserId());
@@ -753,6 +845,20 @@ class ProductControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createBody)))
                 .andExpect(status().isConflict());
+    }
+
+    @Test
+    void canonicalDownloadFileEndpoints_rejectSectionFromDifferentProduct() throws Exception {
+        User owner = persistUser("owner@example.com");
+        currentUser.set(owner.getUserId());
+
+        UUID firstDownloadId = createDownloadProduct(owner, "Files A");
+        UUID secondDownloadId = createDownloadProduct(owner, "Files B");
+        UUID firstSectionId = getDownloadSectionId(firstDownloadId);
+
+        mockMvc.perform(get("/api/products/{productId}/sections/{sectionId}/files/presigned-url", secondDownloadId, firstSectionId)
+                        .param("filename", "notes.pdf"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
