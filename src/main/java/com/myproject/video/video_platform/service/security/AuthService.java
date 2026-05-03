@@ -2,6 +2,7 @@ package com.myproject.video.video_platform.service.security;
 
 import com.myproject.video.video_platform.dto.authetication.LoginRequest;
 import com.myproject.video.video_platform.dto.authetication.RegisterRequest;
+import com.myproject.video.video_platform.common.enums.user.UserRole;
 import com.myproject.video.video_platform.entity.user.Role;
 import com.myproject.video.video_platform.entity.user.User;
 import com.myproject.video.video_platform.exception.auth.AuthenticationException;
@@ -71,7 +72,7 @@ public class AuthService {
             user.setEnabled(false);
             user.setOnboardingcompleted(false);
 
-            Role userRole = roleRepository.findByRoleName("user");
+            Role userRole = getRequiredDefaultUserRole();
             user.setRoles(Collections.singleton(userRole));
 
             userRepository.save(user);
@@ -183,5 +184,13 @@ public class AuthService {
         csrfCookie.setPath("/");
         csrfCookie.setMaxAge(3600);
         response.addCookie(csrfCookie);
+    }
+
+    private Role getRequiredDefaultUserRole() {
+        Role userRole = roleRepository.findByRoleName(UserRole.USER.name());
+        if (userRole == null) {
+            throw new IllegalStateException("Default role USER is missing from the database");
+        }
+        return userRole;
     }
 }

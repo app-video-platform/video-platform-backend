@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,6 +35,7 @@ public class LessonQuizController implements LessonQuizApiDoc {
     private final LessonQuizPlayerService playerService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('CREATOR','ADMIN')")
     @Override
     public ResponseEntity<QuizDraftDto> getQuizForAuthoring(@PathVariable("lessonId") UUID lessonId) {
         QuizDraftDto quiz = authoringService.getQuiz(lessonId);
@@ -41,6 +43,7 @@ public class LessonQuizController implements LessonQuizApiDoc {
     }
 
     @PutMapping
+    @PreAuthorize("hasAnyRole('CREATOR','ADMIN')")
     @Override
     public ResponseEntity<QuizDraftDto> upsertQuiz(
             @PathVariable("lessonId") UUID lessonId,
@@ -51,6 +54,7 @@ public class LessonQuizController implements LessonQuizApiDoc {
     }
 
     @DeleteMapping
+    @PreAuthorize("hasAnyRole('CREATOR','ADMIN')")
     @Override
     public ResponseEntity<Void> deleteQuiz(@PathVariable("lessonId") UUID lessonId) {
         authoringService.deleteQuiz(lessonId);
@@ -58,6 +62,7 @@ public class LessonQuizController implements LessonQuizApiDoc {
     }
 
     @GetMapping("/play")
+    @PreAuthorize("isAuthenticated()")
     @Override
     public ResponseEntity<QuizDraftDto> getQuizForPlay(@PathVariable("lessonId") UUID lessonId) {
         QuizDraftDto quiz = playerService.getQuizForPlay(lessonId);
@@ -65,6 +70,7 @@ public class LessonQuizController implements LessonQuizApiDoc {
     }
 
     @PostMapping("/submit")
+    @PreAuthorize("isAuthenticated()")
     @Override
     public ResponseEntity<QuizSubmissionResponse> submitQuiz(
             @PathVariable("lessonId") UUID lessonId,

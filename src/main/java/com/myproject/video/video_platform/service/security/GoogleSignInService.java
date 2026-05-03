@@ -4,6 +4,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
+import com.myproject.video.video_platform.common.enums.user.UserRole;
 import com.myproject.video.video_platform.dto.authetication.GoogleLoginRequest;
 import com.myproject.video.video_platform.entity.user.Role;
 import com.myproject.video.video_platform.entity.user.User;
@@ -84,9 +85,9 @@ public class GoogleSignInService {
                 user.setOnboardingcompleted(false);
                 user.setAuthProvider("GOOGLE");
 
-                Role userRole = roleRepository.findByRoleName("User");
+                Role userRole = roleRepository.findByRoleName(UserRole.USER.name());
                 if (userRole == null) {
-                    log.warn("Default role 'user' not found, creating or handle error");
+                    throw new IllegalStateException("Default role USER is missing from the database");
                 }
                 user.setRoles(new HashSet<>(Collections.singleton(userRole)));
                 userRepository.save(user);

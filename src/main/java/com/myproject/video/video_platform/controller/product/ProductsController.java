@@ -7,6 +7,7 @@ import com.myproject.video.video_platform.dto.products.ProductMinimised;
 import com.myproject.video.video_platform.service.product.ProductService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -39,6 +40,7 @@ public class ProductsController implements ProductsApiDoc {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('CREATOR','ADMIN')")
     @Override
     public ResponseEntity<AbstractProductResponseDto> createProduct(@RequestBody AbstractProductRequestDto request) {
         log.info("Received create product request: {}", request);
@@ -94,6 +96,7 @@ public class ProductsController implements ProductsApiDoc {
     }
 
     @PutMapping
+    @PreAuthorize("hasAnyRole('CREATOR','ADMIN')")
     @Override
     public ResponseEntity<AbstractProductResponseDto> updateProduct(@RequestBody AbstractProductRequestDto request) {
         log.info("Received update product request: {}", request.toString());
@@ -102,6 +105,7 @@ public class ProductsController implements ProductsApiDoc {
     }
 
     @PatchMapping("/{productId}")
+    @PreAuthorize("hasAnyRole('CREATOR','ADMIN')")
     public ResponseEntity<AbstractProductResponseDto> patchProduct(
             @PathVariable("productId") String productId,
             @RequestBody(required = false) com.fasterxml.jackson.databind.JsonNode request
@@ -111,6 +115,7 @@ public class ProductsController implements ProductsApiDoc {
     }
 
     @DeleteMapping()
+    @PreAuthorize("hasAnyRole('CREATOR','ADMIN')")
     @Override
     public ResponseEntity<String> deleteProduct(
             @RequestParam(name = "userId") String userId,
@@ -122,6 +127,7 @@ public class ProductsController implements ProductsApiDoc {
     }
 
     @DeleteMapping("/{productId}")
+    @PreAuthorize("hasAnyRole('CREATOR','ADMIN')")
     public ResponseEntity<Void> deleteProduct(@PathVariable("productId") String productId) {
         productService.deleteProductById(productId);
         return ResponseEntity.noContent().build();

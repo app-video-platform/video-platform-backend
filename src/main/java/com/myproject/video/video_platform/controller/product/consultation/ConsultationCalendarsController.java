@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,6 +36,7 @@ public class ConsultationCalendarsController implements ConsultationCalendarsApi
     }
 
     @PostMapping("/connect")
+    @PreAuthorize("hasAnyRole('CREATOR','ADMIN')")
     @Override
     public ResponseEntity<CalendarDtos.ConnectInitResponse> connectInit(@Validated @RequestBody CalendarDtos.ConnectInitRequest req) {
         // CSRF: FE must include X-XSRF-TOKEN per your filter
@@ -44,6 +46,7 @@ public class ConsultationCalendarsController implements ConsultationCalendarsApi
 
     // OAuth redirect callbacks (GET works for both Google & Microsoft)
     @GetMapping("/oauth/{provider}/callback")
+    @PreAuthorize("hasAnyRole('CREATOR','ADMIN')")
     @Override
     public ResponseEntity<CalendarDtos.ConnectedCalendarResponse> oauthCallback(
             @PathVariable String provider,
@@ -61,12 +64,14 @@ public class ConsultationCalendarsController implements ConsultationCalendarsApi
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('CREATOR','ADMIN')")
     @Override
     public ResponseEntity<?> myCalendars() {
         return ResponseEntity.ok(calendars.listMyCalendars());
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('CREATOR','ADMIN')")
     @Override
     public ResponseEntity<Void> delete(@PathVariable("id") UUID id) {
         calendars.deleteMyCalendar(id);
