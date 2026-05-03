@@ -11,8 +11,11 @@ import java.util.UUID;
 public record ProductMinimised(
         @Schema(description = "Product identifier", example = "a8c5d4a9-dc93-4c71-9c33-5d56f3d6b21d") UUID id,
         @Schema(description = "Product title", example = "Foundations of Lifestyle Photography") String title,
+        @Schema(description = "Short description shown in creator summary cards", example = "Learn the fundamentals with downloadable presets and workflows.") String description,
         @Schema(description = "Product type", example = "COURSE") ProductType type,
+        @Schema(description = "Current publishing state", example = "DRAFT") String status,
         @Schema(description = "Display price", example = "149.00") BigDecimal price,
+        @Schema(description = "Product image URL when configured", example = "https://cdn.example.com/products/a8c5d4a9.jpg") String imageUrl,
         @Schema(description = "Creator identifier", example = "738297f1-45fb-4f5f-98a5-6d0eb0a8f542") UUID createdById,
         @Schema(description = "Creator full name", example = "Amelia Hughes") String createdByName,
         @Schema(description = "Creator job title/role", example = "Lifestyle Photographer") String createdByTitle,

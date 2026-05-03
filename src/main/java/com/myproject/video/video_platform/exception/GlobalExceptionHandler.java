@@ -11,6 +11,7 @@ import com.myproject.video.video_platform.exception.email.EmailSendingException;
 import com.myproject.video.video_platform.exception.product.InvalidProductTypeException;
 import com.myproject.video.video_platform.exception.product.QuizValidationException;
 import com.myproject.video.video_platform.exception.product.ResourceNotFoundException;
+import com.myproject.video.video_platform.exception.product.UnsupportedProductOperationException;
 import com.myproject.video.video_platform.exception.user.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -114,5 +115,13 @@ public class GlobalExceptionHandler {
                 ex.getErrors()
         );
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UnsupportedProductOperationException.class)
+    public ResponseEntity<ErrorResponse> handleUnsupportedProductOperationException(
+            UnsupportedProductOperationException ex
+    ) {
+        ErrorResponse error = new ErrorResponse(ex.getMessage(), HttpStatus.CONFLICT.value());
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
 }

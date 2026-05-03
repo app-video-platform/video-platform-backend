@@ -20,4 +20,6 @@ public class CourseLessonResponseDto {
     private String description;
     @Schema(description = "Relative ordering inside the section", example = "1")
     private Integer position;
+    @Schema(description = "Owning section identifier", example = "c84b79a6-9d4d-4bb4-8f3c-3eb8bb76390a")
+    private String sectionId;
 }

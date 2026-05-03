@@ -59,8 +59,11 @@ public class ProductConverter {
         return new ProductMinimised(
                 p.getId(),
                 p.getName(),
+                p.getDescription(),
                 p.getType(),
+                p.getStatus() != null ? p.getStatus().name() : null,
                 p.getPrice(),
+                p.getImage(),
                 p.getUser().getUserId(),
                 fullName,
                 user.getTitle(),

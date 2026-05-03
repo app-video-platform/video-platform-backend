@@ -1,5 +1,7 @@
 package com.myproject.video.video_platform.service.product;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.myproject.video.video_platform.common.converter.product.DownloadProductConverter;
 import com.myproject.video.video_platform.common.converter.product.ProductConverter;
 import com.myproject.video.video_platform.common.enums.products.ProductType;
@@ -17,6 +19,7 @@ import com.myproject.video.video_platform.service.product.strategy_handler.Produ
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -27,6 +30,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -46,6 +50,8 @@ class ProductServiceRoutingTest {
     private ProductRepository productRepository;
     @Mock
     private ProductConverter productConverter;
+    @Mock
+    private ObjectMapper objectMapper;
 
     @Mock
     private ProductTypeHandler courseHandler;
@@ -68,7 +74,8 @@ class ProductServiceRoutingTest {
                 downloadProductConverter,
                 productRepository,
                 Set.of(courseHandler, downloadHandler, consultationHandler),
-                productConverter
+                productConverter,
+                objectMapper
         );
 
         Mockito.clearInvocations(courseHandler, downloadHandler, consultationHandler);
@@ -146,5 +153,87 @@ class ProductServiceRoutingTest {
         verify(courseHandler).getProductById(course.getId().toString());
         verify(downloadHandler).getProductById(download.getId().toString());
         verifyNoInteractions(productConverter);
+    }
+
+    @Test
+    void getProductById_routesToStoredProductTypeHandler() {
+        UUID userId = UUID.randomUUID();
+        User user = new User();
+        user.setUserId(userId);
+
+        DownloadProduct download = new DownloadProduct();
+        download.setId(UUID.randomUUID());
+        download.setType(ProductType.DOWNLOAD);
+        download.setUser(user);
+
+        when(productRepository.findById(download.getId())).thenReturn(Optional.of(download));
+
+        AbstractProductResponseDto response = Mockito.mock(AbstractProductResponseDto.class);
+        when(downloadHandler.getProductById(download.getId().toString())).thenReturn(response);
+
+        assertEquals(response, service.getProductById(download.getId().toString()));
+        verify(downloadHandler).getProductById(download.getId().toString());
+        verifyNoInteractions(courseHandler, consultationHandler);
+    }
+
+    @Test
+    void deleteProductById_routesToStoredProductTypeHandler() {
+        UUID userId = UUID.randomUUID();
+        User user = new User();
+        user.setUserId(userId);
+
+        DownloadProduct download = new DownloadProduct();
+        download.setId(UUID.randomUUID());
+        download.setType(ProductType.DOWNLOAD);
+        download.setUser(user);
+
+        when(productRepository.findById(download.getId())).thenReturn(Optional.of(download));
+
+        service.deleteProductById(download.getId().toString());
+
+        verify(downloadHandler).deleteProduct(userId.toString(), download.getId().toString());
+        verifyNoInteractions(courseHandler, consultationHandler);
+    }
+
+    @Test
+    void patchProduct_downloadPatchInjectsRoutingFieldsAndKeepsDetailsNull() {
+        ProductService patchService = new ProductService(
+                userRepository,
+                downloadProductRepository,
+                downloadProductConverter,
+                productRepository,
+                Set.of(courseHandler, downloadHandler, consultationHandler),
+                productConverter,
+                new ObjectMapper()
+        );
+        Mockito.clearInvocations(courseHandler, downloadHandler, consultationHandler);
+
+        UUID userId = UUID.randomUUID();
+        User user = new User();
+        user.setUserId(userId);
+
+        DownloadProduct download = new DownloadProduct();
+        download.setId(UUID.randomUUID());
+        download.setType(ProductType.DOWNLOAD);
+        download.setUser(user);
+
+        when(productRepository.findById(download.getId())).thenReturn(Optional.of(download));
+
+        AbstractProductResponseDto response = Mockito.mock(AbstractProductResponseDto.class);
+        ArgumentCaptor<DownloadProductRequestDto> captor = ArgumentCaptor.forClass(DownloadProductRequestDto.class);
+        when(downloadHandler.updateProduct(captor.capture())).thenReturn(response);
+
+        ObjectNode patch = new ObjectMapper().createObjectNode();
+        patch.put("name", "Renamed download");
+
+        assertEquals(response, patchService.patchProduct(download.getId().toString(), patch));
+
+        DownloadProductRequestDto routedDto = captor.getValue();
+        assertEquals(download.getId().toString(), routedDto.getId());
+        assertEquals("DOWNLOAD", routedDto.getType());
+        assertEquals(userId.toString(), routedDto.getUserId());
+        assertEquals("Renamed download", routedDto.getName());
+        assertNull(routedDto.getDetails());
+        verifyNoInteractions(courseHandler, consultationHandler);
     }
 }

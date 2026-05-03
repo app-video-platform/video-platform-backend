@@ -44,7 +44,7 @@ public class DownloadFilesController implements DownloadFilesApiDoc {
             @RequestParam String folderType,
             @RequestParam String filename
     ) {
-        PresignedUrlResponseDto dto = filesService.generatePresignedUrl(
+        PresignedUrlResponseDto dto = filesService.generateLegacyPresignedUrl(
                 sectionId, folderType, filename, Duration.ofMinutes(5)
         );
         return ResponseEntity.ok(dto);

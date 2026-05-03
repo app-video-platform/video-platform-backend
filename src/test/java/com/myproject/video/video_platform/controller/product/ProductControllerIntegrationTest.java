@@ -23,6 +23,7 @@ import com.myproject.video.video_platform.repository.products.course.CourseSecti
 import com.myproject.video.video_platform.repository.products.download.DownloadProductRepository;
 import com.myproject.video.video_platform.repository.products.download.FileDownloadProductRepository;
 import com.myproject.video.video_platform.repository.products.download.SectionDownloadProductRepository;
+import com.myproject.video.video_platform.service.digitalocean.SpacesS3Service;
 import com.myproject.video.video_platform.service.user.CurrentUserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,6 +52,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -88,6 +90,8 @@ class ProductControllerIntegrationTest {
 
     @MockBean
     private CurrentUserService currentUserService;
+    @MockBean
+    private SpacesS3Service spacesS3Service;
 
     private final AtomicReference<UUID> currentUser = new AtomicReference<>();
 
@@ -100,6 +104,8 @@ class ProductControllerIntegrationTest {
             }
             return userId;
         });
+        Mockito.when(spacesS3Service.generatePresignedUrlForPut(Mockito.anyString(), Mockito.any()))
+                .thenReturn("https://signed.example.com/upload");
 
         fileDownloadProductRepository.deleteAll();
         sectionDownloadProductRepository.deleteAll();
@@ -169,6 +175,21 @@ class ProductControllerIntegrationTest {
     }
 
     @Test
+    void getProductById_withoutType_returnsTypedDetails() throws Exception {
+        User owner = persistUser("owner@example.com");
+        currentUser.set(owner.getUserId());
+
+        UUID downloadId = createDownloadProduct(owner, "Files");
+
+        mockMvc.perform(get("/api/products/{productId}", downloadId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(downloadId.toString()))
+                .andExpect(jsonPath("$.type").value("DOWNLOAD"))
+                .andExpect(jsonPath("$.details.sections", hasSize(1)))
+                .andExpect(jsonPath("$.details.sections[0].title").value("Files"));
+    }
+
+    @Test
     void createDownloadProduct_withSections_persistsAndReturnsDetails() throws Exception {
         User owner = persistUser("owner@example.com");
         currentUser.set(owner.getUserId());
@@ -196,6 +217,22 @@ class ProductControllerIntegrationTest {
                 .andExpect(jsonPath("$.type").value("DOWNLOAD"))
                 .andExpect(jsonPath("$.details.sections", hasSize(1)))
                 .andExpect(jsonPath("$.details.sections[0].title").value("Files"));
+    }
+
+    @Test
+    void getProductsSummary_withOwnerId_returnsSummaryCards() throws Exception {
+        User owner = persistUser("owner@example.com");
+        currentUser.set(owner.getUserId());
+
+        createCourseProduct(owner);
+        createDownloadProduct(owner, "Files");
+
+        mockMvc.perform(get("/api/products")
+                        .param("ownerId", owner.getUserId().toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[*].title", containsInAnyOrder("Course", "Download")))
+                .andExpect(jsonPath("$[*].status", containsInAnyOrder("DRAFT", "DRAFT")));
     }
 
     @Test
@@ -340,6 +377,50 @@ class ProductControllerIntegrationTest {
     }
 
     @Test
+    void patchProductById_updatesMetadataWithoutWipingDownloadSections() throws Exception {
+        User owner = persistUser("owner@example.com");
+        currentUser.set(owner.getUserId());
+
+        UUID downloadId = createDownloadProduct(owner, "Files");
+
+        ObjectNode patchBody = objectMapper.createObjectNode();
+        patchBody.put("name", "Download renamed");
+        patchBody.put("description", "Updated description");
+
+        mockMvc.perform(patch("/api/products/{productId}", downloadId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(patchBody)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Download renamed"))
+                .andExpect(jsonPath("$.details.sections", hasSize(1)))
+                .andExpect(jsonPath("$.details.sections[0].title").value("Files"));
+    }
+
+    @Test
+    void patchProductById_updatesCourseMetadataWithoutWipingSectionsAndLessons() throws Exception {
+        User owner = persistUser("owner@example.com");
+        currentUser.set(owner.getUserId());
+
+        UUID courseId = createCourseProduct(owner);
+        UUID sectionId = getDraftSectionId(courseId);
+        createCourseLesson(owner, sectionId, "Intro", "VIDEO");
+
+        ObjectNode patchBody = objectMapper.createObjectNode();
+        patchBody.put("name", "Course renamed");
+        patchBody.put("description", "Updated description");
+
+        mockMvc.perform(patch("/api/products/{productId}", courseId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(patchBody)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Course renamed"))
+                .andExpect(jsonPath("$.details.sections", hasSize(1)))
+                .andExpect(jsonPath("$.details.sections[0].title").value("Draft"))
+                .andExpect(jsonPath("$.details.sections[0].lessons", hasSize(1)))
+                .andExpect(jsonPath("$.details.sections[0].lessons[0].title").value("Intro"));
+    }
+
+    @Test
     void updateDownloadProduct_withEmptySections_clearsSections() throws Exception {
         User owner = persistUser("owner@example.com");
         currentUser.set(owner.getUserId());
@@ -380,6 +461,20 @@ class ProductControllerIntegrationTest {
         mockMvc.perform(get("/api/products/getProduct")
                         .param("productId", courseId.toString())
                         .param("type", "COURSE"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deleteProductById_removesConsultationEntity() throws Exception {
+        User owner = persistUser("owner@example.com");
+        currentUser.set(owner.getUserId());
+
+        UUID consultationId = createConsultationProduct(owner);
+
+        mockMvc.perform(delete("/api/products/{productId}", consultationId))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/products/{productId}", consultationId))
                 .andExpect(status().isNotFound());
     }
 
@@ -588,6 +683,230 @@ class ProductControllerIntegrationTest {
     }
 
     @Test
+    void canonicalSectionCrud_supportsDownloadProducts() throws Exception {
+        User owner = persistUser("owner@example.com");
+        currentUser.set(owner.getUserId());
+
+        UUID downloadId = createDownloadProduct(owner, "Files");
+        UUID existingSectionId = getDownloadSectionId(downloadId);
+
+        ObjectNode createBody = objectMapper.createObjectNode();
+        createBody.put("title", "Bonuses");
+        createBody.put("description", "More files");
+        createBody.put("position", 1);
+
+        MvcResult created = mockMvc.perform(post("/api/products/{productId}/sections", downloadId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createBody)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.productId").value(downloadId.toString()))
+                .andExpect(jsonPath("$.title").value("Bonuses"))
+                .andReturn();
+
+        UUID createdSectionId = UUID.fromString(
+                objectMapper.readTree(created.getResponse().getContentAsString()).get("id").asText()
+        );
+
+        ObjectNode updateBody = objectMapper.createObjectNode();
+        updateBody.put("title", "Bonuses updated");
+        updateBody.put("position", 3);
+
+        mockMvc.perform(patch("/api/products/{productId}/sections/{sectionId}", downloadId, createdSectionId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateBody)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Bonuses updated"))
+                .andExpect(jsonPath("$.position").value(3));
+
+        mockMvc.perform(delete("/api/products/{productId}/sections/{sectionId}", downloadId, existingSectionId))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/products/{productId}", downloadId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.details.sections", hasSize(1)))
+                .andExpect(jsonPath("$.details.sections[0].title").value("Bonuses updated"));
+    }
+
+    @Test
+    void canonicalSectionEndpoint_onConsultationProduct_returnsConflict() throws Exception {
+        User owner = persistUser("owner@example.com");
+        currentUser.set(owner.getUserId());
+
+        UUID consultationId = createConsultationProduct(owner);
+
+        ObjectNode createBody = objectMapper.createObjectNode();
+        createBody.put("title", "Should fail");
+
+        mockMvc.perform(post("/api/products/{productId}/sections", consultationId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createBody)))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void canonicalSectionEndpoint_rejectsSectionFromDifferentDownloadProduct() throws Exception {
+        User owner = persistUser("owner@example.com");
+        currentUser.set(owner.getUserId());
+
+        UUID firstDownloadId = createDownloadProduct(owner, "Files A");
+        UUID secondDownloadId = createDownloadProduct(owner, "Files B");
+        UUID firstSectionId = getDownloadSectionId(firstDownloadId);
+
+        ObjectNode updateBody = objectMapper.createObjectNode();
+        updateBody.put("title", "Wrong product");
+
+        mockMvc.perform(patch("/api/products/{productId}/sections/{sectionId}", secondDownloadId, firstSectionId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateBody)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void canonicalCourseLessonCrud_supportsCourseProducts() throws Exception {
+        User owner = persistUser("owner@example.com");
+        currentUser.set(owner.getUserId());
+
+        UUID courseId = createCourseProduct(owner);
+        UUID sectionId = getDraftSectionId(courseId);
+
+        ObjectNode createBody = objectMapper.createObjectNode();
+        createBody.put("title", "Canonical lesson");
+        createBody.put("type", "VIDEO");
+        createBody.put("videoUrl", "https://cdn.example.com/video.mp4");
+        createBody.put("description", "Created via canonical endpoint");
+        createBody.put("position", 1);
+
+        MvcResult created = mockMvc.perform(post("/api/products/{productId}/sections/{sectionId}/lessons", courseId, sectionId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createBody)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.sectionId").value(sectionId.toString()))
+                .andExpect(jsonPath("$.title").value("Canonical lesson"))
+                .andReturn();
+
+        UUID lessonId = UUID.fromString(
+                objectMapper.readTree(created.getResponse().getContentAsString()).get("id").asText()
+        );
+
+        ObjectNode updateBody = objectMapper.createObjectNode();
+        updateBody.put("title", "Canonical article");
+        updateBody.put("type", "ARTICLE");
+        updateBody.put("content", "<p>Hello</p>");
+        updateBody.put("description", "Updated via canonical endpoint");
+
+        mockMvc.perform(patch("/api/products/{productId}/sections/{sectionId}/lessons/{lessonId}", courseId, sectionId, lessonId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateBody)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.type").value("ARTICLE"))
+                .andExpect(jsonPath("$.content").value("<p>Hello</p>"));
+
+        mockMvc.perform(delete("/api/products/{productId}/sections/{sectionId}/lessons/{lessonId}", courseId, sectionId, lessonId))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/products/{productId}", courseId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.details.sections[0].lessons", hasSize(0)));
+    }
+
+    @Test
+    void canonicalLessonEndpoint_rejectsSectionFromDifferentCourse() throws Exception {
+        User owner = persistUser("owner@example.com");
+        currentUser.set(owner.getUserId());
+
+        UUID firstCourseId = createCourseProduct(owner);
+        UUID secondCourseId = createCourseProduct(owner);
+        UUID firstSectionId = getDraftSectionId(firstCourseId);
+
+        ObjectNode createBody = objectMapper.createObjectNode();
+        createBody.put("title", "Wrong course lesson");
+        createBody.put("type", "VIDEO");
+        createBody.put("videoUrl", "https://cdn.example.com/video.mp4");
+
+        mockMvc.perform(post("/api/products/{productId}/sections/{sectionId}/lessons", secondCourseId, firstSectionId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createBody)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void canonicalLessonEndpoint_onDownloadProduct_returnsConflict() throws Exception {
+        User owner = persistUser("owner@example.com");
+        currentUser.set(owner.getUserId());
+
+        UUID downloadId = createDownloadProduct(owner, "Files");
+        UUID sectionId = getDownloadSectionId(downloadId);
+
+        ObjectNode createBody = objectMapper.createObjectNode();
+        createBody.put("title", "Should fail");
+        createBody.put("type", "VIDEO");
+
+        mockMvc.perform(post("/api/products/{productId}/sections/{sectionId}/lessons", downloadId, sectionId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createBody)))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void canonicalDownloadFileEndpoints_rejectSectionFromDifferentProduct() throws Exception {
+        User owner = persistUser("owner@example.com");
+        currentUser.set(owner.getUserId());
+
+        UUID firstDownloadId = createDownloadProduct(owner, "Files A");
+        UUID secondDownloadId = createDownloadProduct(owner, "Files B");
+        UUID firstSectionId = getDownloadSectionId(firstDownloadId);
+
+        mockMvc.perform(get("/api/products/{productId}/sections/{sectionId}/files/presigned-url", secondDownloadId, firstSectionId)
+                        .param("filename", "notes.pdf"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void canonicalDownloadFileEndpoints_supportDownloadProductsAndRejectCourseProducts() throws Exception {
+        User owner = persistUser("owner@example.com");
+        currentUser.set(owner.getUserId());
+
+        UUID downloadId = createDownloadProduct(owner, "Files");
+        UUID downloadSectionId = getDownloadSectionId(downloadId);
+
+        mockMvc.perform(get("/api/products/{productId}/sections/{sectionId}/files/presigned-url", downloadId, downloadSectionId)
+                        .param("filename", "notes.pdf"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.fileId").exists())
+                .andExpect(jsonPath("$.presignedUrl").value("https://signed.example.com/upload"));
+
+        ObjectNode confirmBody = objectMapper.createObjectNode();
+        confirmBody.put("sectionId", downloadSectionId.toString());
+        confirmBody.put("key", "users-content/test/download_section_files/" + downloadSectionId + "/file_notes.pdf");
+        confirmBody.put("fileUrl", "https://cdn.example.com/notes.pdf");
+        confirmBody.put("fileName", "notes.pdf");
+        confirmBody.put("fileSize", 1234);
+        confirmBody.put("fileType", "application/pdf");
+
+        MvcResult confirmResult = mockMvc.perform(post("/api/products/{productId}/sections/{sectionId}/files/confirm-upload", downloadId, downloadSectionId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(confirmBody)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.fileId").exists())
+                .andExpect(jsonPath("$.fileName").value("notes.pdf"))
+                .andReturn();
+
+        String fileId = objectMapper.readTree(confirmResult.getResponse().getContentAsString()).get("fileId").asText();
+        assertEquals(1, fileDownloadProductRepository.count());
+
+        mockMvc.perform(delete("/api/products/{productId}/sections/{sectionId}/files/{fileId}", downloadId, downloadSectionId, fileId))
+                .andExpect(status().isNoContent());
+        assertEquals(0, fileDownloadProductRepository.count());
+
+        UUID courseId = createCourseProduct(owner);
+        UUID courseSectionId = getDraftSectionId(courseId);
+
+        mockMvc.perform(get("/api/products/{productId}/sections/{sectionId}/files/presigned-url", courseId, courseSectionId)
+                        .param("filename", "video.mp4"))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
     void consultationProductResponse_includesConnectedCalendarsUnderDetails() throws Exception {
         User owner = persistUser("owner@example.com");
         currentUser.set(owner.getUserId());
@@ -691,6 +1010,14 @@ class ProductControllerIntegrationTest {
     private UUID getDraftSectionId(UUID courseId) {
         return courseSectionRepository.findAll().stream()
                 .filter(section -> section.getCourse().getId().equals(courseId))
+                .findFirst()
+                .map(section -> section.getId())
+                .orElseThrow();
+    }
+
+    private UUID getDownloadSectionId(UUID downloadId) {
+        return sectionDownloadProductRepository.findAll().stream()
+                .filter(section -> section.getDownloadProduct().getId().equals(downloadId))
                 .findFirst()
                 .map(section -> section.getId())
                 .orElseThrow();
