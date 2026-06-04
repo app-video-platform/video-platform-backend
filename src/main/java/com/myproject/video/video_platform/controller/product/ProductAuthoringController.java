@@ -11,6 +11,7 @@ import com.myproject.video.video_platform.service.product.course.CourseLessonSer
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Validated
 @RequiredArgsConstructor
 @RequestMapping("/api/products/{productId}/sections")
+@PreAuthorize("hasAnyRole('CREATOR','ADMIN')")
 @Tag(name = "Product Authoring", description = "Canonical nested authoring endpoints for product sections and course lessons.")
 public class ProductAuthoringController {
 

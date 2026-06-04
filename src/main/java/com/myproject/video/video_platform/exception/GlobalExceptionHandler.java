@@ -15,6 +15,7 @@ import com.myproject.video.video_platform.exception.product.UnsupportedProductOp
 import com.myproject.video.video_platform.exception.user.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -81,6 +82,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CsrfException.class)
     public ResponseEntity<ErrorResponse> handleCsrfException(CsrfException ex) {
         ErrorResponse error = new ErrorResponse(ex.getMessage(), HttpStatus.FORBIDDEN.value());
+        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex) {
+        ErrorResponse error = new ErrorResponse("Access Denied", HttpStatus.FORBIDDEN.value());
         return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
 

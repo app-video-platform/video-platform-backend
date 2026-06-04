@@ -14,7 +14,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Handles generating and validating JWT tokens.
@@ -40,6 +42,9 @@ public class JwtProvider {
         return Jwts.builder()
                 .subject(user.getUserId().toString())
                 .claim("email", user.getEmail())
+                .claim("roles", user.getRoles().stream()
+                        .map(role -> role.getRoleName())
+                        .toList())
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(getSigningKey())
@@ -100,5 +105,17 @@ public class JwtProvider {
 
     public String getSubjectFromJwt(String token) {
         return parseClaims(token).getSubject();
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<String> getRolesFromJwt(String token) {
+        Object roles = parseClaims(token).get("roles");
+        if (roles instanceof List<?>) {
+            return ((List<?>) roles).stream()
+                    .filter(String.class::isInstance)
+                    .map(String.class::cast)
+                    .toList();
+        }
+        return Collections.emptyList();
     }
 }

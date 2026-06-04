@@ -21,6 +21,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -40,6 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
+@WithMockUser(roles = "CREATOR")
 class CourseControllerIntegrationTest {
 
     @Autowired
@@ -77,7 +79,7 @@ class CourseControllerIntegrationTest {
     }
 
     @Test
-    void createSection_nonOwner_returnsBadRequest() throws Exception {
+    void createSection_nonOwner_returnsForbidden() throws Exception {
         User owner = persistUser("owner@example.com");
         User other = persistUser("other@example.com");
 
@@ -92,9 +94,9 @@ class CourseControllerIntegrationTest {
         dto.setPosition(2);
 
         mockMvc.perform(post("/api/products/course/section")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isBadRequest());
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isForbidden());
     }
 
     @Test
