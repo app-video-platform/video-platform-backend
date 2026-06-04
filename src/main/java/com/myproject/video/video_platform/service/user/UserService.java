@@ -1,5 +1,6 @@
 package com.myproject.video.video_platform.service.user;
 
+import com.myproject.video.video_platform.common.enums.user.UserRole;
 import com.myproject.video.video_platform.dto.user.SocialMediaLinkResponse;
 import com.myproject.video.video_platform.dto.user.SocialMediaLinkUpdateRequest;
 import com.myproject.video.video_platform.dto.user.UpdateUserRequest;
@@ -9,9 +10,11 @@ import com.myproject.video.video_platform.entity.user.SocialMediaLink;
 import com.myproject.video.video_platform.entity.user.User;
 import com.myproject.video.video_platform.exception.product.ResourceNotFoundException;
 import com.myproject.video.video_platform.exception.user.UserNotFoundException;
+import com.myproject.video.video_platform.repository.auth.RoleRepository;
 import com.myproject.video.video_platform.repository.auth.UserRepository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -19,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -31,11 +35,18 @@ public class UserService {
 
     private static final Log log = LogFactory.getLog(UserService.class);
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final CurrentUserService currentUserService;
+    private final boolean devRoleSwitchEnabled;
 
-    public UserService(UserRepository userRepository, CurrentUserService currentUserService) {
+    public UserService(UserRepository userRepository,
+                       RoleRepository roleRepository,
+                       CurrentUserService currentUserService,
+                       @Value("${app.dev-role-switch.enabled:false}") boolean devRoleSwitchEnabled) {
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
         this.currentUserService = currentUserService;
+        this.devRoleSwitchEnabled = devRoleSwitchEnabled;
     }
 
 
@@ -144,5 +155,26 @@ public class UserService {
         // map to UserProfileResponse
         return getUserDto(saved);
 
+    }
+
+    @Transactional
+    public UserDto changeCurrentUserRoleForDev(UserRole role) {
+        if (!devRoleSwitchEnabled) {
+            throw new AccessDeniedException("Dev role switching is disabled");
+        }
+
+        UUID currentUserId = currentUserService.getCurrentUserId();
+        User user = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + currentUserId));
+
+        Role nextRole = roleRepository.findByRoleName(role.name());
+        if (nextRole == null) {
+            throw new IllegalStateException("Role " + role.name() + " is missing from the database");
+        }
+
+        user.setRoles(new HashSet<>(Set.of(nextRole)));
+        User saved = userRepository.save(user);
+
+        return getUserDto(saved);
     }
 }

@@ -47,6 +47,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -204,6 +205,43 @@ class AuthRoleSmokeIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value("google-smoke@example.com"))
                 .andExpect(jsonPath("$.roles", hasItem(UserRole.USER.name())));
+    }
+
+    @Test
+    void devRoleSwitchChangesCurrentUserRoleAndReissuesAuthCookies() throws Exception {
+        RegisterRequest register = registerVerifiedUser("dev-role-switch@example.com");
+
+        MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest(register.getEmail(), register.getPassword()))))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        MvcResult roleSwitchResult = mockMvc.perform(put("/api/user/dev/role")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .cookie(
+                                responseCookie(loginResult, "JWT_TOKEN"),
+                                responseCookie(loginResult, "XSRF-TOKEN")
+                        )
+                        .header("X-XSRF-TOKEN", responseCookie(loginResult, "XSRF-TOKEN").getValue())
+                        .content("{\"role\":\"CREATOR\"}"))
+                .andExpect(status().isOk())
+                .andExpect(cookie().exists("JWT_TOKEN"))
+                .andExpect(cookie().exists("REFRESH_TOKEN"))
+                .andExpect(cookie().exists("XSRF-TOKEN"))
+                .andExpect(jsonPath("$.roles", hasItem(UserRole.CREATOR.name())))
+                .andReturn();
+
+        User updatedUser = userRepository.findByEmail(register.getEmail()).orElseThrow();
+        assertTrue(updatedUser.getRoles().stream()
+                .anyMatch(role -> UserRole.CREATOR.name().equals(role.getRoleName())));
+        assertFalse(updatedUser.getRoles().stream()
+                .anyMatch(role -> UserRole.USER.name().equals(role.getRoleName())));
+
+        mockMvc.perform(get("/api/user/userInfo")
+                        .cookie(responseCookie(roleSwitchResult, "JWT_TOKEN")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.roles", hasItem(UserRole.CREATOR.name())));
     }
 
     @Test

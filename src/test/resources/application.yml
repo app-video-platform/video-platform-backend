@@ -41,6 +41,8 @@ sendgrid:
 app:
   domain: example.com
   refresh-expiry-days: 7
+  dev-role-switch:
+    enabled: true
   frontend:
     url: https://example.com
   calendar:

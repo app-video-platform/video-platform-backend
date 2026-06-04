@@ -1,9 +1,12 @@
 package com.myproject.video.video_platform.controller.user;
 
 import com.myproject.video.video_platform.controller.docs.user.UserApiDoc;
+import com.myproject.video.video_platform.dto.user.DevRoleChangeRequest;
 import com.myproject.video.video_platform.dto.user.UpdateUserRequest;
 import com.myproject.video.video_platform.dto.user.UserDto;
+import com.myproject.video.video_platform.service.security.AuthService;
 import com.myproject.video.video_platform.service.user.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -24,9 +27,11 @@ import jakarta.validation.Valid;
 public class UserController implements UserApiDoc {
 
     private final UserService userService;
+    private final AuthService authService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, AuthService authService) {
         this.userService = userService;
+        this.authService = authService;
     }
 
     /**
@@ -44,6 +49,14 @@ public class UserController implements UserApiDoc {
     @Override
     public ResponseEntity<UserDto> updateUserInfo(@Valid @RequestBody UpdateUserRequest req) {
         UserDto updatedUser = userService.updateUserInfo(req);
+        return ResponseEntity.ok(updatedUser);
+    }
+
+    @PutMapping("/dev/role")
+    public ResponseEntity<UserDto> changeDevRole(@Valid @RequestBody DevRoleChangeRequest req,
+                                                 HttpServletResponse response) {
+        UserDto updatedUser = userService.changeCurrentUserRoleForDev(req.getRole());
+        authService.setAuthCookies(response, updatedUser.getEmail());
         return ResponseEntity.ok(updatedUser);
     }
 }

@@ -45,6 +45,8 @@ server:
 app:
   refresh-expiry-days: 7
   domain: "serious-debauchery.click"
+  dev-role-switch:
+    enabled: ${DEV_ROLE_SWITCH_ENABLED:true}
   frontend:
     url: "https://app.serious-debauchery.click"
   calendar:
