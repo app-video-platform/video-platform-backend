@@ -4,7 +4,6 @@ import com.myproject.video.video_platform.dto.authetication.ErrorResponse;
 import com.myproject.video.video_platform.dto.authetication.GoogleLoginRequest;
 import com.myproject.video.video_platform.dto.authetication.LoginRequest;
 import com.myproject.video.video_platform.dto.authetication.RegisterRequest;
-import com.myproject.video.video_platform.dto.authetication.TokenRequest;
 import com.myproject.video.video_platform.dto.authetication.ValidationErrorResponse;
 import com.myproject.video.video_platform.exception.auth.TokenExpiredException;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -68,7 +67,7 @@ public interface AuthApiDoc {
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = ErrorResponse.class)))
     })
-    ResponseEntity<String> verifyAccount(TokenRequest token) throws TokenExpiredException;
+    ResponseEntity<String> verifyAccount(String token) throws TokenExpiredException;
 
     @Operation(
             summary = "Login with credentials",

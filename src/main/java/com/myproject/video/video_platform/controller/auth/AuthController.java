@@ -52,8 +52,10 @@ public class AuthController implements AuthApiDoc {
 
     @GetMapping("/verify")
     @Override
-    public ResponseEntity<String> verifyAccount(@RequestParam("token") TokenRequest token) throws TokenExpiredException {
-        verificationTokenService.verifyToken(token);
+    public ResponseEntity<String> verifyAccount(@RequestParam("token") String token) throws TokenExpiredException {
+        TokenRequest tokenRequest = new TokenRequest();
+        tokenRequest.setToken(token);
+        verificationTokenService.verifyToken(tokenRequest);
         return ResponseEntity.ok("Account verified successfully!");
     }
 
