@@ -8,10 +8,9 @@ import com.myproject.video.video_platform.entity.products.course.CourseSection;
 import com.myproject.video.video_platform.exception.product.ResourceNotFoundException;
 import com.myproject.video.video_platform.repository.products.course.CourseProductRepository;
 import com.myproject.video.video_platform.repository.products.course.CourseSectionRepository;
-import com.myproject.video.video_platform.service.user.CurrentUserService;
+import com.myproject.video.video_platform.service.product.ProductAuthorizationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +25,7 @@ public class CourseSectionService {
 
     private final CourseProductRepository courseRepo;
     private final CourseSectionRepository sectionRepo;
-    private final CurrentUserService currentUserService;
+    private final ProductAuthorizationService productAuthorizationService;
 
     /**
      * POST /api/products/{productId}/sections
@@ -37,13 +36,7 @@ public class CourseSectionService {
         CourseProduct course = courseRepo.findFullById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found: " + productId));
 
-        UUID currentUserId = currentUserService.getCurrentUserId();
-        log.info("User id from context: {}", currentUserId);
-
-
-        if (!course.getUser().getUserId().equals(currentUserId))
-            throw new AccessDeniedException("You don’t own this product.");
-
+        productAuthorizationService.requireOwnerOrAdmin(course);
 
         CourseSection section = new CourseSection();
         section.setTitle(dto.getTitle());
@@ -75,11 +68,7 @@ public class CourseSectionService {
         CourseSection section = sectionRepo.findById(sectionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Section not found: " + dto.getId()));
 
-        UUID currentUserId = currentUserService.getCurrentUserId();
-        log.info("User id from context: {}", currentUserId);
-
-        if (!section.getCourse().getUser().getUserId().equals(currentUserId))
-            throw new AccessDeniedException("You don’t own this product.");
+        productAuthorizationService.requireOwnerOrAdmin(section.getCourse());
 
         section.setTitle(dto.getTitle());
         section.setDescription(dto.getDescription());
@@ -94,10 +83,7 @@ public class CourseSectionService {
     public void deleteSection(String id) {
         Optional<CourseSection> sectionOptional = sectionRepo.findById(UUID.fromString(id));
         if (sectionOptional.isPresent()) {
-            UUID currentUserId = currentUserService.getCurrentUserId();
-            log.info("User id from context: {}", currentUserId);
-            if (!sectionOptional.get().getCourse().getUser().getUserId().equals(currentUserId))
-                throw new AccessDeniedException("You don’t own this product.");
+            productAuthorizationService.requireOwnerOrAdmin(sectionOptional.get().getCourse());
 
             CourseProduct course = sectionOptional.get().getCourse();
             sectionRepo.delete(sectionOptional.get());

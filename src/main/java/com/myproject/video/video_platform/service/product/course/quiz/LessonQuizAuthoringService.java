@@ -10,9 +10,8 @@ import com.myproject.video.video_platform.exception.product.ResourceNotFoundExce
 import com.myproject.video.video_platform.repository.products.course.CourseProductRepository;
 import com.myproject.video.video_platform.repository.products.course.CourseLessonRepository;
 import com.myproject.video.video_platform.repository.products.course.quiz.QuizRepository;
-import com.myproject.video.video_platform.service.user.CurrentUserService;
+import com.myproject.video.video_platform.service.product.ProductAuthorizationService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +26,7 @@ public class LessonQuizAuthoringService {
     private final CourseLessonRepository lessonRepository;
     private final CourseProductRepository courseRepository;
     private final QuizRepository quizRepository;
-    private final CurrentUserService currentUserService;
+    private final ProductAuthorizationService productAuthorizationService;
     private final QuizValidator quizValidator;
     private final QuizMapper quizMapper;
 
@@ -92,11 +91,7 @@ public class LessonQuizAuthoringService {
     }
 
     private void ensureOwner(CourseLesson lesson) {
-        UUID currentUserId = currentUserService.getCurrentUserId();
-        UUID ownerId = lesson.getSection().getCourse().getUser().getUserId();
-        if (!ownerId.equals(currentUserId)) {
-            throw new AccessDeniedException("You don’t own this lesson");
-        }
+        productAuthorizationService.requireOwnerOrAdmin(lesson.getSection().getCourse());
     }
 
     private void ensureQuizLesson(CourseLesson lesson) {

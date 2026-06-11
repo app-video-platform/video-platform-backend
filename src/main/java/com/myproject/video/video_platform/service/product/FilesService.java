@@ -15,11 +15,9 @@ import com.myproject.video.video_platform.repository.products.download.DownloadP
 import com.myproject.video.video_platform.repository.products.download.FileDownloadProductRepository;
 import com.myproject.video.video_platform.repository.products.download.SectionDownloadProductRepository;
 import com.myproject.video.video_platform.service.digitalocean.SpacesS3Service;
-import com.myproject.video.video_platform.service.user.CurrentUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -42,7 +40,7 @@ public class FilesService {
     private final DownloadProductRepository downloadProductRepository;
     private final FileDownloadProductRepository fileRepository;
     private final ProductRepository productRepository;
-    private final CurrentUserService currentUserService;
+    private final ProductAuthorizationService productAuthorizationService;
 
 
     /**
@@ -95,17 +93,10 @@ public class FilesService {
     private SectionDownloadProduct authorizeSectionUpload(String sectionIdStr) {
         UUID sectionId = UUID.fromString(sectionIdStr);
 
-        UUID currentUserId = currentUserService.getCurrentUserId();
-        log.info("User id from context: {}", currentUserId);
-
-
         SectionDownloadProduct section = sectionRepository.findById(sectionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Section not found: " + sectionId));
 
-        UUID ownerId = section.getDownloadProduct().getUser().getUserId();
-        if (!ownerId.equals(currentUserId)) {
-            throw new AccessDeniedException("Not authorized for section " + sectionId);
-        }
+        productAuthorizationService.requireOwnerOrAdmin(section.getDownloadProduct());
         return section;
     }
 
@@ -117,12 +108,7 @@ public class FilesService {
             throw new UnsupportedProductOperationException("File uploads are only supported for DOWNLOAD products.");
         }
 
-        UUID currentUserId = currentUserService.getCurrentUserId();
-        log.info("User id from context: {}", currentUserId);
-
-        if (!product.getUser().getUserId().equals(currentUserId)) {
-            throw new AccessDeniedException("You don’t own this product.");
-        }
+        productAuthorizationService.requireOwnerOrAdmin(product);
 
         SectionDownloadProduct section = sectionRepository.findById(UUID.fromString(sectionIdStr))
                 .orElseThrow(() -> new ResourceNotFoundException("Section not found: " + sectionIdStr));
