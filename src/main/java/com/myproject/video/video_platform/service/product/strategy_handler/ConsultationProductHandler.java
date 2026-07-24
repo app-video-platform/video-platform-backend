@@ -8,13 +8,10 @@ import com.myproject.video.video_platform.dto.products.consultation.Consultation
 import com.myproject.video.video_platform.entity.products.consultation.ConsultationProduct;
 import com.myproject.video.video_platform.entity.user.User;
 import com.myproject.video.video_platform.exception.product.ResourceNotFoundException;
-import com.myproject.video.video_platform.exception.user.UserNotFoundException;
 import com.myproject.video.video_platform.repository.products.consultation.ConsultationProductRepository;
-import com.myproject.video.video_platform.service.user.CurrentUserService;
-import com.myproject.video.video_platform.service.user.UserService;
+import com.myproject.video.video_platform.service.product.ProductAuthorizationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,8 +25,7 @@ public class ConsultationProductHandler implements ProductTypeHandler {
 
     private final ConsultationProductRepository repo;
     private final ConsultationProductConverter converter;
-    private final UserService userService;
-    private final CurrentUserService currentUserService;
+    private final ProductAuthorizationService productAuthorizationService;
 
     @Override
     public ProductType getSupportedType() {
@@ -39,15 +35,7 @@ public class ConsultationProductHandler implements ProductTypeHandler {
     @Override
     @Transactional
     public AbstractProductResponseDto createProduct(AbstractProductRequestDto dto) {
-        User owner = userService
-                .findByUserId(UUID.fromString(dto.getUserId()))
-                .orElseThrow(() -> new UserNotFoundException("User not found: " + dto.getUserId()));
-
-        UUID currentUserId = currentUserService.getCurrentUserId();
-        log.info("User id from context: {}", currentUserId);
-
-        if (!owner.getUserId().equals(currentUserId))
-            throw new AccessDeniedException("You don’t own this product.");
+        User owner = productAuthorizationService.resolveOwnerForCreate(dto);
 
         ConsultationProduct entity = converter.fromDto((ConsultationProductRequestDto) dto, owner);
         ConsultationProduct saved = repo.save(entity);
@@ -70,11 +58,7 @@ public class ConsultationProductHandler implements ProductTypeHandler {
         ConsultationProduct existing = repo.findById(UUID.fromString(id))
                 .orElseThrow(() -> new ResourceNotFoundException("Consultation not found: " + id));
 
-        UUID currentUserId = currentUserService.getCurrentUserId();
-        log.info("User id from context: {}", currentUserId);
-
-        if (!existing.getUser().getUserId().equals(currentUserId))
-            throw new AccessDeniedException("You don’t own this product.");
+        productAuthorizationService.requireOwnerOrAdmin(existing);
 
         converter.updateEntityFromDto(
                 (ConsultationProductRequestDto) dto,
@@ -90,17 +74,12 @@ public class ConsultationProductHandler implements ProductTypeHandler {
     public void deleteProduct(String userId, String productId) {
         log.info("Deleting Consultation: {}", productId);
 
-        UUID currentUserId = currentUserService.getCurrentUserId();
-        log.info("User id from context: {}", currentUserId);
-
-
         Optional<ConsultationProduct> existing = repo.findById(UUID.fromString(productId));
 
         if (existing.isEmpty())
             throw new ResourceNotFoundException("DownloadProduct not found for ID: " + productId);
         else {
-            if (!existing.get().getUser().getUserId().equals(currentUserId))
-                throw new AccessDeniedException("You don’t own this product.");
+            productAuthorizationService.requireOwnerOrAdmin(existing.get());
 
             repo.delete(existing.get());
             log.info("Deleted succesfully a Consultation Product: {}", productId);

@@ -15,6 +15,7 @@ import com.myproject.video.video_platform.exception.product.InvalidProductTypeEx
 import com.myproject.video.video_platform.repository.auth.UserRepository;
 import com.myproject.video.video_platform.repository.products.ProductRepository;
 import com.myproject.video.video_platform.repository.products.download.DownloadProductRepository;
+import com.myproject.video.video_platform.service.admin.AdminAuditService;
 import com.myproject.video.video_platform.service.product.strategy_handler.ProductTypeHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,6 +53,10 @@ class ProductServiceRoutingTest {
     private ProductConverter productConverter;
     @Mock
     private ObjectMapper objectMapper;
+    @Mock
+    private ProductAuthorizationService productAuthorizationService;
+    @Mock
+    private AdminAuditService adminAuditService;
 
     @Mock
     private ProductTypeHandler courseHandler;
@@ -75,7 +80,9 @@ class ProductServiceRoutingTest {
                 productRepository,
                 Set.of(courseHandler, downloadHandler, consultationHandler),
                 productConverter,
-                objectMapper
+                objectMapper,
+                productAuthorizationService,
+                adminAuditService
         );
 
         Mockito.clearInvocations(courseHandler, downloadHandler, consultationHandler);
@@ -98,6 +105,16 @@ class ProductServiceRoutingTest {
     void updateProduct_routesToHandlerBasedOnType() {
         DownloadProductRequestDto dto = new DownloadProductRequestDto();
         dto.setType("DOWNLOAD");
+        dto.setId(UUID.randomUUID().toString());
+
+        User user = new User();
+        user.setUserId(UUID.randomUUID());
+        DownloadProduct before = new DownloadProduct();
+        before.setId(UUID.fromString(dto.getId()));
+        before.setType(ProductType.DOWNLOAD);
+        before.setName("Before");
+        before.setUser(user);
+        when(productRepository.findById(before.getId())).thenReturn(Optional.of(before));
 
         AbstractProductResponseDto response = Mockito.mock(AbstractProductResponseDto.class);
         when(downloadHandler.updateProduct(dto)).thenReturn(response);
@@ -109,8 +126,18 @@ class ProductServiceRoutingTest {
 
     @Test
     void deleteProduct_routesToHandlerBasedOnType() {
-        service.deleteProduct("user", UUID.randomUUID().toString(), "CONSULTATION");
-        verify(consultationHandler).deleteProduct(Mockito.eq("user"), Mockito.anyString());
+        UUID productId = UUID.randomUUID();
+        User user = new User();
+        user.setUserId(UUID.randomUUID());
+        DownloadProduct before = new DownloadProduct();
+        before.setId(productId);
+        before.setType(ProductType.CONSULTATION);
+        before.setName("Before");
+        before.setUser(user);
+        when(productRepository.findById(productId)).thenReturn(Optional.of(before));
+
+        service.deleteProduct("user", productId.toString(), "CONSULTATION");
+        verify(consultationHandler).deleteProduct("user", productId.toString());
         verifyNoInteractions(courseHandler, downloadHandler);
     }
 
@@ -204,7 +231,9 @@ class ProductServiceRoutingTest {
                 productRepository,
                 Set.of(courseHandler, downloadHandler, consultationHandler),
                 productConverter,
-                new ObjectMapper()
+                new ObjectMapper(),
+                productAuthorizationService,
+                adminAuditService
         );
         Mockito.clearInvocations(courseHandler, downloadHandler, consultationHandler);
 

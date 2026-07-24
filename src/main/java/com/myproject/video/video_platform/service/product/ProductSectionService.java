@@ -20,11 +20,9 @@ import com.myproject.video.video_platform.repository.products.course.CourseProdu
 import com.myproject.video.video_platform.repository.products.course.CourseSectionRepository;
 import com.myproject.video.video_platform.repository.products.download.DownloadProductRepository;
 import com.myproject.video.video_platform.repository.products.download.SectionDownloadProductRepository;
-import com.myproject.video.video_platform.service.user.CurrentUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,7 +47,7 @@ public class ProductSectionService {
     private final DownloadProductRepository downloadProductRepository;
     private final CourseSectionRepository courseSectionRepository;
     private final SectionDownloadProductRepository downloadSectionRepository;
-    private final CurrentUserService currentUserService;
+    private final ProductAuthorizationService productAuthorizationService;
 
     @Transactional
     public ProductSectionResponseDto createSection(String productId, ProductSectionCreateRequestDto dto) {
@@ -219,12 +217,7 @@ public class ProductSectionService {
         Product product = productRepository.findById(UUID.fromString(productId))
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
 
-        UUID currentUserId = currentUserService.getCurrentUserId();
-        log.info("User id from context: {}", currentUserId);
-
-        if (!product.getUser().getUserId().equals(currentUserId)) {
-            throw new AccessDeniedException("You don’t own this product.");
-        }
+        productAuthorizationService.requireOwnerOrAdmin(product);
 
         return product;
     }

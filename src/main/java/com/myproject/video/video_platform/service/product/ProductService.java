@@ -21,6 +21,7 @@ import com.myproject.video.video_platform.exception.user.UserNotFoundException;
 import com.myproject.video.video_platform.repository.auth.UserRepository;
 import com.myproject.video.video_platform.repository.products.ProductRepository;
 import com.myproject.video.video_platform.repository.products.download.DownloadProductRepository;
+import com.myproject.video.video_platform.service.admin.AdminAuditService;
 import com.myproject.video.video_platform.service.product.strategy_handler.ProductTypeHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -45,6 +46,8 @@ public class ProductService {
     private final Map<ProductType, ProductTypeHandler> handlers;
     private final ProductConverter productConverter;
     private final ObjectMapper objectMapper;
+    private final ProductAuthorizationService productAuthorizationService;
+    private final AdminAuditService adminAuditService;
 
     public ProductService(UserRepository userRepository,
                           DownloadProductRepository downloadProductRepository,
@@ -52,13 +55,17 @@ public class ProductService {
                           ProductRepository productRepository,
                           Set<ProductTypeHandler> handlerSet,
                           ProductConverter productConverter,
-                          ObjectMapper objectMapper) {
+                          ObjectMapper objectMapper,
+                          ProductAuthorizationService productAuthorizationService,
+                          AdminAuditService adminAuditService) {
         this.userRepository = userRepository;
         this.downloadProductRepository = downloadProductRepository;
         this.productRepository = productRepository;
         this.downloadProductConverter = downloadProductConverter;
         this.productConverter = productConverter;
         this.objectMapper = objectMapper;
+        this.productAuthorizationService = productAuthorizationService;
+        this.adminAuditService = adminAuditService;
 
         // Convert the set of handlers into a map: ProductType -> handler
         this.handlers = handlerSet.stream()
@@ -70,7 +77,9 @@ public class ProductService {
 
 
     public AbstractProductResponseDto createProduct(AbstractProductRequestDto dto) {
-        return getProductStrategyHandler(dto.getType()).createProduct(dto);
+        AbstractProductResponseDto response = getProductStrategyHandler(dto.getType()).createProduct(dto);
+        recordAdminProductAction("PRODUCT_CREATE", null, response);
+        return response;
     }
 
 
@@ -84,13 +93,20 @@ public class ProductService {
     }
 
     public AbstractProductResponseDto updateProduct(AbstractProductRequestDto dto) {
-        return getProductStrategyHandler(dto.getType()).updateProduct(dto);
+        Product before = getProductEntity(dto.getId());
+        String beforeSummary = productSummary(before);
+        AbstractProductResponseDto response = getProductStrategyHandler(dto.getType()).updateProduct(dto);
+        recordAdminProductAction("PRODUCT_UPDATE", beforeSummary, response);
+        return response;
     }
 
     public AbstractProductResponseDto patchProduct(String productId, JsonNode payload) {
         Product product = getProductEntity(productId);
+        String beforeSummary = productSummary(product);
         AbstractProductRequestDto dto = mapPatchPayload(product, payload);
-        return getProductStrategyHandler(product.getType().name()).updateProduct(dto);
+        AbstractProductResponseDto response = getProductStrategyHandler(product.getType().name()).updateProduct(dto);
+        recordAdminProductAction("PRODUCT_UPDATE", beforeSummary, response);
+        return response;
     }
 
     public List<AbstractProductResponseDto> getAllProductsForUser(String userId) {
@@ -124,13 +140,18 @@ public class ProductService {
 
 
     public void deleteProduct(String userId, String productId, String productType) {
+        Product before = getProductEntity(productId);
+        String beforeSummary = productSummary(before);
         getProductStrategyHandler(productType).deleteProduct(userId, productId);
+        recordAdminProductAction("PRODUCT_DELETE", beforeSummary, before.getId().toString(), before.getUser().getUserId().toString(), null);
     }
 
     public void deleteProductById(String productId) {
         Product product = getProductEntity(productId);
+        String beforeSummary = productSummary(product);
         getProductStrategyHandler(product.getType().name())
                 .deleteProduct(product.getUser().getUserId().toString(), product.getId().toString());
+        recordAdminProductAction("PRODUCT_DELETE", beforeSummary, product.getId().toString(), product.getUser().getUserId().toString(), null);
     }
 
     public List<ProductMinimised> getAllProductsMinimised() {
@@ -179,6 +200,56 @@ public class ProductService {
         UUID id = UUID.fromString(productId);
         return productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
+    }
+
+    private void recordAdminProductAction(String action, String beforeSummary, AbstractProductResponseDto response) {
+        if (!productAuthorizationService.isCurrentUserAdmin()) {
+            return;
+        }
+        recordAdminProductAction(
+                action,
+                beforeSummary,
+                response.getId().toString(),
+                response.getUserId().toString(),
+                responseSummary(response)
+        );
+    }
+
+    private void recordAdminProductAction(String action,
+                                          String beforeSummary,
+                                          String productId,
+                                          String ownerId,
+                                          String afterSummary) {
+        if (!productAuthorizationService.isCurrentUserAdmin()) {
+            return;
+        }
+        adminAuditService.recordCurrentAdminAction(
+                action,
+                "PRODUCT",
+                productId,
+                beforeSummary,
+                afterSummary != null ? afterSummary : "ownerId=" + ownerId
+        );
+    }
+
+    private String productSummary(Product product) {
+        return "id=%s,type=%s,name=%s,status=%s,ownerId=%s".formatted(
+                product.getId(),
+                product.getType(),
+                product.getName(),
+                product.getStatus(),
+                product.getUser().getUserId()
+        );
+    }
+
+    private String responseSummary(AbstractProductResponseDto response) {
+        return "id=%s,type=%s,name=%s,status=%s,ownerId=%s".formatted(
+                response.getId(),
+                response.getType(),
+                response.getName(),
+                response.getStatus(),
+                response.getUserId()
+        );
     }
 
     private AbstractProductRequestDto mapPatchPayload(Product product, JsonNode payload) {

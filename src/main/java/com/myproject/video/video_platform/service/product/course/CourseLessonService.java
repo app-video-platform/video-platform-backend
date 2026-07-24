@@ -17,10 +17,9 @@ import com.myproject.video.video_platform.repository.products.ProductRepository;
 import com.myproject.video.video_platform.repository.products.course.CourseProductRepository;
 import com.myproject.video.video_platform.repository.products.course.CourseLessonRepository;
 import com.myproject.video.video_platform.repository.products.course.CourseSectionRepository;
-import com.myproject.video.video_platform.service.user.CurrentUserService;
+import com.myproject.video.video_platform.service.product.ProductAuthorizationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +36,7 @@ public class CourseLessonService {
     private final CourseProductRepository courseRepo;
     private final CourseSectionRepository sectionRepo;
     private final CourseLessonRepository lessonRepo;
-    private final CurrentUserService currentUserService;
+    private final ProductAuthorizationService productAuthorizationService;
 
     /**
      * POST /api/sections/{sectionId}/lessons
@@ -49,12 +48,7 @@ public class CourseLessonService {
         CourseSection section = sectionRepo.findById(sectionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Section not found: " + sectionId));
 
-        UUID currentUserId = currentUserService.getCurrentUserId();
-        log.info("User id from context: {}", currentUserId);
-
-        if (!section.getCourse().getUser().getUserId().equals(currentUserId))
-            throw new AccessDeniedException("You don’t own this product.");
-
+        productAuthorizationService.requireOwnerOrAdmin(section.getCourse());
 
         CourseLesson lesson = new CourseLesson();
         lesson.setTitle(dto.getTitle());
@@ -94,11 +88,7 @@ public class CourseLessonService {
         CourseLesson lesson = lessonRepo.findById(lessonId)
                 .orElseThrow(() -> new ResourceNotFoundException("Lesson not found: " + dto.getId()));
 
-        UUID currentUserId = currentUserService.getCurrentUserId();
-        log.info("User id from context: {}", currentUserId);
-
-        if (!lesson.getSection().getCourse().getUser().getUserId().equals(currentUserId))
-            throw new AccessDeniedException("You don’t own this product.");
+        productAuthorizationService.requireOwnerOrAdmin(lesson.getSection().getCourse());
 
         lesson.setTitle(dto.getTitle());
         LessonType newType = LessonType.valueOf(dto.getType().toUpperCase());
@@ -204,11 +194,7 @@ public class CourseLessonService {
 public void deleteLesson(String userId, String lessonId) {
         Optional<CourseLesson> lessonOptional = lessonRepo.findById(UUID.fromString(lessonId));
         if (lessonOptional.isPresent()) {
-            UUID currentUserId = currentUserService.getCurrentUserId();
-            log.info("User id from context: {}", currentUserId);
-
-            if (!lessonOptional.get().getSection().getCourse().getUser().getUserId().equals(currentUserId))
-                throw new AccessDeniedException("You don’t own this product.");
+            productAuthorizationService.requireOwnerOrAdmin(lessonOptional.get().getSection().getCourse());
 
             CourseProduct course = lessonOptional.get().getSection().getCourse();
             lessonRepo.delete(lessonOptional.get());
@@ -223,12 +209,7 @@ public void deleteLesson(String userId, String lessonId) {
         Product product = productRepository.findById(UUID.fromString(productId))
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
 
-        UUID currentUserId = currentUserService.getCurrentUserId();
-        log.info("User id from context: {}", currentUserId);
-
-        if (!product.getUser().getUserId().equals(currentUserId)) {
-            throw new AccessDeniedException("You don’t own this product.");
-        }
+        productAuthorizationService.requireOwnerOrAdmin(product);
         return product;
     }
 

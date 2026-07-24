@@ -8,13 +8,10 @@ import com.myproject.video.video_platform.dto.products.course.CourseProductReque
 import com.myproject.video.video_platform.entity.products.course.CourseProduct;
 import com.myproject.video.video_platform.entity.user.User;
 import com.myproject.video.video_platform.exception.product.ResourceNotFoundException;
-import com.myproject.video.video_platform.exception.user.UserNotFoundException;
 import com.myproject.video.video_platform.repository.products.course.CourseProductRepository;
-import com.myproject.video.video_platform.service.user.CurrentUserService;
-import com.myproject.video.video_platform.service.user.UserService;
+import com.myproject.video.video_platform.service.product.ProductAuthorizationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,8 +25,7 @@ public class CourseProductHandler implements ProductTypeHandler {
 
     private final CourseProductRepository courseRepo;
     private final CourseProductConverter converter;
-    private final UserService userService;
-    private final CurrentUserService currentUserService;
+    private final ProductAuthorizationService productAuthorizationService;
 
     @Override
     public ProductType getSupportedType() {
@@ -51,15 +47,7 @@ public class CourseProductHandler implements ProductTypeHandler {
         CourseProductRequestDto dto = (CourseProductRequestDto) baseDto;
         log.info("Creating a new Course: {}", dto.getName());
 
-        User owner = userService
-                .findByUserId(UUID.fromString(dto.getUserId()))
-                .orElseThrow(() -> new UserNotFoundException("User not found: " + dto.getUserId()));
-
-        UUID currentUserId = currentUserService.getCurrentUserId();
-        log.info("User id from context: {}", currentUserId);
-
-        if (!owner.getUserId().equals(currentUserId))
-            throw new AccessDeniedException("You don’t own this product.");
+        User owner = productAuthorizationService.resolveOwnerForCreate(dto);
 
         CourseProduct courseEntity = converter.mapCourseCreateDtoToEntity(dto, owner);
         CourseProduct saved = courseRepo.save(courseEntity);
@@ -76,12 +64,7 @@ public class CourseProductHandler implements ProductTypeHandler {
         CourseProduct existing = courseRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found: " + dto.getId()));
 
-        UUID currentUserId = currentUserService.getCurrentUserId();
-        log.info("User id from context: {}", currentUserId);
-
-        if (!existing.getUser().getUserId().equals(currentUserId))
-            throw new AccessDeniedException("You don’t own this product.");
-
+        productAuthorizationService.requireOwnerOrAdmin(existing);
 
         converter.applyCourseUpdateDto(existing, dto);
         CourseProduct saved = courseRepo.save(existing);
@@ -90,13 +73,9 @@ public class CourseProductHandler implements ProductTypeHandler {
 
     @Override
     public void deleteProduct(String userId, String productId) {
-        UUID currentUserId = currentUserService.getCurrentUserId();
-        log.info("User id from context: {}", currentUserId);
-
         Optional<CourseProduct> courseProductOptional = courseRepo.findById(UUID.fromString(productId));
         if (courseProductOptional.isPresent()) {
-            if (!courseProductOptional.get().getUser().getUserId().equals(currentUserId))
-                throw new AccessDeniedException("You don’t own this product.");
+            productAuthorizationService.requireOwnerOrAdmin(courseProductOptional.get());
 
             courseRepo.delete(courseProductOptional.get());
             log.info("Deleted succesfully a DownloadProduct: {}", productId);
