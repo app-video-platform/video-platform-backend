@@ -34,7 +34,8 @@ public class ProductContentAccessService {
         if (userId == null) {
             return false;
         }
-        if (hasAdminRole(authentication) || product.getUser().getUserId().equals(userId)) {
+        if ((authentication != null && hasAdminRole(authentication))
+                || product.getUser().getUserId().equals(userId)) {
             return true;
         }
         return entitlementService.hasActiveEntitlement(userId, product.getId());
@@ -116,11 +117,6 @@ public class ProductContentAccessService {
     }
 
     private UUID authenticatedUserId(Authentication authentication) {
-        if (authentication == null
-                || !authentication.isAuthenticated()
-                || "anonymousUser".equals(authentication.getPrincipal())) {
-            return null;
-        }
         try {
             return currentUserService.getCurrentUserId();
         } catch (RuntimeException ignored) {

@@ -16,6 +16,7 @@ import com.myproject.video.video_platform.entity.products.course.CourseProduct;
 import com.myproject.video.video_platform.entity.products.course.CourseSection;
 import com.myproject.video.video_platform.entity.user.User;
 import com.myproject.video.video_platform.repository.auth.UserRepository;
+import com.myproject.video.video_platform.repository.entitlement.ProductEntitlementRepository;
 import com.myproject.video.video_platform.repository.products.course.CourseLessonRepository;
 import com.myproject.video.video_platform.repository.products.course.CourseProductRepository;
 import com.myproject.video.video_platform.repository.products.course.CourseSectionRepository;
@@ -71,6 +72,8 @@ class LessonQuizControllerIntegrationTest {
     private QuizAttemptRepository quizAttemptRepository;
     @Autowired
     private ProductEntitlementService entitlementService;
+    @Autowired
+    private ProductEntitlementRepository entitlementRepository;
 
     @MockBean
     private CurrentUserService currentUserService;
@@ -88,6 +91,7 @@ class LessonQuizControllerIntegrationTest {
         });
 
         quizAttemptRepository.deleteAll();
+        entitlementRepository.deleteAll();
         courseLessonRepository.deleteAll();
         courseSectionRepository.deleteAll();
         courseProductRepository.deleteAll();
