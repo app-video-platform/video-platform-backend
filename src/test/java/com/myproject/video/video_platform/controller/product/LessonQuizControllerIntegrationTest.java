@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.myproject.video.video_platform.common.enums.products.ProductStatus;
 import com.myproject.video.video_platform.common.enums.products.ProductType;
 import com.myproject.video.video_platform.common.enums.products.course.LessonType;
+import com.myproject.video.video_platform.common.enums.entitlement.EntitlementSource;
 import com.myproject.video.video_platform.dto.products.course.quiz.QuizDraftDto;
 import com.myproject.video.video_platform.dto.products.course.quiz.QuizOptionDto;
 import com.myproject.video.video_platform.dto.products.course.quiz.QuizQuestionDto;
@@ -20,6 +21,7 @@ import com.myproject.video.video_platform.repository.products.course.CourseProdu
 import com.myproject.video.video_platform.repository.products.course.CourseSectionRepository;
 import com.myproject.video.video_platform.repository.products.course.quiz.QuizAttemptRepository;
 import com.myproject.video.video_platform.service.user.CurrentUserService;
+import com.myproject.video.video_platform.service.entitlement.ProductEntitlementService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -67,6 +69,8 @@ class LessonQuizControllerIntegrationTest {
     private CourseLessonRepository courseLessonRepository;
     @Autowired
     private QuizAttemptRepository quizAttemptRepository;
+    @Autowired
+    private ProductEntitlementService entitlementService;
 
     @MockBean
     private CurrentUserService currentUserService;
@@ -128,6 +132,11 @@ class LessonQuizControllerIntegrationTest {
         String correctOptionId = quizJson.at("/questions/0/options/0/id").asText();
 
         currentUser.set(learner.getUserId());
+        entitlementService.grant(
+                learner.getUserId(),
+                lesson.getSection().getCourse(),
+                EntitlementSource.FREE_ENROLLMENT
+        );
         mockMvc.perform(get("/api/lessons/{lessonId}/quiz/play", lesson.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.questions[0].options[0].isCorrect").doesNotExist());
