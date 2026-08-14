@@ -306,6 +306,12 @@ class AuthRoleSmokeIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
+        CourseProductRequestDto publicCourse = courseRequest(
+                creator.getUserId().toString(),
+                "Public smoke course"
+        );
+        publicCourse.setStatus("PUBLISHED");
+
         MvcResult productResult = mockMvc.perform(post("/api/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .cookie(
@@ -313,7 +319,7 @@ class AuthRoleSmokeIntegrationTest {
                                 responseCookie(loginResult, "XSRF-TOKEN")
                         )
                         .header("X-XSRF-TOKEN", responseCookie(loginResult, "XSRF-TOKEN").getValue())
-                        .content(objectMapper.writeValueAsString(courseRequest(creator.getUserId().toString(), "Public smoke course"))))
+                        .content(objectMapper.writeValueAsString(publicCourse)))
                 .andExpect(status().isCreated())
                 .andReturn();
 

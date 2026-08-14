@@ -19,6 +19,7 @@ import com.myproject.video.video_platform.exception.product.InvalidProductTypeEx
 import com.myproject.video.video_platform.exception.product.ResourceNotFoundException;
 import com.myproject.video.video_platform.exception.user.UserNotFoundException;
 import com.myproject.video.video_platform.repository.auth.UserRepository;
+import com.myproject.video.video_platform.repository.entitlement.ProductEntitlementRepository;
 import com.myproject.video.video_platform.repository.products.ProductRepository;
 import com.myproject.video.video_platform.repository.products.download.DownloadProductRepository;
 import com.myproject.video.video_platform.service.admin.AdminAuditService;
@@ -48,6 +49,7 @@ public class ProductService {
     private final ObjectMapper objectMapper;
     private final ProductAuthorizationService productAuthorizationService;
     private final AdminAuditService adminAuditService;
+    private final ProductEntitlementRepository entitlementRepository;
 
     public ProductService(UserRepository userRepository,
                           DownloadProductRepository downloadProductRepository,
@@ -57,7 +59,8 @@ public class ProductService {
                           ProductConverter productConverter,
                           ObjectMapper objectMapper,
                           ProductAuthorizationService productAuthorizationService,
-                          AdminAuditService adminAuditService) {
+                          AdminAuditService adminAuditService,
+                          ProductEntitlementRepository entitlementRepository) {
         this.userRepository = userRepository;
         this.downloadProductRepository = downloadProductRepository;
         this.productRepository = productRepository;
@@ -66,6 +69,7 @@ public class ProductService {
         this.objectMapper = objectMapper;
         this.productAuthorizationService = productAuthorizationService;
         this.adminAuditService = adminAuditService;
+        this.entitlementRepository = entitlementRepository;
 
         // Convert the set of handlers into a map: ProductType -> handler
         this.handlers = handlerSet.stream()
@@ -142,6 +146,7 @@ public class ProductService {
     public void deleteProduct(String userId, String productId, String productType) {
         Product before = getProductEntity(productId);
         String beforeSummary = productSummary(before);
+        entitlementRepository.deleteAllByProductId(before.getId());
         getProductStrategyHandler(productType).deleteProduct(userId, productId);
         recordAdminProductAction("PRODUCT_DELETE", beforeSummary, before.getId().toString(), before.getUser().getUserId().toString(), null);
     }
@@ -149,6 +154,7 @@ public class ProductService {
     public void deleteProductById(String productId) {
         Product product = getProductEntity(productId);
         String beforeSummary = productSummary(product);
+        entitlementRepository.deleteAllByProductId(product.getId());
         getProductStrategyHandler(product.getType().name())
                 .deleteProduct(product.getUser().getUserId().toString(), product.getId().toString());
         recordAdminProductAction("PRODUCT_DELETE", beforeSummary, product.getId().toString(), product.getUser().getUserId().toString(), null);

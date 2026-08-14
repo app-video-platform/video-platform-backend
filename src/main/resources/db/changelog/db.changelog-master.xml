@@ -34,5 +34,7 @@
     <include file="db/changelog/scripts/28-add-course-lesson-description.sql" />
     <include file="db/changelog/scripts/29-normalize_roles.sql" />
     <include file="db/changelog/scripts/30-create-admin-audit-log.sql" />
+    <include file="db/changelog/scripts/31-enforce-single-user-role.sql" />
+    <include file="db/changelog/scripts/32-create-product-entitlements.sql" />
 
 </databaseChangeLog>

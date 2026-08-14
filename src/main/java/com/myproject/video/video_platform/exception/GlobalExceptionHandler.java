@@ -9,6 +9,7 @@ import com.myproject.video.video_platform.exception.auth.TokenExpiredException;
 import com.myproject.video.video_platform.exception.auth.UserAlreadyExistingException;
 import com.myproject.video.video_platform.exception.email.EmailSendingException;
 import com.myproject.video.video_platform.exception.product.InvalidProductTypeException;
+import com.myproject.video.video_platform.exception.product.PaymentRequiredException;
 import com.myproject.video.video_platform.exception.product.QuizValidationException;
 import com.myproject.video.video_platform.exception.product.ResourceNotFoundException;
 import com.myproject.video.video_platform.exception.product.UnsupportedProductOperationException;
@@ -130,5 +131,11 @@ public class GlobalExceptionHandler {
     ) {
         ErrorResponse error = new ErrorResponse(ex.getMessage(), HttpStatus.CONFLICT.value());
         return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(PaymentRequiredException.class)
+    public ResponseEntity<ErrorResponse> handlePaymentRequiredException(PaymentRequiredException ex) {
+        ErrorResponse error = new ErrorResponse(ex.getMessage(), HttpStatus.PAYMENT_REQUIRED.value());
+        return new ResponseEntity<>(error, HttpStatus.PAYMENT_REQUIRED);
     }
 }

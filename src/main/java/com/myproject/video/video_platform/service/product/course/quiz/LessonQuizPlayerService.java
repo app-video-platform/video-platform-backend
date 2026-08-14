@@ -2,7 +2,6 @@ package com.myproject.video.video_platform.service.product.course.quiz;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.myproject.video.video_platform.common.enums.products.ProductStatus;
 import com.myproject.video.video_platform.common.enums.products.course.LessonType;
 import com.myproject.video.video_platform.dto.products.course.quiz.QuizDraftDto;
 import com.myproject.video.video_platform.dto.products.course.quiz.QuizQuestionResultDto;
@@ -18,9 +17,9 @@ import com.myproject.video.video_platform.repository.products.course.CourseLesso
 import com.myproject.video.video_platform.repository.products.course.quiz.QuizAttemptRepository;
 import com.myproject.video.video_platform.service.product.course.quiz.QuizSubmissionEvaluator.QuestionResult;
 import com.myproject.video.video_platform.service.product.course.quiz.QuizSubmissionEvaluator.QuizSubmissionEvaluation;
+import com.myproject.video.video_platform.service.entitlement.ProductContentAccessService;
 import com.myproject.video.video_platform.service.user.CurrentUserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +41,7 @@ public class LessonQuizPlayerService {
     private final QuizMapper quizMapper;
     private final QuizSubmissionEvaluator submissionEvaluator;
     private final ObjectMapper objectMapper;
+    private final ProductContentAccessService contentAccessService;
 
     @Transactional(readOnly = true)
     public QuizDraftDto getQuizForPlay(UUID lessonId) {
@@ -131,15 +131,7 @@ public class LessonQuizPlayerService {
     }
 
     private void ensureLearnerAccess(CourseLesson lesson) {
-        UUID currentUserId = currentUserService.getCurrentUserId();
-        UUID ownerId = lesson.getSection().getCourse().getUser().getUserId();
-        if (ownerId.equals(currentUserId)) {
-            return;
-        }
-        ProductStatus status = lesson.getSection().getCourse().getStatus();
-        if (status != ProductStatus.PUBLISHED) {
-            throw new AccessDeniedException("Lesson is not publicly available");
-        }
+        contentAccessService.requireContentAccess(lesson.getSection().getCourse());
     }
 
     private Quiz requireQuiz(CourseLesson lesson) {

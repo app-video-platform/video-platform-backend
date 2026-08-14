@@ -5,6 +5,7 @@ import com.myproject.video.video_platform.dto.products.AbstractProductRequestDto
 import com.myproject.video.video_platform.dto.products.AbstractProductResponseDto;
 import com.myproject.video.video_platform.dto.products.ProductMinimised;
 import com.myproject.video.video_platform.service.product.ProductService;
+import com.myproject.video.video_platform.service.entitlement.ProductContentAccessService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -34,9 +35,14 @@ import java.util.List;
 public class ProductsController implements ProductsApiDoc {
 
     private final ProductService productService;
+    private final ProductContentAccessService contentAccessService;
 
-    public ProductsController(ProductService productService) {
+    public ProductsController(
+            ProductService productService,
+            ProductContentAccessService contentAccessService
+    ) {
         this.productService = productService;
+        this.contentAccessService = contentAccessService;
     }
 
     @PostMapping
@@ -51,7 +57,9 @@ public class ProductsController implements ProductsApiDoc {
     @GetMapping(params = "userId")
     @Override
     public ResponseEntity<List<AbstractProductResponseDto>> getProducts(@RequestParam(name = "userId") String userId) {
-        List<AbstractProductResponseDto> response = productService.getAllProductsForUser(userId);
+        List<AbstractProductResponseDto> response = contentAccessService.protectProductResponses(
+                productService.getAllProductsForUser(userId)
+        );
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -83,7 +91,9 @@ public class ProductsController implements ProductsApiDoc {
             @RequestParam(name = "productId") String productId,
             @RequestParam(name = "type") String type) {
 
-        AbstractProductResponseDto response = productService.getProductByIdAndType(productId, type);
+        AbstractProductResponseDto response = contentAccessService.protectProductResponse(
+                productService.getProductByIdAndType(productId, type)
+        );
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -91,7 +101,9 @@ public class ProductsController implements ProductsApiDoc {
     public ResponseEntity<AbstractProductResponseDto> getProductById(
             @PathVariable("productId") String productId
     ) {
-        AbstractProductResponseDto response = productService.getProductById(productId);
+        AbstractProductResponseDto response = contentAccessService.protectProductResponse(
+                productService.getProductById(productId)
+        );
         return ResponseEntity.ok(response);
     }
 

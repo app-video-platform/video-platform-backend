@@ -3,6 +3,7 @@ package com.myproject.video.video_platform.service.product.course.quiz;
 import com.myproject.video.video_platform.common.enums.products.ProductStatus;
 import com.myproject.video.video_platform.common.enums.products.ProductType;
 import com.myproject.video.video_platform.common.enums.products.course.LessonType;
+import com.myproject.video.video_platform.common.enums.entitlement.EntitlementSource;
 import com.myproject.video.video_platform.dto.products.course.quiz.QuizDraftDto;
 import com.myproject.video.video_platform.dto.products.course.quiz.QuizOptionDto;
 import com.myproject.video.video_platform.dto.products.course.quiz.QuizQuestionDto;
@@ -15,11 +16,13 @@ import com.myproject.video.video_platform.entity.products.course.CourseSection;
 import com.myproject.video.video_platform.entity.products.course.quiz.QuizAttempt;
 import com.myproject.video.video_platform.entity.user.User;
 import com.myproject.video.video_platform.repository.auth.UserRepository;
+import com.myproject.video.video_platform.repository.entitlement.ProductEntitlementRepository;
 import com.myproject.video.video_platform.repository.products.course.CourseLessonRepository;
 import com.myproject.video.video_platform.repository.products.course.CourseProductRepository;
 import com.myproject.video.video_platform.repository.products.course.CourseSectionRepository;
 import com.myproject.video.video_platform.repository.products.course.quiz.QuizAttemptRepository;
 import com.myproject.video.video_platform.service.user.CurrentUserService;
+import com.myproject.video.video_platform.service.entitlement.ProductEntitlementService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -57,6 +60,10 @@ class LessonQuizIntegrationTest {
     private QuizAttemptRepository attemptRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private ProductEntitlementRepository entitlementRepository;
+    @Autowired
+    private ProductEntitlementService entitlementService;
 
     @MockBean
     private CurrentUserService currentUserService;
@@ -72,6 +79,13 @@ class LessonQuizIntegrationTest {
             }
             return userId;
         });
+
+        attemptRepository.deleteAll();
+        entitlementRepository.deleteAll();
+        courseLessonRepository.deleteAll();
+        courseSectionRepository.deleteAll();
+        courseProductRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     @Test
@@ -84,6 +98,11 @@ class LessonQuizIntegrationTest {
         QuizDraftDto created = authoringService.upsertQuiz(lesson.getId(), buildDraft());
 
         currentUser.set(learner.getUserId());
+        entitlementService.grant(
+                learner.getUserId(),
+                lesson.getSection().getCourse(),
+                EntitlementSource.FREE_ENROLLMENT
+        );
         QuizDraftDto playView = playerService.getQuizForPlay(lesson.getId());
         assertNull(playView.getQuestions().get(0).getOptions().get(0).getIsCorrect(), "Play mode must hide correctness");
 
