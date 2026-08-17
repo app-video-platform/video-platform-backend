@@ -92,12 +92,15 @@ the main package structure under `src/test/java`.
 
 ## Product Domain Rules
 
-- Backend-supported product types are currently `COURSE`, `DOWNLOAD`, and
-  `CONSULTATION`.
+- Backend-supported product types are currently `COURSE`, `DOWNLOAD`,
+  `CONSULTATION`, and `MEMBERSHIP`.
 - Backend-supported product statuses are `DRAFT`, `PUBLISHED`, and `HIDDEN`.
-- `MEMBERSHIP` is not a persisted backend product type. Do not add membership
-  fields to generic product DTOs or claim membership support without a complete,
-  reviewed backend contract and migration.
+- `MEMBERSHIP` supports Creator/Admin authoring persistence for recurring-price
+  metadata, native content metadata, included Course/Download Products, and feed
+  ordering. Membership publishing, binary media transfer, subscriptions,
+  checkout, entitlements, and member-facing access are intentionally unavailable.
+- Membership Product status is limited to `DRAFT` and `HIDDEN`; attempts to
+  publish return a conflict until the excluded runtime capabilities exist.
 - Products use JPA `TABLE_PER_CLASS` inheritance. Each concrete product table
   contains the shared Product fields.
 - Product-type behavior is routed through `ProductTypeHandler`; add a complete

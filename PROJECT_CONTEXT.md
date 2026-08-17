@@ -53,11 +53,14 @@ Current backend Product types:
 - `DOWNLOAD`: ordered sections containing downloadable files.
 - `CONSULTATION`: duration, meeting method, location, buffer, capacity, message,
   policy, and connected-calendar information.
+- `MEMBERSHIP`: recurring-price authoring metadata, native Post/Video/Resource
+  metadata, included Course/Download Products, and an ordered feed.
 
 Current Product statuses are `DRAFT`, `PUBLISHED`, and `HIDDEN`.
 
-`MEMBERSHIP` is not implemented as a backend Product type. Frontend Membership
-contracts or mocks must not be treated as production backend capability.
+Membership is an authoring-only Product type. Membership publishing, binary
+media upload/delivery, checkout, subscriptions, entitlements, and member-facing
+access are not implemented.
 
 ## Technology and Runtime
 
@@ -151,13 +154,17 @@ demoted. Admin role and Product mutations are recorded in the Admin audit log.
 
 `Product` is an abstract JPA entity using `InheritanceType.TABLE_PER_CLASS`.
 Concrete Product tables repeat shared fields including ID, name, description,
-image, type, status, owner, price, customer count, and timestamps.
+image, type, status, owner, price, pricing model, billing interval, currency,
+customer count, and timestamps. Existing Product types use `ONE_TIME`, no
+billing interval, and `EUR`; Membership uses `RECURRING`, `MONTH` or `YEAR`, and
+`EUR`.
 
 Product behavior is dispatched through `ProductTypeHandler` implementations:
 
 - `CourseProductHandler`
 - `DownloadProductHandler`
 - `ConsultationProductHandler`
+- `MembershipProductHandler`
 
 Converters map each concrete Product type to its API DTO. The generic Product
 service resolves the correct handler, applies ownership rules, records Admin
@@ -191,6 +198,18 @@ reject invalid cross-type operations rather than silently accepting them.
 
 Legacy Course and generic file endpoints still exist. Confirm frontend usage
 before removing them. Prefer canonical nested routes for new integrations.
+
+Membership authoring uses the aggregate rooted at
+`/api/products/{productId}/membership`, with nested content endpoints and a
+transactional feed replacement endpoint. These operations require Creator or
+Admin access even though general Product GET routes have public URL-level
+matching. Creators can access only their own Memberships.
+
+Native Membership content supports `POST`, `VIDEO`, and `RESOURCE`. Video and
+Resource records persist server-owned file IDs plus filename, MIME type, and
+size only; this API does not upload or deliver binary data. Feed entries cover
+all native content and optional same-owner Course/Download Products. Ordering is
+either manual one-based positions or server-derived newest-first timestamps.
 
 ## Course Quizzes
 
@@ -253,6 +272,8 @@ The backend now persists one-time commerce Orders, immutable Order-item
 snapshots, payment attempts, and idempotent processed payment events. Checkout
 is authenticated, server-priced, EUR-only, limited to 20 unique published paid
 Products, and restricted to Products owned by one Creator.
+Membership and all recurring-price Products are explicitly rejected from this
+one-time checkout path.
 
 Current commerce endpoints are:
 
@@ -311,7 +332,7 @@ numbered SQL migrations for:
 - users, roles, single-role enforcement, verification tokens, and refresh
   tokens
 - user profile and social-link data
-- Course, Download, and Consultation Product tables
+- Course, Download, Consultation, and Membership Product tables
 - Course and Download sections and their child content
 - Quiz definitions, options, and attempts
 - connected calendars
@@ -320,6 +341,8 @@ numbered SQL migrations for:
 - Product entitlements
 - one-time commerce Orders, Order items, payment attempts, payment events, and
   purchase-entitlement references
+- Membership content and feed entries, including recurring-pricing backfills on
+  all concrete Product tables
 
 Hibernate uses `ddl-auto: none`; adding or changing an entity does not update
 the deployed schema automatically. Every persistence change needs a new
@@ -372,7 +395,9 @@ Implemented and server-backed:
 - Google sign-in
 - authenticated user profile and social-link updates
 - single-role user model and Admin role management
-- Course, Download, and Consultation Product CRUD
+- Course, Download, Consultation, and Membership Product CRUD
+- Membership Creator/Admin config, content-metadata, included-Product, and feed
+  authoring
 - Product ownership and Admin cross-owner rules
 - Product search and Product summaries
 - canonical section, lesson, and Download file authoring
@@ -388,7 +413,8 @@ Implemented and server-backed:
 
 Not currently implemented as complete backend capabilities:
 
-- Membership Products, membership content, subscriptions, or member access
+- Membership binary media upload/delivery, Product publishing, subscriptions,
+  checkout, entitlements, or member access
 - production checkout through Stripe or another real payment provider
 - public paid purchase completion in the frontend
 - partial refunds, payment retries, taxes, coupons, marketplace payouts, or

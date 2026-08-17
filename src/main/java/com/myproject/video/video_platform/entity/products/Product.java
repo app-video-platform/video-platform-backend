@@ -2,6 +2,9 @@ package com.myproject.video.video_platform.entity.products;
 
 import com.myproject.video.video_platform.common.enums.products.ProductStatus;
 import com.myproject.video.video_platform.common.enums.products.ProductType;
+import com.myproject.video.video_platform.common.enums.products.ProductBillingInterval;
+import com.myproject.video.video_platform.common.enums.products.ProductCurrency;
+import com.myproject.video.video_platform.common.enums.products.ProductPricingModel;
 import com.myproject.video.video_platform.entity.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -44,6 +47,17 @@ public abstract class Product {
     private User user;
 
     private BigDecimal price;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ProductPricingModel pricingModel = ProductPricingModel.ONE_TIME;
+
+    @Enumerated(EnumType.STRING)
+    private ProductBillingInterval billingInterval;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ProductCurrency currency = ProductCurrency.EUR;
 
     private int customers;
 

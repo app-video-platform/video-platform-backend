@@ -5,9 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.myproject.video.video_platform.common.enums.entitlement.EntitlementStatus;
 import com.myproject.video.video_platform.common.enums.products.ProductStatus;
 import com.myproject.video.video_platform.common.enums.products.ProductType;
+import com.myproject.video.video_platform.common.enums.products.ProductBillingInterval;
+import com.myproject.video.video_platform.common.enums.products.ProductCurrency;
+import com.myproject.video.video_platform.common.enums.products.ProductPricingModel;
 import com.myproject.video.video_platform.common.enums.user.UserRole;
 import com.myproject.video.video_platform.entity.entitlement.ProductEntitlement;
 import com.myproject.video.video_platform.entity.products.course.CourseProduct;
+import com.myproject.video.video_platform.entity.products.membership.MembershipProduct;
 import com.myproject.video.video_platform.entity.user.Role;
 import com.myproject.video.video_platform.entity.user.User;
 import com.myproject.video.video_platform.exception.product.UnsupportedProductOperationException;
@@ -18,6 +22,7 @@ import com.myproject.video.video_platform.repository.commerce.CommercePaymentAtt
 import com.myproject.video.video_platform.repository.commerce.CommercePaymentEventRepository;
 import com.myproject.video.video_platform.repository.entitlement.ProductEntitlementRepository;
 import com.myproject.video.video_platform.repository.products.course.CourseProductRepository;
+import com.myproject.video.video_platform.repository.products.membership.MembershipProductRepository;
 import com.myproject.video.video_platform.service.product.ProductService;
 import com.myproject.video.video_platform.service.security.JwtProvider;
 import jakarta.servlet.http.Cookie;
@@ -64,6 +69,8 @@ class CommerceCheckoutIntegrationTest {
     @Autowired
     private CourseProductRepository productRepository;
     @Autowired
+    private MembershipProductRepository membershipProductRepository;
+    @Autowired
     private ProductEntitlementRepository entitlementRepository;
     @Autowired
     private CommercePaymentEventRepository paymentEventRepository;
@@ -103,6 +110,7 @@ class CommerceCheckoutIntegrationTest {
         entitlementRepository.deleteAll();
         paymentAttemptRepository.deleteAll();
         orderRepository.deleteAll();
+        membershipProductRepository.deleteAll();
         productRepository.deleteAll();
         userRepository.deleteAll();
         roleRepository.deleteAll();
@@ -181,6 +189,27 @@ class CommerceCheckoutIntegrationTest {
                 .andExpect(status().isCreated());
         createCheckout(List.of(second.getId()), "reused-key")
                 .andExpect(status().isConflict());
+    }
+
+    @Test
+    void membershipCannotEnterOneTimeCheckout() throws Exception {
+        MembershipProduct membership = new MembershipProduct();
+        membership.setName("Paid membership");
+        membership.setDescription("Recurring");
+        membership.setType(ProductType.MEMBERSHIP);
+        membership.setStatus(ProductStatus.PUBLISHED);
+        membership.setPrice(new BigDecimal("12.00"));
+        membership.setPricingModel(ProductPricingModel.RECURRING);
+        membership.setBillingInterval(ProductBillingInterval.MONTH);
+        membership.setCurrency(ProductCurrency.EUR);
+        membership.setUser(creator);
+        membership = membershipProductRepository.save(membership);
+
+        createCheckout(List.of(membership.getId()), "membership-checkout")
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.message").value(
+                        "Recurring and Membership Products cannot use one-time checkout"));
+        assertEquals(0, entitlementRepository.count());
     }
 
     @Test

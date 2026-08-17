@@ -57,6 +57,7 @@ public class ProductSectionService {
             case COURSE -> createCourseSection(product.getId(), dto);
             case DOWNLOAD -> createDownloadSection(product.getId(), dto);
             case CONSULTATION -> throw unsupported("Sections are not supported for CONSULTATION products.");
+            case MEMBERSHIP -> throw unsupported("Sections are managed through the Membership feed API.");
         };
     }
 
@@ -72,6 +73,7 @@ public class ProductSectionService {
             case COURSE -> updateCourseSection(product.getId(), sectionId, dto);
             case DOWNLOAD -> updateDownloadSection(product.getId(), sectionId, dto);
             case CONSULTATION -> throw unsupported("Sections are not supported for CONSULTATION products.");
+            case MEMBERSHIP -> throw unsupported("Sections are managed through the Membership feed API.");
         };
     }
 
@@ -83,6 +85,7 @@ public class ProductSectionService {
             case COURSE -> deleteCourseSection(product.getId(), sectionId);
             case DOWNLOAD -> deleteDownloadSection(product.getId(), sectionId);
             case CONSULTATION -> throw unsupported("Sections are not supported for CONSULTATION products.");
+            case MEMBERSHIP -> throw unsupported("Sections are managed through the Membership feed API.");
         }
     }
 
@@ -94,6 +97,7 @@ public class ProductSectionService {
             case COURSE -> mapCourseSection(loadCourseSection(product.getId(), sectionId));
             case DOWNLOAD -> mapDownloadSection(loadDownloadSection(product.getId(), sectionId));
             case CONSULTATION -> throw unsupported("Sections are not supported for CONSULTATION products.");
+            case MEMBERSHIP -> throw unsupported("Sections are managed through the Membership feed API.");
         };
     }
 

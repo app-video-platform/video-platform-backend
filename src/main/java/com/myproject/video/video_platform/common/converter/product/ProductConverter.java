@@ -5,10 +5,12 @@ import com.myproject.video.video_platform.dto.products.ProductMinimised;
 import com.myproject.video.video_platform.dto.products.consultation.ConsultationProductResponseDto;
 import com.myproject.video.video_platform.dto.products.course.CourseProductResponseDto;
 import com.myproject.video.video_platform.dto.products.download.DownloadProductResponseDto;
+import com.myproject.video.video_platform.dto.products.membership.MembershipProductResponseDto;
 import com.myproject.video.video_platform.entity.products.Product;
 import com.myproject.video.video_platform.entity.products.consultation.ConsultationProduct;
 import com.myproject.video.video_platform.entity.products.course.CourseProduct;
 import com.myproject.video.video_platform.entity.products.download.DownloadProduct;
+import com.myproject.video.video_platform.entity.products.membership.MembershipProduct;
 import com.myproject.video.video_platform.entity.user.User;
 import org.springframework.stereotype.Component;
 
@@ -27,6 +29,8 @@ public class ProductConverter {
             dto = new CourseProductResponseDto();
         } else if (product instanceof ConsultationProduct) {
             dto = new ConsultationProductResponseDto();
+        } else if (product instanceof MembershipProduct) {
+            dto = new MembershipProductResponseDto();
         } else {
             throw new IllegalArgumentException("Unknown product subclass: " + product.getClass().getSimpleName());
         }
@@ -40,6 +44,7 @@ public class ProductConverter {
         dto.setType(product.getType().name());
         dto.setCreatedAt(product.getCreatedAt());
         dto.setUpdatedAt(product.getUpdatedAt() != null ? product.getUpdatedAt() : product.getCreatedAt());
+        ProductPricingSupport.mapResponse(product, dto);
 
         return dto;
     }
@@ -63,6 +68,9 @@ public class ProductConverter {
                 p.getType(),
                 p.getStatus() != null ? p.getStatus().name() : null,
                 p.getPrice(),
+                p.getPricingModel() == null ? "ONE_TIME" : p.getPricingModel().name(),
+                p.getBillingInterval() == null ? null : p.getBillingInterval().name(),
+                p.getCurrency() == null ? "EUR" : p.getCurrency().name(),
                 p.getImage(),
                 p.getUser().getUserId(),
                 fullName,
