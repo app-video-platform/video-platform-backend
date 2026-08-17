@@ -141,6 +141,9 @@ class ProductControllerIntegrationTest {
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.type").value("COURSE"))
+                .andExpect(jsonPath("$.pricingModel").value("ONE_TIME"))
+                .andExpect(jsonPath("$.billingInterval").doesNotExist())
+                .andExpect(jsonPath("$.currency").value("EUR"))
                 .andExpect(jsonPath("$.details.sections", hasSize(1)))
                 .andExpect(jsonPath("$.details.sections[0].title").value("Draft"));
     }

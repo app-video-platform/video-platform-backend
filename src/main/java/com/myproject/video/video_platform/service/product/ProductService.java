@@ -16,6 +16,7 @@ import com.myproject.video.video_platform.dto.products.ProductMinimised;
 import com.myproject.video.video_platform.dto.products.consultation.ConsultationProductRequestDto;
 import com.myproject.video.video_platform.dto.products.course.CourseProductRequestDto;
 import com.myproject.video.video_platform.dto.products.download.DownloadProductRequestDto;
+import com.myproject.video.video_platform.dto.products.membership.MembershipProductRequestDto;
 import com.myproject.video.video_platform.entity.products.Product;
 import com.myproject.video.video_platform.entity.user.User;
 import com.myproject.video.video_platform.exception.product.InvalidProductTypeException;
@@ -27,12 +28,15 @@ import com.myproject.video.video_platform.repository.commerce.CommerceOrderRepos
 import com.myproject.video.video_platform.repository.entitlement.ProductEntitlementRepository;
 import com.myproject.video.video_platform.repository.products.ProductRepository;
 import com.myproject.video.video_platform.repository.products.download.DownloadProductRepository;
+import com.myproject.video.video_platform.repository.products.membership.MembershipFeedEntryRepository;
+import com.myproject.video.video_platform.repository.products.membership.MembershipProductRepository;
 import com.myproject.video.video_platform.service.admin.AdminAuditService;
 import com.myproject.video.video_platform.service.product.strategy_handler.ProductTypeHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -57,6 +61,8 @@ public class ProductService {
     private final AdminAuditService adminAuditService;
     private final ProductEntitlementRepository entitlementRepository;
     private final CommerceOrderRepository commerceOrderRepository;
+    private final MembershipFeedEntryRepository membershipFeedEntryRepository;
+    private final MembershipProductRepository membershipProductRepository;
 
     public ProductService(UserRepository userRepository,
                           DownloadProductRepository downloadProductRepository,
@@ -68,7 +74,9 @@ public class ProductService {
                           ProductAuthorizationService productAuthorizationService,
                           AdminAuditService adminAuditService,
                           ProductEntitlementRepository entitlementRepository,
-                          CommerceOrderRepository commerceOrderRepository) {
+                          CommerceOrderRepository commerceOrderRepository,
+                          MembershipFeedEntryRepository membershipFeedEntryRepository,
+                          MembershipProductRepository membershipProductRepository) {
         this.userRepository = userRepository;
         this.downloadProductRepository = downloadProductRepository;
         this.productRepository = productRepository;
@@ -79,6 +87,8 @@ public class ProductService {
         this.adminAuditService = adminAuditService;
         this.entitlementRepository = entitlementRepository;
         this.commerceOrderRepository = commerceOrderRepository;
+        this.membershipFeedEntryRepository = membershipFeedEntryRepository;
+        this.membershipProductRepository = membershipProductRepository;
 
         // Convert the set of handlers into a map: ProductType -> handler
         this.handlers = handlerSet.stream()
@@ -152,20 +162,24 @@ public class ProductService {
     }
 
 
+    @Transactional
     public void deleteProduct(String userId, String productId, String productType) {
         Product before = getProductEntity(productId);
         requireProductCanBeDeleted(before.getId());
         String beforeSummary = productSummary(before);
         entitlementRepository.deleteAllByProductId(before.getId());
+        removeMembershipReferences(before.getId());
         getProductStrategyHandler(productType).deleteProduct(userId, productId);
         recordAdminProductAction("PRODUCT_DELETE", beforeSummary, before.getId().toString(), before.getUser().getUserId().toString(), null);
     }
 
+    @Transactional
     public void deleteProductById(String productId) {
         Product product = getProductEntity(productId);
         requireProductCanBeDeleted(product.getId());
         String beforeSummary = productSummary(product);
         entitlementRepository.deleteAllByProductId(product.getId());
+        removeMembershipReferences(product.getId());
         getProductStrategyHandler(product.getType().name())
                 .deleteProduct(product.getUser().getUserId().toString(), product.getId().toString());
         recordAdminProductAction("PRODUCT_DELETE", beforeSummary, product.getId().toString(), product.getUser().getUserId().toString(), null);
@@ -187,6 +201,15 @@ public class ProductService {
                     "Products with active purchases or checkout sessions cannot be deleted; hide the Product instead"
             );
         }
+    }
+
+    private void removeMembershipReferences(UUID productId) {
+        List<UUID> membershipIds = membershipFeedEntryRepository.findMembershipIdsByIncludedProductId(productId);
+        membershipFeedEntryRepository.deleteAllByIncludedProductId(productId);
+        membershipIds.forEach(id -> membershipProductRepository.findById(id).ifPresent(membership -> {
+            membership.setUpdatedAt(java.time.LocalDateTime.now());
+            membershipProductRepository.save(membership);
+        }));
     }
 
     public List<ProductMinimised> getAllProductsMinimised() {
@@ -303,6 +326,7 @@ public class ProductService {
             case COURSE -> CourseProductRequestDto.class;
             case DOWNLOAD -> DownloadProductRequestDto.class;
             case CONSULTATION -> ConsultationProductRequestDto.class;
+            case MEMBERSHIP -> MembershipProductRequestDto.class;
         };
 
         try {

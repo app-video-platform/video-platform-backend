@@ -37,5 +37,6 @@
     <include file="db/changelog/scripts/31-enforce-single-user-role.sql" />
     <include file="db/changelog/scripts/32-create-product-entitlements.sql" />
     <include file="db/changelog/scripts/33-create-commerce-foundation.sql" />
+    <include file="db/changelog/scripts/34-create-membership-authoring.sql" />
 
 </databaseChangeLog>

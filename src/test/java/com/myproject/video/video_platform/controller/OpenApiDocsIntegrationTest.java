@@ -40,6 +40,16 @@ class OpenApiDocsIntegrationTest {
         JsonNode upsertQuiz = root.path("paths").path("/api/lessons/{lessonId}/quiz").path("put");
         assertFalse(upsertQuiz.isMissingNode());
         assertEquals("Upsert quiz", upsertQuiz.path("summary").asText());
+
+        JsonNode membershipAggregate = root.path("paths")
+                .path("/api/products/{productId}/membership").path("get");
+        assertFalse(membershipAggregate.isMissingNode());
+        assertEquals("Get the complete Membership authoring aggregate",
+                membershipAggregate.path("summary").asText());
+
+        assertFalse(root.path("components").path("schemas")
+                .path("MembershipProductRequestDto").isMissingNode());
+        assertFalse(root.path("components").path("schemas")
+                .path("MembershipProductResponseDto").isMissingNode());
     }
 }
-

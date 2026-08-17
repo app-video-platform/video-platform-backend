@@ -34,6 +34,7 @@ public class ConsultationProductConverter {
         entity.setDescription(dto.getDescription());
         entity.setStatus(parseStatus(dto.getStatus(), DEFAULT_STATUS));
         entity.setPrice(parsePrice(dto.getPrice(), BigDecimal.ZERO));
+        ProductPricingSupport.initializeOneTime(entity);
         entity.setType(ProductType.CONSULTATION);
         entity.setUser(user);
 
@@ -74,6 +75,7 @@ public class ConsultationProductConverter {
         dto.setUserId(entity.getUser().getUserId());
         dto.setCreatedAt(entity.getCreatedAt());
         dto.setUpdatedAt(entity.getUpdatedAt() != null ? entity.getUpdatedAt() : entity.getCreatedAt());
+        ProductPricingSupport.mapResponse(entity, dto);
 
         ConsultationProductDetailsDto details = new ConsultationProductDetailsDto();
         details.setDurationMinutes(entity.getDurationMinutes());

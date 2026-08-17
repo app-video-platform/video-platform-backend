@@ -31,7 +31,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/api/products")
-@Tag(name = "Products", description = "Create and manage course, download, and consultation products for sale.")
+@Tag(name = "Products", description = "Create and manage course, download, consultation, and Membership products.")
 public class ProductsController implements ProductsApiDoc {
 
     private final ProductService productService;

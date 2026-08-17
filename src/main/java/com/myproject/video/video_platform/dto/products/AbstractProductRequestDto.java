@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.myproject.video.video_platform.dto.products.consultation.ConsultationProductRequestDto;
 import com.myproject.video.video_platform.dto.products.course.CourseProductRequestDto;
 import com.myproject.video.video_platform.dto.products.download.DownloadProductRequestDto;
+import com.myproject.video.video_platform.dto.products.membership.MembershipProductRequestDto;
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -20,9 +21,10 @@ import lombok.Data;
         discriminatorMapping = {
                 @DiscriminatorMapping(value = "DOWNLOAD", schema = DownloadProductRequestDto.class),
                 @DiscriminatorMapping(value = "COURSE", schema = CourseProductRequestDto.class),
-                @DiscriminatorMapping(value = "CONSULTATION", schema = ConsultationProductRequestDto.class)
+                @DiscriminatorMapping(value = "CONSULTATION", schema = ConsultationProductRequestDto.class),
+                @DiscriminatorMapping(value = "MEMBERSHIP", schema = MembershipProductRequestDto.class)
         },
-        oneOf = {DownloadProductRequestDto.class, CourseProductRequestDto.class, ConsultationProductRequestDto.class}
+        oneOf = {DownloadProductRequestDto.class, CourseProductRequestDto.class, ConsultationProductRequestDto.class, MembershipProductRequestDto.class}
 )
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
@@ -33,7 +35,8 @@ import lombok.Data;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = DownloadProductRequestDto.class, name = "DOWNLOAD"),
         @JsonSubTypes.Type(value = CourseProductRequestDto.class,   name = "COURSE"),
-        @JsonSubTypes.Type(value = ConsultationProductRequestDto.class, name = "CONSULTATION")
+        @JsonSubTypes.Type(value = ConsultationProductRequestDto.class, name = "CONSULTATION"),
+        @JsonSubTypes.Type(value = MembershipProductRequestDto.class, name = "MEMBERSHIP")
 })
 public abstract class AbstractProductRequestDto {
     @Schema(description = "Product identifier for updates", example = "6f83c0cb-f8f4-4a6d-8e9a-bf5ac36b26be")
@@ -48,6 +51,12 @@ public abstract class AbstractProductRequestDto {
     private String status;       // "draft", "published", etc.
     @Schema(description = "Display price or 'free' token", example = "149.00")
     private String price;        // "free" or numeric string
+    @Schema(description = "Pricing model", example = "ONE_TIME")
+    private String pricingModel;
+    @Schema(description = "Recurring interval; null for one-time Products", example = "MONTH", nullable = true)
+    private String billingInterval;
+    @Schema(description = "Product currency", example = "EUR")
+    private String currency;
     @Schema(description = "Owner user identifier", example = "738297f1-45fb-4f5f-98a5-6d0eb0a8f542")
     private String userId;
 }
