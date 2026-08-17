@@ -7,6 +7,7 @@ import com.myproject.video.video_platform.exception.auth.CsrfException;
 import com.myproject.video.video_platform.exception.auth.InvalidTokenException;
 import com.myproject.video.video_platform.exception.auth.TokenExpiredException;
 import com.myproject.video.video_platform.exception.auth.UserAlreadyExistingException;
+import com.myproject.video.video_platform.exception.commerce.CommerceException;
 import com.myproject.video.video_platform.exception.email.EmailSendingException;
 import com.myproject.video.video_platform.exception.product.InvalidProductTypeException;
 import com.myproject.video.video_platform.exception.product.PaymentRequiredException;
@@ -28,6 +29,12 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(CommerceException.class)
+    public ResponseEntity<ErrorResponse> handleCommerceException(CommerceException ex) {
+        ErrorResponse error = new ErrorResponse(ex.getMessage(), ex.getStatus().value());
+        return new ResponseEntity<>(error, ex.getStatus());
+    }
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex) {

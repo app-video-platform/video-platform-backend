@@ -247,6 +247,35 @@ Download delivery resolves the file through its Product and section, verifies
 content access, and returns a time-limited URL rather than exposing a permanent
 storage URL in Product payloads.
 
+## Commerce Foundation
+
+The backend now persists one-time commerce Orders, immutable Order-item
+snapshots, payment attempts, and idempotent processed payment events. Checkout
+is authenticated, server-priced, EUR-only, limited to 20 unique published paid
+Products, and restricted to Products owned by one Creator.
+
+Current commerce endpoints are:
+
+- `POST /api/commerce/checkout-sessions` with an `Idempotency-Key` header
+- `GET /api/commerce/orders/{orderId}` for the buyer or an Admin
+
+`PaymentGateway` is the provider boundary. The current implementation includes
+only a fake gateway under the `dev` and `test` profiles. Commerce and fake
+simulation are disabled by default. When explicitly enabled for development,
+an Admin can simulate `PAID`, `FAILED`, and `REFUNDED` outcomes through
+`POST /api/dev/commerce/orders/{orderId}/simulate`.
+
+A paid event grants `PURCHASE` entitlements linked to the originating Order
+items. A full refund revokes only those linked purchase entitlements. Duplicate
+events and repeated checkout requests are idempotent. Products with active
+purchase access or an unexpired pending checkout cannot be deleted.
+
+This is not production payment processing yet. A future Stripe adapter must
+create hosted sessions, verify webhook signatures, normalize provider events,
+and then call the existing payment-event processor. Subscriptions, partial
+refunds, taxes, payouts, coupons, and Creator financial read APIs remain
+outside this foundation.
+
 ## Consultation Calendars
 
 Calendar endpoints expose provider discovery, connection initiation, OAuth
@@ -289,6 +318,8 @@ numbered SQL migrations for:
 - search indexes
 - Admin audit logs
 - Product entitlements
+- one-time commerce Orders, Order items, payment attempts, payment events, and
+  purchase-entitlement references
 
 Hibernate uses `ddl-auto: none`; adding or changing an entity does not update
 the deployed schema automatically. Every persistence change needs a new
@@ -351,12 +382,17 @@ Implemented and server-backed:
 - free Product enrollment, user library, access checks, protected Product
   responses, and authorized Download delivery
 - Springdoc-generated OpenAPI under the `docs` profile
+- provider-neutral one-time commerce Order persistence, idempotent checkout
+  orchestration, fake dev/test payment transitions, paid entitlement creation,
+  and full-refund entitlement revocation
 
 Not currently implemented as complete backend capabilities:
 
 - Membership Products, membership content, subscriptions, or member access
-- checkout or payment-provider processing
-- public purchase completion and paid entitlement creation
+- production checkout through Stripe or another real payment provider
+- public paid purchase completion in the frontend
+- partial refunds, payment retries, taxes, coupons, marketplace payouts, or
+  provider-driven dispute handling
 - an exposed Admin entitlement grant/revoke workflow
 - Creator dashboard, customer, sales, or analytics aggregate APIs represented by
   frontend-only mocks/contracts

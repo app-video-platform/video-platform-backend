@@ -7,6 +7,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.myproject.video.video_platform.common.converter.product.DownloadProductConverter;
 import com.myproject.video.video_platform.common.converter.product.ProductConverter;
 import com.myproject.video.video_platform.common.enums.products.ProductType;
+import com.myproject.video.video_platform.common.enums.commerce.CommerceOrderStatus;
+import com.myproject.video.video_platform.common.enums.entitlement.EntitlementSource;
+import com.myproject.video.video_platform.common.enums.entitlement.EntitlementStatus;
 import com.myproject.video.video_platform.dto.products.AbstractProductRequestDto;
 import com.myproject.video.video_platform.dto.products.AbstractProductResponseDto;
 import com.myproject.video.video_platform.dto.products.ProductMinimised;
@@ -17,8 +20,10 @@ import com.myproject.video.video_platform.entity.products.Product;
 import com.myproject.video.video_platform.entity.user.User;
 import com.myproject.video.video_platform.exception.product.InvalidProductTypeException;
 import com.myproject.video.video_platform.exception.product.ResourceNotFoundException;
+import com.myproject.video.video_platform.exception.product.UnsupportedProductOperationException;
 import com.myproject.video.video_platform.exception.user.UserNotFoundException;
 import com.myproject.video.video_platform.repository.auth.UserRepository;
+import com.myproject.video.video_platform.repository.commerce.CommerceOrderRepository;
 import com.myproject.video.video_platform.repository.entitlement.ProductEntitlementRepository;
 import com.myproject.video.video_platform.repository.products.ProductRepository;
 import com.myproject.video.video_platform.repository.products.download.DownloadProductRepository;
@@ -33,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.time.Instant;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -50,6 +56,7 @@ public class ProductService {
     private final ProductAuthorizationService productAuthorizationService;
     private final AdminAuditService adminAuditService;
     private final ProductEntitlementRepository entitlementRepository;
+    private final CommerceOrderRepository commerceOrderRepository;
 
     public ProductService(UserRepository userRepository,
                           DownloadProductRepository downloadProductRepository,
@@ -60,7 +67,8 @@ public class ProductService {
                           ObjectMapper objectMapper,
                           ProductAuthorizationService productAuthorizationService,
                           AdminAuditService adminAuditService,
-                          ProductEntitlementRepository entitlementRepository) {
+                          ProductEntitlementRepository entitlementRepository,
+                          CommerceOrderRepository commerceOrderRepository) {
         this.userRepository = userRepository;
         this.downloadProductRepository = downloadProductRepository;
         this.productRepository = productRepository;
@@ -70,6 +78,7 @@ public class ProductService {
         this.productAuthorizationService = productAuthorizationService;
         this.adminAuditService = adminAuditService;
         this.entitlementRepository = entitlementRepository;
+        this.commerceOrderRepository = commerceOrderRepository;
 
         // Convert the set of handlers into a map: ProductType -> handler
         this.handlers = handlerSet.stream()
@@ -145,6 +154,7 @@ public class ProductService {
 
     public void deleteProduct(String userId, String productId, String productType) {
         Product before = getProductEntity(productId);
+        requireProductCanBeDeleted(before.getId());
         String beforeSummary = productSummary(before);
         entitlementRepository.deleteAllByProductId(before.getId());
         getProductStrategyHandler(productType).deleteProduct(userId, productId);
@@ -153,11 +163,30 @@ public class ProductService {
 
     public void deleteProductById(String productId) {
         Product product = getProductEntity(productId);
+        requireProductCanBeDeleted(product.getId());
         String beforeSummary = productSummary(product);
         entitlementRepository.deleteAllByProductId(product.getId());
         getProductStrategyHandler(product.getType().name())
                 .deleteProduct(product.getUser().getUserId().toString(), product.getId().toString());
         recordAdminProductAction("PRODUCT_DELETE", beforeSummary, product.getId().toString(), product.getUser().getUserId().toString(), null);
+    }
+
+    private void requireProductCanBeDeleted(UUID productId) {
+        boolean hasActivePurchase = entitlementRepository.existsByProductIdAndStatusAndSource(
+                productId,
+                EntitlementStatus.ACTIVE,
+                EntitlementSource.PURCHASE
+        );
+        boolean hasLiveCheckout = commerceOrderRepository.existsLivePendingOrderForProduct(
+                productId,
+                CommerceOrderStatus.PENDING,
+                Instant.now()
+        );
+        if (hasActivePurchase || hasLiveCheckout) {
+            throw new UnsupportedProductOperationException(
+                    "Products with active purchases or checkout sessions cannot be deleted; hide the Product instead"
+            );
+        }
     }
 
     public List<ProductMinimised> getAllProductsMinimised() {

@@ -60,9 +60,10 @@ public class ProductEntitlementService {
             entitlement.setUser(user);
             entitlement.setProductId(productId);
             entitlement.setProductType(product.getType());
-            entitlement.setSource(EntitlementSource.FREE_ENROLLMENT);
         }
 
+        entitlement.setSource(EntitlementSource.FREE_ENROLLMENT);
+        entitlement.setPurchaseOrderItemId(null);
         entitlement.setStatus(EntitlementStatus.ACTIVE);
         entitlement.setRevokedAt(null);
         return toDto(entitlementRepository.save(entitlement), product);
@@ -106,9 +107,43 @@ public class ProductEntitlementService {
         entitlement.setProductId(product.getId());
         entitlement.setProductType(product.getType());
         entitlement.setSource(source);
+        entitlement.setPurchaseOrderItemId(null);
         entitlement.setStatus(EntitlementStatus.ACTIVE);
         entitlement.setRevokedAt(null);
         return entitlementRepository.save(entitlement);
+    }
+
+    @Transactional
+    public ProductEntitlement grantPurchase(
+            UUID userId,
+            Product product,
+            UUID orderItemId
+    ) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + userId));
+        ProductEntitlement entitlement = entitlementRepository
+                .findByUserUserIdAndProductId(userId, product.getId())
+                .orElseGet(ProductEntitlement::new);
+        entitlement.setUser(user);
+        entitlement.setProductId(product.getId());
+        entitlement.setProductType(product.getType());
+        entitlement.setSource(EntitlementSource.PURCHASE);
+        entitlement.setPurchaseOrderItemId(orderItemId);
+        entitlement.setStatus(EntitlementStatus.ACTIVE);
+        entitlement.setRevokedAt(null);
+        return entitlementRepository.save(entitlement);
+    }
+
+    @Transactional
+    public void revokePurchase(UUID userId, UUID productId, UUID orderItemId) {
+        entitlementRepository.findByUserUserIdAndProductId(userId, productId)
+                .filter(entitlement -> entitlement.getSource() == EntitlementSource.PURCHASE)
+                .filter(entitlement -> orderItemId.equals(entitlement.getPurchaseOrderItemId()))
+                .ifPresent(entitlement -> {
+                    entitlement.setStatus(EntitlementStatus.REVOKED);
+                    entitlement.setRevokedAt(Instant.now());
+                    entitlementRepository.save(entitlement);
+                });
     }
 
     @Transactional

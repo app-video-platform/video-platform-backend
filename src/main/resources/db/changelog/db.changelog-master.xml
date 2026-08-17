@@ -36,5 +36,6 @@
     <include file="db/changelog/scripts/30-create-admin-audit-log.sql" />
     <include file="db/changelog/scripts/31-enforce-single-user-role.sql" />
     <include file="db/changelog/scripts/32-create-product-entitlements.sql" />
+    <include file="db/changelog/scripts/33-create-commerce-foundation.sql" />
 
 </databaseChangeLog>

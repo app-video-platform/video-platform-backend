@@ -13,6 +13,7 @@ import com.myproject.video.video_platform.entity.products.download.DownloadProdu
 import com.myproject.video.video_platform.entity.user.User;
 import com.myproject.video.video_platform.exception.product.InvalidProductTypeException;
 import com.myproject.video.video_platform.repository.auth.UserRepository;
+import com.myproject.video.video_platform.repository.commerce.CommerceOrderRepository;
 import com.myproject.video.video_platform.repository.entitlement.ProductEntitlementRepository;
 import com.myproject.video.video_platform.repository.products.ProductRepository;
 import com.myproject.video.video_platform.repository.products.download.DownloadProductRepository;
@@ -60,6 +61,8 @@ class ProductServiceRoutingTest {
     private AdminAuditService adminAuditService;
     @Mock
     private ProductEntitlementRepository entitlementRepository;
+    @Mock
+    private CommerceOrderRepository commerceOrderRepository;
 
     @Mock
     private ProductTypeHandler courseHandler;
@@ -86,7 +89,8 @@ class ProductServiceRoutingTest {
                 objectMapper,
                 productAuthorizationService,
                 adminAuditService,
-                entitlementRepository
+                entitlementRepository,
+                commerceOrderRepository
         );
 
         Mockito.clearInvocations(courseHandler, downloadHandler, consultationHandler);
@@ -238,7 +242,8 @@ class ProductServiceRoutingTest {
                 new ObjectMapper(),
                 productAuthorizationService,
                 adminAuditService,
-                entitlementRepository
+                entitlementRepository,
+                commerceOrderRepository
         );
         Mockito.clearInvocations(courseHandler, downloadHandler, consultationHandler);
 

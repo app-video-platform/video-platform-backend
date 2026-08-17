@@ -45,6 +45,14 @@ server:
 app:
   refresh-expiry-days: 7
   domain: "serious-debauchery.click"
+  commerce:
+    enabled: ${COMMERCE_ENABLED:false}
+    provider: ${COMMERCE_PROVIDER:none}
+    currency: EUR
+    session-expiry-minutes: 30
+    expiration-scan-ms: 60000
+    fake:
+      enabled: false
   dev-role-switch:
     enabled: ${DEV_ROLE_SWITCH_ENABLED:true}
   frontend:
