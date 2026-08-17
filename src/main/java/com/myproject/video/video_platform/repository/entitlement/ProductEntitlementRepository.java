@@ -1,6 +1,7 @@
 package com.myproject.video.video_platform.repository.entitlement;
 
 import com.myproject.video.video_platform.common.enums.entitlement.EntitlementStatus;
+import com.myproject.video.video_platform.common.enums.entitlement.EntitlementSource;
 import com.myproject.video.video_platform.entity.entitlement.ProductEntitlement;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -24,4 +25,10 @@ public interface ProductEntitlementRepository extends JpaRepository<ProductEntit
     );
 
     void deleteAllByProductId(UUID productId);
+
+    boolean existsByProductIdAndStatusAndSource(
+            UUID productId,
+            EntitlementStatus status,
+            EntitlementSource source
+    );
 }

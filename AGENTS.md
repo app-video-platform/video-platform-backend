@@ -148,6 +148,27 @@ the main package structure under `src/test/java`.
 - Deleting a product deletes its entitlement records before deleting the
   product.
 
+## Commerce Rules
+
+- Production payment-provider processing is disabled until a real provider
+  adapter and verified webhook integration are configured.
+- The current commerce foundation supports one-time EUR Orders for published,
+  positively priced Course, Download, and Consultation Products.
+- A checkout may contain at most 20 unique Products and all Products must have
+  the same Creator. Resolve prices, ownership, and the buyer on the server.
+- Checkout creation requires a buyer-scoped idempotency key. Reusing that key
+  with different Products is a conflict.
+- Order items are immutable financial snapshots. Product price or title changes
+  must not rewrite historical Orders.
+- Only a normalized, verified payment event may mark an Order paid and grant
+  `PURCHASE` entitlements. Processing must remain idempotent.
+- Full refunds revoke only the purchase entitlements originating from the
+  refunded Order. Partial refunds are not currently supported.
+- The fake payment gateway and simulation endpoint are development/test tools.
+  They must remain profile- and configuration-gated and unavailable by default.
+- Products with a live checkout or active purchase entitlement cannot be
+  deleted; use `HIDDEN` instead.
+
 ## Database and Migration Rules
 
 - PostgreSQL is the production database. H2 is used by tests.
@@ -213,6 +234,13 @@ finishing whenever practical. If validation cannot run, report why.
 Current checkout verification: `./mvnw test` passes on Java 17. The local
 machine's Java 25 default is not compatible with the current compiler/Lombok
 setup, so select a Java 17 runtime before running Maven.
+
+## Version Control Naming
+
+- Branch names, commit messages, and pull/merge request titles and descriptions
+  must describe only the product or engineering change.
+- Do not include references to AI assistants, language models, generation
+  tools, or names such as AI, GPT, ChatGPT, or Codex in that metadata.
 
 ## Documentation Synchronization
 

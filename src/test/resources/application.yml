@@ -5,10 +5,14 @@ spring:
     password:
     driver-class-name: org.h2.Driver
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: create-drop
     show-sql: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
   liquibase:
     enabled: false
   sql:
@@ -41,6 +45,14 @@ sendgrid:
 app:
   domain: example.com
   refresh-expiry-days: 7
+  commerce:
+    enabled: true
+    provider: fake
+    currency: EUR
+    session-expiry-minutes: 30
+    expiration-scan-ms: 3600000
+    fake:
+      enabled: true
   dev-role-switch:
     enabled: true
   frontend:

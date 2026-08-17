@@ -67,4 +67,7 @@ public class ProductEntitlement {
 
     @Column(name = "revoked_at")
     private Instant revokedAt;
+
+    @Column(name = "purchase_order_item_id", unique = true)
+    private UUID purchaseOrderItemId;
 }
