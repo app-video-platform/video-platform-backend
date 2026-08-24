@@ -40,6 +40,17 @@ class OpenApiDocsIntegrationTest {
         JsonNode upsertQuiz = root.path("paths").path("/api/lessons/{lessonId}/quiz").path("put");
         assertFalse(upsertQuiz.isMissingNode());
         assertEquals("Upsert quiz", upsertQuiz.path("summary").asText());
+
+        JsonNode creatorOrders = root.path("paths").path("/api/creator/orders").path("get");
+        assertFalse(creatorOrders.isMissingNode());
+        assertEquals("List Creator Orders", creatorOrders.path("summary").asText());
+
+        JsonNode creatorCustomers = root.path("paths").path("/api/creator/customers").path("get");
+        assertFalse(creatorCustomers.isMissingNode());
+        assertEquals("List Creator customers", creatorCustomers.path("summary").asText());
+
+        JsonNode creatorAnalytics = root.path("paths").path("/api/creator/analytics/overview").path("get");
+        assertFalse(creatorAnalytics.isMissingNode());
+        assertEquals("Get Creator Analytics overview", creatorAnalytics.path("summary").asText());
     }
 }
-
