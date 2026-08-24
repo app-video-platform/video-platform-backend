@@ -39,5 +39,8 @@
     <include file="db/changelog/scripts/33-create-commerce-foundation.sql" />
     <include file="db/changelog/scripts/34-add-creator-reporting-indexes.sql" />
     <include file="db/changelog/scripts/35-create-membership-authoring.sql" />
+    <include file="db/changelog/scripts/36-add-public-email.sql" />
+    <include file="db/changelog/scripts/37-create-storefront-config.sql" />
+    <include file="db/changelog/scripts/38-create-product-landing-page-config.sql" />
 
 </databaseChangeLog>

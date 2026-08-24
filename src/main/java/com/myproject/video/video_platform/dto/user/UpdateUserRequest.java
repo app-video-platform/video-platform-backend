@@ -3,6 +3,7 @@ package com.myproject.video.video_platform.dto.user;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,8 +15,18 @@ import java.util.List;
 @AllArgsConstructor
 @Schema(description = "Profile fields that the authenticated user may update.")
 public class UpdateUserRequest {
-    @Schema(description = "User identifier", example = "738297f1-45fb-4f5f-98a5-6d0eb0a8f542")
+    @Schema(description = "Deprecated compatibility field. The authenticated user is always updated.", deprecated = true)
     private String userId;
+
+    @Size(max = 100)
+    private String firstName;
+
+    @Size(max = 100)
+    private String lastName;
+
+    @Email
+    @Size(max = 320)
+    private String publicEmail;
 
     @Size(max = 100)
     @Schema(description = "Public title shown on storefront", example = "Lifestyle Photographer")
@@ -43,7 +54,8 @@ public class UpdateUserRequest {
 
     /**
      * Full replacement set:
-     * • null or empty = remove all links
+     * • null = leave links unchanged
+     * • empty = remove all links
      * • items w/ null id = new links
      * • items w/ existing id = update that link
      * • any existing link not referenced by id here = delete

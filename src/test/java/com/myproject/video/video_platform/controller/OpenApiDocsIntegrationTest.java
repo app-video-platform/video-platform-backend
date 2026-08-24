@@ -63,5 +63,16 @@ class OpenApiDocsIntegrationTest {
         JsonNode creatorAnalytics = root.path("paths").path("/api/creator/analytics/overview").path("get");
         assertFalse(creatorAnalytics.isMissingNode());
         assertEquals("Get Creator Analytics overview", creatorAnalytics.path("summary").asText());
+
+        assertEquals("Get Creator Dashboard summary", root.path("paths")
+                .path("/api/creator/dashboard/summary").path("get").path("summary").asText());
+        assertEquals("Get Creator Storefront configuration", root.path("paths")
+                .path("/api/creator/storefront").path("get").path("summary").asText());
+        assertEquals("Get a Creator's public Storefront", root.path("paths")
+                .path("/api/storefronts/{creatorId}").path("get").path("summary").asText());
+        assertEquals("Get Product Landing Page configuration for management", root.path("paths")
+                .path("/api/creator/products/{productId}/landing-page").path("get").path("summary").asText());
+        assertEquals("Get a published Product's public Landing Page configuration", root.path("paths")
+                .path("/api/products/{productId}/landing-page").path("get").path("summary").asText());
     }
 }

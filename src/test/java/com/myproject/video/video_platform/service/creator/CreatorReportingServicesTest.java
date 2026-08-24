@@ -45,6 +45,7 @@ class CreatorReportingServicesTest {
     private CreatorSalesService salesService;
     private CreatorCustomersService customersService;
     private CreatorAnalyticsService analyticsService;
+    private CreatorDashboardService dashboardService;
 
     @BeforeEach
     void setUp() {
@@ -52,6 +53,7 @@ class CreatorReportingServicesTest {
         salesService = new CreatorSalesService(currentUserService, reportingRepository, clock);
         customersService = new CreatorCustomersService(currentUserService, reportingRepository);
         analyticsService = new CreatorAnalyticsService(currentUserService, reportingRepository, clock);
+        dashboardService = new CreatorDashboardService(currentUserService, reportingRepository, clock);
         lenient().when(currentUserService.getCurrentUserId()).thenReturn(CREATOR_ID);
     }
 
@@ -142,6 +144,24 @@ class CreatorReportingServicesTest {
         var ninetyDays = analyticsService.overview("90d");
         assertEquals(13, ninetyDays.performance().series().size());
         assertThrows(IllegalArgumentException.class, () -> analyticsService.overview("today"));
+    }
+
+    @Test
+    void dashboardUsesThirtyDayReportingAndMarksMembershipsUnavailable() {
+        User buyer = user("Paid", "Buyer", "paid@example.test");
+        CommerceOrder paid = order(buyer, CommerceOrderStatus.PAID, "2026-08-20T10:00:00Z", 10_000,
+                item("Course", ProductType.COURSE, 10_000));
+        paid.setPaidAt(Instant.parse("2026-08-20T10:01:00Z"));
+        stub(List.of(paid), List.of());
+
+        var dashboard = dashboardService.summary();
+
+        assertEquals("EUR 100", dashboard.metrics().get(0).value());
+        assertEquals("1", dashboard.metrics().get(1).value());
+        assertEquals("unavailable", dashboard.metrics().get(3).state());
+        assertEquals("sale", dashboard.activities().get(0).kind());
+        assertEquals(1, dashboard.topProducts().size());
+        assertEquals(100.0, dashboard.topProducts().get(0).revenueShare());
     }
 
     @Test

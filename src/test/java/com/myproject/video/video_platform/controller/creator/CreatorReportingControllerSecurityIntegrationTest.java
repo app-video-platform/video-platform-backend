@@ -6,6 +6,8 @@ import com.myproject.video.video_platform.dto.creator.sales.CreatorSalesDtos;
 import com.myproject.video.video_platform.service.creator.CreatorAnalyticsService;
 import com.myproject.video.video_platform.service.creator.CreatorCustomersService;
 import com.myproject.video.video_platform.service.creator.CreatorSalesService;
+import com.myproject.video.video_platform.service.creator.CreatorDashboardService;
+import com.myproject.video.video_platform.dto.creator.dashboard.CreatorDashboardDtos;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -39,6 +41,8 @@ class CreatorReportingControllerSecurityIntegrationTest {
     private CreatorCustomersService customersService;
     @MockBean
     private CreatorAnalyticsService analyticsService;
+    @MockBean
+    private CreatorDashboardService dashboardService;
 
     @Test
     @WithMockUser(roles = "CREATOR")
@@ -60,6 +64,7 @@ class CreatorReportingControllerSecurityIntegrationTest {
                 new CreatorAnalyticsDtos.CustomerGrowth(new CreatorAnalyticsDtos.CustomerGrowthSummary(0, 0, "No change"), List.of()),
                 new CreatorAnalyticsDtos.Memberships(null, List.of()),
                 new CreatorAnalyticsDtos.PaymentHealth(List.of(), List.of())));
+        when(dashboardService.summary()).thenReturn(new CreatorDashboardDtos.Summary(List.of(), List.of(), List.of(), List.of()));
 
         mockMvc.perform(get("/api/creator/sales/summary")).andExpect(status().isOk()).andExpect(jsonPath("$.period").value("30d"));
         mockMvc.perform(get("/api/creator/orders")).andExpect(status().isOk()).andExpect(jsonPath("$.empty").value(true));
@@ -69,6 +74,8 @@ class CreatorReportingControllerSecurityIntegrationTest {
         mockMvc.perform(get("/api/creator/analytics/overview")).andExpect(status().isOk())
                 .andExpect(jsonPath("$.memberships.summary").value(nullValue()))
                 .andExpect(jsonPath("$.memberships.series").isEmpty());
+        mockMvc.perform(get("/api/creator/dashboard/summary")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.metrics").isEmpty());
     }
 
     @Test
@@ -91,5 +98,6 @@ class CreatorReportingControllerSecurityIntegrationTest {
         mockMvc.perform(get("/api/creator/customers")).andExpect(status().isForbidden());
         mockMvc.perform(get("/api/creator/customers/{id}", id)).andExpect(status().isForbidden());
         mockMvc.perform(get("/api/creator/analytics/overview")).andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/creator/dashboard/summary")).andExpect(status().isForbidden());
     }
 }
