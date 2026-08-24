@@ -29,7 +29,7 @@ class MembershipMigrationTest {
                     INSERT INTO users(user_id) VALUES ('00000000-0000-0000-0000-000000000010');
                     """.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
             ScriptUtils.executeSqlScript(connection,
-                    new ClassPathResource("db/changelog/scripts/34-create-membership-authoring.sql"));
+                    new ClassPathResource("db/changelog/scripts/35-create-membership-authoring.sql"));
 
             try (var result = connection.createStatement().executeQuery(
                     "SELECT pricing_model, billing_interval, currency FROM course_products")) {
