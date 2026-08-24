@@ -31,6 +31,7 @@ public final class CreatorReportingSupport {
             case COURSE -> "Course";
             case DOWNLOAD -> "Download";
             case CONSULTATION -> "Consultation";
+            case MEMBERSHIP -> "Membership";
         };
     }
 

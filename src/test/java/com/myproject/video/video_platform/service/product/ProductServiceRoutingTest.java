@@ -17,6 +17,8 @@ import com.myproject.video.video_platform.repository.commerce.CommerceOrderRepos
 import com.myproject.video.video_platform.repository.entitlement.ProductEntitlementRepository;
 import com.myproject.video.video_platform.repository.products.ProductRepository;
 import com.myproject.video.video_platform.repository.products.download.DownloadProductRepository;
+import com.myproject.video.video_platform.repository.products.membership.MembershipFeedEntryRepository;
+import com.myproject.video.video_platform.repository.products.membership.MembershipProductRepository;
 import com.myproject.video.video_platform.service.admin.AdminAuditService;
 import com.myproject.video.video_platform.service.product.strategy_handler.ProductTypeHandler;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,6 +65,10 @@ class ProductServiceRoutingTest {
     private ProductEntitlementRepository entitlementRepository;
     @Mock
     private CommerceOrderRepository commerceOrderRepository;
+    @Mock
+    private MembershipFeedEntryRepository membershipFeedEntryRepository;
+    @Mock
+    private MembershipProductRepository membershipProductRepository;
 
     @Mock
     private ProductTypeHandler courseHandler;
@@ -90,7 +96,9 @@ class ProductServiceRoutingTest {
                 productAuthorizationService,
                 adminAuditService,
                 entitlementRepository,
-                commerceOrderRepository
+                commerceOrderRepository,
+                membershipFeedEntryRepository,
+                membershipProductRepository
         );
 
         Mockito.clearInvocations(courseHandler, downloadHandler, consultationHandler);
@@ -243,7 +251,9 @@ class ProductServiceRoutingTest {
                 productAuthorizationService,
                 adminAuditService,
                 entitlementRepository,
-                commerceOrderRepository
+                commerceOrderRepository,
+                membershipFeedEntryRepository,
+                membershipProductRepository
         );
         Mockito.clearInvocations(courseHandler, downloadHandler, consultationHandler);
 

@@ -48,6 +48,7 @@ public class DownloadProductConverter {
         product.setType(ProductType.DOWNLOAD);
         product.setStatus(parseStatus(dto.getStatus()));
         product.setPrice(parsePrice(dto.getPrice()));
+        ProductPricingSupport.initializeOneTime(product);
         product.setUser(user);
 
         // Build sections
@@ -84,6 +85,7 @@ public class DownloadProductConverter {
         dto.setUserId(product.getUser().getUserId());
         dto.setCreatedAt(product.getCreatedAt());
         dto.setUpdatedAt(resolveLastUpdatedAt(product));
+        ProductPricingSupport.mapResponse(product, dto);
 
         if (product.getSectionDownloadProducts() != null) {
             List<SectionDownloadProductResponseDto> sections = product.getSectionDownloadProducts()

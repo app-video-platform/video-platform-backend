@@ -38,5 +38,6 @@
     <include file="db/changelog/scripts/32-create-product-entitlements.sql" />
     <include file="db/changelog/scripts/33-create-commerce-foundation.sql" />
     <include file="db/changelog/scripts/34-add-creator-reporting-indexes.sql" />
+    <include file="db/changelog/scripts/35-create-membership-authoring.sql" />
 
 </databaseChangeLog>

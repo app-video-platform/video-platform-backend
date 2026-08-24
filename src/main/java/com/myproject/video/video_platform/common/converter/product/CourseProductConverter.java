@@ -36,6 +36,7 @@ public class CourseProductConverter {
         course.setType(com.myproject.video.video_platform.common.enums.products.ProductType.COURSE);
         course.setStatus(parseStatus(dto.getStatus(), DEFAULT_STATUS));
         course.setPrice(parsePrice(dto.getPrice(), BigDecimal.ZERO));
+        ProductPricingSupport.initializeOneTime(course);
         course.setUser(owner);
 
         // ───► CREATE A NEW "DRAFT" SECTION BY DEFAULT ◄────────────
@@ -71,6 +72,7 @@ public class CourseProductConverter {
         );
         dto.setCreatedAt(course.getCreatedAt());
         dto.setUpdatedAt(resolveLastUpdatedAt(course));
+        ProductPricingSupport.mapResponse(course, dto);
 
 
         if (course.getSections() != null) {

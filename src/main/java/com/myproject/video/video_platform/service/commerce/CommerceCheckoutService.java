@@ -4,6 +4,8 @@ import com.myproject.video.video_platform.common.enums.commerce.CommerceOrderSta
 import com.myproject.video.video_platform.common.enums.commerce.PaymentAttemptStatus;
 import com.myproject.video.video_platform.common.enums.entitlement.EntitlementStatus;
 import com.myproject.video.video_platform.common.enums.products.ProductStatus;
+import com.myproject.video.video_platform.common.enums.products.ProductPricingModel;
+import com.myproject.video.video_platform.common.enums.products.ProductType;
 import com.myproject.video.video_platform.dto.commerce.CommerceCheckoutRequest;
 import com.myproject.video.video_platform.dto.commerce.CommerceOrderResponse;
 import com.myproject.video.video_platform.entity.commerce.CommerceOrder;
@@ -182,6 +184,10 @@ public class CommerceCheckoutService {
     private User validateProducts(List<Product> products, UUID buyerId) {
         User creator = null;
         for (Product product : products) {
+            if (product.getType() == ProductType.MEMBERSHIP
+                    || product.getPricingModel() == ProductPricingModel.RECURRING) {
+                throw invalidCheckout("Recurring and Membership Products cannot use one-time checkout");
+            }
             if (product.getStatus() != ProductStatus.PUBLISHED) {
                 throw invalidCheckout("Only published Products can be purchased");
             }
