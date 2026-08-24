@@ -3,8 +3,8 @@
 Generated from repository state:
 
 - Branch: `main`
-- Commit: `7ee603c`
-- Last reviewed: 2026-08-17
+- Commit: `f110de5`
+- Last reviewed: 2026-08-22
 
 ## How to Use This Document
 
@@ -270,11 +270,24 @@ items. A full refund revokes only those linked purchase entitlements. Duplicate
 events and repeated checkout requests are idempotent. Products with active
 purchase access or an unexpired pending checkout cannot be deleted.
 
+Creator-only reporting APIs now expose Sales summaries, the Order ledger and
+Order detail, Customer list/detail read models, and an Analytics overview from
+these Commerce and entitlement records. Reporting is scoped through the
+authenticated Creator ID, uses UTC calendar periods from an injected `Clock`,
+and returns `404` for cross-Creator Order or Customer detail lookups. Admin and
+User roles are deliberately rejected.
+
+Sales revenue is retained paid revenue: only Orders currently in `PAID` state
+contribute. Fully refunded Orders are reported separately. Ledger periods use
+Order creation time, while revenue, refunds, and failures use their respective
+event timestamps. Customer relationships include paid/refunded buyers and
+users with free, purchased, or manually granted Product entitlements. Analytics
+returns no fabricated Membership values while that domain is absent.
+
 This is not production payment processing yet. A future Stripe adapter must
 create hosted sessions, verify webhook signatures, normalize provider events,
 and then call the existing payment-event processor. Subscriptions, partial
-refunds, taxes, payouts, coupons, and Creator financial read APIs remain
-outside this foundation.
+refunds, taxes, payouts, and coupons remain outside this foundation.
 
 ## Consultation Calendars
 
@@ -320,6 +333,8 @@ numbered SQL migrations for:
 - Product entitlements
 - one-time commerce Orders, Order items, payment attempts, payment events, and
   purchase-entitlement references
+- Creator/payment-date, customer-aggregation, and entitlement-relationship
+  reporting indexes
 
 Hibernate uses `ddl-auto: none`; adding or changing an entity does not update
 the deployed schema automatically. Every persistence change needs a new
@@ -385,6 +400,8 @@ Implemented and server-backed:
 - provider-neutral one-time commerce Order persistence, idempotent checkout
   orchestration, fake dev/test payment transitions, paid entitlement creation,
   and full-refund entitlement revocation
+- Creator-only Sales summary, Order ledger/detail, Customer list/detail, and
+  Analytics overview read APIs backed by Commerce and entitlements
 
 Not currently implemented as complete backend capabilities:
 
@@ -394,8 +411,9 @@ Not currently implemented as complete backend capabilities:
 - partial refunds, payment retries, taxes, coupons, marketplace payouts, or
   provider-driven dispute handling
 - an exposed Admin entitlement grant/revoke workflow
-- Creator dashboard, customer, sales, or analytics aggregate APIs represented by
-  frontend-only mocks/contracts
+- Creator dashboard aggregate APIs represented by frontend-only mocks/contracts
+- Membership/waitlist Customer relationships, Membership analytics, editable
+  Customer notes/tags, and reporting exports
 - Storefront configuration and public Storefront backend contracts represented
   by frontend-only mocks/contracts
 - Product Landing Page configuration persistence represented by frontend-only
