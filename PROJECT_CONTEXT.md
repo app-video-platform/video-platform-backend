@@ -3,7 +3,7 @@
 Generated from repository state:
 
 - Branch: `main`
-- Commit: `c97c5e1`
+- Commit: `8ace633` plus the current Storefront/Dashboard integration work
 - Last reviewed: 2026-08-24
 
 ## How to Use This Document
@@ -123,6 +123,7 @@ URL-level public access currently includes:
 - `/api/auth/**`
 - `/testEndpoint`
 - GET requests under `/api/products/**`
+- GET requests under `/api/storefronts/**`
 - GET `/api/calendars/providers`
 
 All other requests require authentication unless method-level or future URL
@@ -141,7 +142,9 @@ production deployment.
 ## User and Role Model
 
 `User` uses a UUID primary key and stores identity, profile, onboarding, auth
-provider, Product ownership, social links, and role relationships.
+provider, Product ownership, social links, and role relationships. `publicEmail`
+is an optional explicitly public profile field; public APIs never expose the
+login email as a fallback.
 
 Supported role values are `ADMIN`, `CREATOR`, and `USER`. Although the JPA model
 uses a set and a join table, migration 31 adds a unique index on `user_id`, so a
@@ -306,6 +309,28 @@ users with free, purchased, or manually granted Product entitlements. Analytics
 returns no fabricated Membership values while Membership commerce and
 subscriptions are absent.
 
+The Creator Dashboard reuses the same reporting snapshot for fixed 30-day
+revenue, Sales, Customer, recent activity, top Product, and attention summaries.
+Active Memberships are deliberately marked unavailable until subscription
+tracking exists.
+
+## Storefront and Product Presentation
+
+Creator-only Storefront configuration persists Light/Dark appearance, accent
+color, typography, featured Product, and Product order. Anonymous public
+Storefront reads return only explicitly public Creator profile fields and
+published Products. The login email is never part of the public read model.
+
+Product Landing Page configuration persists marketing description, hero layout,
+visible sections, and complete section order. Creator owners and Admins may
+manage it; anonymous reads are available only for Published Products. Default
+configurations are returned without creating rows until the first update.
+
+Storefront and landing-page Product UUIDs do not use database foreign keys
+because Products use table-per-class storage. Services validate ownership and
+visibility. Product deletion removes its landing configuration, ordering
+references, and featured-Product reference.
+
 This is not production payment processing yet. A future Stripe adapter must
 create hosted sessions, verify webhook signatures, normalize provider events,
 and then call the existing payment-event processor. Subscriptions, partial
@@ -359,6 +384,8 @@ numbered SQL migrations for:
   all concrete Product tables
 - Creator/payment-date, customer-aggregation, and entitlement-relationship
   reporting indexes
+- User public email, Storefront configuration/order, and Product Landing Page
+  presentation configuration
 
 Hibernate uses `ddl-auto: none`; adding or changing an entity does not update
 the deployed schema automatically. Every persistence change needs a new
@@ -428,6 +455,10 @@ Implemented and server-backed:
   and full-refund entitlement revocation
 - Creator-only Sales summary, Order ledger/detail, Customer list/detail, and
   Analytics overview read APIs backed by Commerce and entitlements
+- Creator-only Dashboard summary backed by the reporting snapshot
+- Creator Storefront configuration and anonymous public Storefront reads
+- Creator/Admin Product Landing Page configuration and anonymous published-Product reads
+- authenticated partial profile updates with a separate public email
 
 Not currently implemented as complete backend capabilities:
 
@@ -438,13 +469,9 @@ Not currently implemented as complete backend capabilities:
 - partial refunds, payment retries, taxes, coupons, marketplace payouts, or
   provider-driven dispute handling
 - an exposed Admin entitlement grant/revoke workflow
-- Creator dashboard aggregate APIs represented by frontend-only mocks/contracts
 - Membership/waitlist Customer relationships, Membership analytics, editable
   Customer notes/tags, and reporting exports
-- Storefront configuration and public Storefront backend contracts represented
-  by frontend-only mocks/contracts
-- Product Landing Page configuration persistence represented by frontend-only
-  contracts
+- a dedicated combined public Product read model
 - generalized asset lifecycle for all Membership or rich media use cases
 
 ## Known Risks and Maintenance Notes

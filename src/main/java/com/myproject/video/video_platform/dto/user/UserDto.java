@@ -19,6 +19,8 @@ public class UserDto {
     private String lastName;
     @Schema(description = "Login email", example = "amelia.hughes@example.com")
     private String email;
+    @Schema(description = "Optional email explicitly published on the storefront", example = "hello@ameliahughes.studio")
+    private String publicEmail;
     @Schema(description = "Public title shown on storefront", example = "Lifestyle Photographer")
     private String title;
     @Schema(description = "Short biography", example = "Helping creatives build their first paid lifestyle shoots.")

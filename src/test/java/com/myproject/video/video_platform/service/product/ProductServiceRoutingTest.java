@@ -69,6 +69,8 @@ class ProductServiceRoutingTest {
     private MembershipFeedEntryRepository membershipFeedEntryRepository;
     @Mock
     private MembershipProductRepository membershipProductRepository;
+    @Mock
+    private ProductPresentationCleanupService presentationCleanupService;
 
     @Mock
     private ProductTypeHandler courseHandler;
@@ -98,7 +100,8 @@ class ProductServiceRoutingTest {
                 entitlementRepository,
                 commerceOrderRepository,
                 membershipFeedEntryRepository,
-                membershipProductRepository
+                membershipProductRepository,
+                presentationCleanupService
         );
 
         Mockito.clearInvocations(courseHandler, downloadHandler, consultationHandler);
@@ -154,6 +157,7 @@ class ProductServiceRoutingTest {
 
         service.deleteProduct("user", productId.toString(), "CONSULTATION");
         verify(consultationHandler).deleteProduct("user", productId.toString());
+        verify(presentationCleanupService).removeProductReferences(productId);
         verifyNoInteractions(courseHandler, downloadHandler);
     }
 
@@ -235,6 +239,7 @@ class ProductServiceRoutingTest {
         service.deleteProductById(download.getId().toString());
 
         verify(downloadHandler).deleteProduct(userId.toString(), download.getId().toString());
+        verify(presentationCleanupService).removeProductReferences(download.getId());
         verifyNoInteractions(courseHandler, consultationHandler);
     }
 
@@ -253,7 +258,8 @@ class ProductServiceRoutingTest {
                 entitlementRepository,
                 commerceOrderRepository,
                 membershipFeedEntryRepository,
-                membershipProductRepository
+                membershipProductRepository,
+                presentationCleanupService
         );
         Mockito.clearInvocations(courseHandler, downloadHandler, consultationHandler);
 

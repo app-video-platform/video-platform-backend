@@ -58,6 +58,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()// Registration, login, verify, etc.
                         .requestMatchers("/testEndpoint").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/storefronts/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/calendars/providers").permitAll()
                    //     .requestMatchers("/api/products/**").permitAll()
                     //    .requestMatchers("/api/files/**").permitAll()

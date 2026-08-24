@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -72,6 +71,7 @@ public class UserService {
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .email(user.getEmail())
+                .publicEmail(user.getPublicEmail())
                 .roles(user.getRoles().stream().map(Role::getRoleName).toList())
                 .title(user.getTitle())
                 .bio(user.getBio())
@@ -91,17 +91,15 @@ public class UserService {
 
     @Transactional
     public UserDto updateUserInfo(UpdateUserRequest req) {
-        User user = userRepository.findById(UUID.fromString(req.getUserId()))
-                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + req.getUserId()));
-
         UUID currentUserId = currentUserService.getCurrentUserId();
-        log.info("User id from context: " + currentUserId);
+        User user = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + currentUserId));
 
-        if (!user.getUserId().equals(currentUserId))
-            throw new AccessDeniedException("Logged in user and user from request don't match.");
+        log.info("Updating user: " + currentUserId);
 
-        log.info("Updating user: " + req.getUserId());
-
+        if (req.getFirstName() != null)      user.setFirstName(requiredName(req.getFirstName(), "First name"));
+        if (req.getLastName() != null)       user.setLastName(req.getLastName().trim());
+        if (req.getPublicEmail() != null)    user.setPublicEmail(blankToNull(req.getPublicEmail()));
         if (req.getTitle() != null)          user.setTitle(req.getTitle());
         if (req.getBio() != null)            user.setBio(req.getBio());
         if (req.getTaglineMission() != null) user.setTaglineMission(req.getTaglineMission());
@@ -109,10 +107,18 @@ public class UserService {
         if (req.getCity() != null)           user.setCity(req.getCity());
         if (req.getCountry() != null)        user.setCountry(req.getCountry());
 
-        // 2️⃣ Reconcile socialLinks
+        if (req.getSocialLinks() != null) {
+            reconcileSocialLinks(user, req.getSocialLinks());
+        }
+
+        User saved = userRepository.save(user);
+
+        log.info("Saved user: " + saved.getUserId());
+        return getUserDto(saved);
+    }
+
+    private void reconcileSocialLinks(User user, List<SocialMediaLinkUpdateRequest> incoming) {
         List<SocialMediaLink> existing = new ArrayList<>(user.getSocialLinks());
-        List<SocialMediaLinkUpdateRequest> incoming =
-                req.getSocialLinks() != null ? req.getSocialLinks() : Collections.emptyList();
 
         // Build set of incoming IDs to keep
         Set<UUID> keepIds = incoming.stream()
@@ -147,14 +153,17 @@ public class UserService {
                 user.addSocialLink(newLink);
             }
         }
+    }
 
-        User saved = userRepository.save(user);
+    private static String requiredName(String value, String label) {
+        String normalized = value.trim();
+        if (normalized.isEmpty()) throw new IllegalArgumentException(label + " cannot be blank");
+        return normalized;
+    }
 
-        log.info("Saved user: " + saved.getUserId());
-
-        // map to UserProfileResponse
-        return getUserDto(saved);
-
+    private static String blankToNull(String value) {
+        String normalized = value.trim();
+        return normalized.isEmpty() ? null : normalized;
     }
 
     @Transactional

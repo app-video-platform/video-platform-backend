@@ -63,6 +63,7 @@ public class ProductService {
     private final CommerceOrderRepository commerceOrderRepository;
     private final MembershipFeedEntryRepository membershipFeedEntryRepository;
     private final MembershipProductRepository membershipProductRepository;
+    private final ProductPresentationCleanupService presentationCleanupService;
 
     public ProductService(UserRepository userRepository,
                           DownloadProductRepository downloadProductRepository,
@@ -76,7 +77,8 @@ public class ProductService {
                           ProductEntitlementRepository entitlementRepository,
                           CommerceOrderRepository commerceOrderRepository,
                           MembershipFeedEntryRepository membershipFeedEntryRepository,
-                          MembershipProductRepository membershipProductRepository) {
+                          MembershipProductRepository membershipProductRepository,
+                          ProductPresentationCleanupService presentationCleanupService) {
         this.userRepository = userRepository;
         this.downloadProductRepository = downloadProductRepository;
         this.productRepository = productRepository;
@@ -89,6 +91,7 @@ public class ProductService {
         this.commerceOrderRepository = commerceOrderRepository;
         this.membershipFeedEntryRepository = membershipFeedEntryRepository;
         this.membershipProductRepository = membershipProductRepository;
+        this.presentationCleanupService = presentationCleanupService;
 
         // Convert the set of handlers into a map: ProductType -> handler
         this.handlers = handlerSet.stream()
@@ -169,6 +172,7 @@ public class ProductService {
         String beforeSummary = productSummary(before);
         entitlementRepository.deleteAllByProductId(before.getId());
         removeMembershipReferences(before.getId());
+        presentationCleanupService.removeProductReferences(before.getId());
         getProductStrategyHandler(productType).deleteProduct(userId, productId);
         recordAdminProductAction("PRODUCT_DELETE", beforeSummary, before.getId().toString(), before.getUser().getUserId().toString(), null);
     }
@@ -180,6 +184,7 @@ public class ProductService {
         String beforeSummary = productSummary(product);
         entitlementRepository.deleteAllByProductId(product.getId());
         removeMembershipReferences(product.getId());
+        presentationCleanupService.removeProductReferences(product.getId());
         getProductStrategyHandler(product.getType().name())
                 .deleteProduct(product.getUser().getUserId().toString(), product.getId().toString());
         recordAdminProductAction("PRODUCT_DELETE", beforeSummary, product.getId().toString(), product.getUser().getUserId().toString(), null);
