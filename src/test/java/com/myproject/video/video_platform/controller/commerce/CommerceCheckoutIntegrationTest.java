@@ -49,7 +49,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@SpringBootTest(properties = "app.commerce.fake.auto-success=true")
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class CommerceCheckoutIntegrationTest {
@@ -123,7 +123,7 @@ class CommerceCheckoutIntegrationTest {
 
         String response = createCheckout(List.of(first.getId(), second.getId()), "checkout-1")
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.status").value("PENDING"))
+                .andExpect(jsonPath("$.status").value("PAID"))
                 .andExpect(jsonPath("$.provider").value("FAKE"))
                 .andExpect(jsonPath("$.currency").value("EUR"))
                 .andExpect(jsonPath("$.totalMinor").value(2999))
@@ -134,6 +134,9 @@ class CommerceCheckoutIntegrationTest {
         createCheckout(List.of(second.getId(), first.getId()), "checkout-1")
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.orderId").value(orderId.toString()));
+
+        assertEquals(1, paymentEventRepository.count());
+        assertEquals("SUCCEEDED", paymentAttemptRepository.findByOrderId(orderId).orElseThrow().getStatus().name());
 
         simulate(orderId, "PAID")
                 .andExpect(status().isOk())

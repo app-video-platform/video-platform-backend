@@ -64,6 +64,7 @@ public class ProductService {
     private final MembershipFeedEntryRepository membershipFeedEntryRepository;
     private final MembershipProductRepository membershipProductRepository;
     private final ProductPresentationCleanupService presentationCleanupService;
+    private final ProductMediaService productMediaService;
 
     public ProductService(UserRepository userRepository,
                           DownloadProductRepository downloadProductRepository,
@@ -78,7 +79,8 @@ public class ProductService {
                           CommerceOrderRepository commerceOrderRepository,
                           MembershipFeedEntryRepository membershipFeedEntryRepository,
                           MembershipProductRepository membershipProductRepository,
-                          ProductPresentationCleanupService presentationCleanupService) {
+                          ProductPresentationCleanupService presentationCleanupService,
+                          ProductMediaService productMediaService) {
         this.userRepository = userRepository;
         this.downloadProductRepository = downloadProductRepository;
         this.productRepository = productRepository;
@@ -92,6 +94,7 @@ public class ProductService {
         this.membershipFeedEntryRepository = membershipFeedEntryRepository;
         this.membershipProductRepository = membershipProductRepository;
         this.presentationCleanupService = presentationCleanupService;
+        this.productMediaService = productMediaService;
 
         // Convert the set of handlers into a map: ProductType -> handler
         this.handlers = handlerSet.stream()
@@ -105,17 +108,17 @@ public class ProductService {
     public AbstractProductResponseDto createProduct(AbstractProductRequestDto dto) {
         AbstractProductResponseDto response = getProductStrategyHandler(dto.getType()).createProduct(dto);
         recordAdminProductAction("PRODUCT_CREATE", null, response);
-        return response;
+        return enrich(response);
     }
 
 
     public AbstractProductResponseDto getProductByIdAndType(String productId, String type) {
-        return getProductStrategyHandler(type).getProductById(productId);
+        return enrich(getProductStrategyHandler(type).getProductById(productId));
     }
 
     public AbstractProductResponseDto getProductById(String productId) {
         Product product = getProductEntity(productId);
-        return getProductStrategyHandler(product.getType().name()).getProductById(product.getId().toString());
+        return enrich(getProductStrategyHandler(product.getType().name()).getProductById(product.getId().toString()));
     }
 
     public AbstractProductResponseDto updateProduct(AbstractProductRequestDto dto) {
@@ -123,7 +126,7 @@ public class ProductService {
         String beforeSummary = productSummary(before);
         AbstractProductResponseDto response = getProductStrategyHandler(dto.getType()).updateProduct(dto);
         recordAdminProductAction("PRODUCT_UPDATE", beforeSummary, response);
-        return response;
+        return enrich(response);
     }
 
     public AbstractProductResponseDto patchProduct(String productId, JsonNode payload) {
@@ -132,7 +135,7 @@ public class ProductService {
         AbstractProductRequestDto dto = mapPatchPayload(product, payload);
         AbstractProductResponseDto response = getProductStrategyHandler(product.getType().name()).updateProduct(dto);
         recordAdminProductAction("PRODUCT_UPDATE", beforeSummary, response);
-        return response;
+        return enrich(response);
     }
 
     public List<AbstractProductResponseDto> getAllProductsForUser(String userId) {
@@ -144,6 +147,7 @@ public class ProductService {
         return products.stream()
                 .map(product -> getProductStrategyHandler(product.getType().name())
                         .getProductById(product.getId().toString()))
+                .map(this::enrich)
                 .toList();
     }
 
@@ -173,6 +177,7 @@ public class ProductService {
         entitlementRepository.deleteAllByProductId(before.getId());
         removeMembershipReferences(before.getId());
         presentationCleanupService.removeProductReferences(before.getId());
+        productMediaService.removeAll(before.getId());
         getProductStrategyHandler(productType).deleteProduct(userId, productId);
         recordAdminProductAction("PRODUCT_DELETE", beforeSummary, before.getId().toString(), before.getUser().getUserId().toString(), null);
     }
@@ -185,6 +190,7 @@ public class ProductService {
         entitlementRepository.deleteAllByProductId(product.getId());
         removeMembershipReferences(product.getId());
         presentationCleanupService.removeProductReferences(product.getId());
+        productMediaService.removeAll(product.getId());
         getProductStrategyHandler(product.getType().name())
                 .deleteProduct(product.getUser().getUserId().toString(), product.getId().toString());
         recordAdminProductAction("PRODUCT_DELETE", beforeSummary, product.getId().toString(), product.getUser().getUserId().toString(), null);
@@ -215,6 +221,13 @@ public class ProductService {
             membership.setUpdatedAt(java.time.LocalDateTime.now());
             membershipProductRepository.save(membership);
         }));
+    }
+
+    private AbstractProductResponseDto enrich(AbstractProductResponseDto response) {
+        if (response != null && response.getId() != null) {
+            productMediaService.enrich(response.getId(), response);
+        }
+        return response;
     }
 
     public List<ProductMinimised> getAllProductsMinimised() {

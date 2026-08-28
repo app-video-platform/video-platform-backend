@@ -111,7 +111,8 @@ class MembershipControllerIntegrationTest {
         mockMvc.perform(patch("/api/products/{id}", membershipId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"status\":\"PUBLISHED\"}"))
-                .andExpect(status().isConflict());
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.errors.status").exists());
 
         MembershipProduct reloaded = membershipRepository.findById(membershipId).orElseThrow();
         org.junit.jupiter.api.Assertions.assertEquals("29.95", reloaded.getPrice().toPlainString());

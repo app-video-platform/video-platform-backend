@@ -12,6 +12,7 @@ import com.myproject.video.video_platform.repository.products.membership.Members
 import com.myproject.video.video_platform.repository.products.membership.MembershipContentRepository;
 import com.myproject.video.video_platform.repository.products.membership.MembershipFeedEntryRepository;
 import com.myproject.video.video_platform.service.product.ProductAuthorizationService;
+import com.myproject.video.video_platform.service.product.ProductPublicationValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,7 @@ public class MembershipProductHandler implements ProductTypeHandler {
     private final ProductAuthorizationService authorizationService;
     private final MembershipContentRepository contentRepository;
     private final MembershipFeedEntryRepository feedRepository;
+    private final ProductPublicationValidator publicationValidator;
 
     @Override
     public ProductType getSupportedType() {
@@ -37,7 +39,9 @@ public class MembershipProductHandler implements ProductTypeHandler {
     public AbstractProductResponseDto createProduct(AbstractProductRequestDto baseDto) {
         MembershipProductRequestDto dto = (MembershipProductRequestDto) baseDto;
         User owner = authorizationService.resolveOwnerForCreate(dto);
-        return converter.toResponse(repository.saveAndFlush(converter.fromCreate(dto, owner)));
+        MembershipProduct product = converter.fromCreate(dto, owner);
+        publicationValidator.validate(product);
+        return converter.toResponse(repository.saveAndFlush(product));
     }
 
     @Override
@@ -54,6 +58,7 @@ public class MembershipProductHandler implements ProductTypeHandler {
         MembershipProduct product = find(dto.getId());
         authorizationService.requireOwnerOrAdmin(product);
         converter.applyUpdate(product, dto);
+        publicationValidator.validate(product);
         return converter.toResponse(repository.save(product));
     }
 

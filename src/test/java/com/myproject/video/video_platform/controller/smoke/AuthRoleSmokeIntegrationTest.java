@@ -310,7 +310,7 @@ class AuthRoleSmokeIntegrationTest {
                 creator.getUserId().toString(),
                 "Public smoke course"
         );
-        publicCourse.setStatus("PUBLISHED");
+        publicCourse.setStatus("DRAFT");
 
         MvcResult productResult = mockMvc.perform(post("/api/products")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -325,6 +325,24 @@ class AuthRoleSmokeIntegrationTest {
 
         JsonNode createdProduct = objectMapper.readTree(productResult.getResponse().getContentAsString());
         String productId = createdProduct.path("id").asText();
+        String sectionId = createdProduct.path("details").path("sections").get(0).path("id").asText();
+
+        Cookie jwt = responseCookie(loginResult, "JWT_TOKEN");
+        Cookie xsrf = responseCookie(loginResult, "XSRF-TOKEN");
+        mockMvc.perform(post("/api/products/{productId}/sections/{sectionId}/lessons", productId, sectionId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .cookie(jwt, xsrf)
+                        .header("X-XSRF-TOKEN", xsrf.getValue())
+                        .content("{\"title\":\"Introduction\",\"type\":\"ARTICLE\",\"content\":\"Welcome\",\"position\":1}"))
+                .andExpect(status().isCreated());
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch(
+                                "/api/products/{productId}", productId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .cookie(jwt, xsrf)
+                        .header("X-XSRF-TOKEN", xsrf.getValue())
+                        .content("{\"status\":\"PUBLISHED\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("PUBLISHED"));
 
         mockMvc.perform(get("/api/products/get-all-products-min"))
                 .andExpect(status().isOk())

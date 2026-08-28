@@ -38,6 +38,28 @@ public class ConsultationProductDetailsDto {
     @Schema(description = "Calendars currently linked for real-time availability")
     private List<ConnectedCalendarDto> connectedCalendars;
 
+    @Schema(description = "Weekly bookable hours. Omit on update to preserve existing availability; send [] to clear it.")
+    private List<AvailabilityDayDto> weeklyAvailability;
+
+    @Data
+    public static class AvailabilityDayDto {
+        private Weekday day;
+        private Boolean enabled;
+        private List<AvailabilityWindowDto> windows;
+    }
+
+    @Data
+    public static class AvailabilityWindowDto {
+        @Schema(example = "09:00")
+        private String startTime;
+        @Schema(example = "17:00")
+        private String endTime;
+    }
+
+    public enum Weekday {
+        MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
+    }
+
     @Data
     @Schema(description = "Connected calendar integration summary.")
     public static class ConnectedCalendarDto {

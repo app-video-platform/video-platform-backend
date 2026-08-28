@@ -3,8 +3,8 @@
 Generated from repository state:
 
 - Branch: `main`
-- Commit: `8ace633` plus the current Storefront/Dashboard integration work
-- Last reviewed: 2026-08-24
+- Commit: `main` plus the current Product synchronization work
+- Last reviewed: 2026-08-28
 
 ## How to Use This Document
 
@@ -52,7 +52,7 @@ Current backend Product types:
 - `COURSE`: ordered sections containing `VIDEO`, `ARTICLE`, or `QUIZ` lessons.
 - `DOWNLOAD`: ordered sections containing downloadable files.
 - `CONSULTATION`: duration, meeting method, location, buffer, capacity, message,
-  policy, and connected-calendar information.
+  policy, normalized weekly availability, and connected-calendar information.
 - `MEMBERSHIP`: recurring-price authoring metadata, native Post/Video/Resource
   metadata, included Course/Download Products, and an ordered feed.
 
@@ -174,6 +174,13 @@ service resolves the correct handler, applies ownership rules, records Admin
 actions where applicable, coordinates entitlement cleanup on deletion, and
 supports search and summary reads.
 
+Publication is server-authoritative on create, PUT, and PATCH. Publishing
+requires a name for every type, Course content, a confirmed Download file, or
+complete Consultation price/duration/method/availability as appropriate.
+Membership publishing remains blocked. Readiness failures return HTTP 422 with
+a field-keyed issue map; thumbnails and connected calendars are warnings, not
+publication requirements.
+
 Creator Product creation ignores an attempted foreign owner and assigns the
 authenticated Creator. Admin Product creation requires an explicit owner whose
 single role is `CREATOR`. Product mutation requires ownership or Admin access.
@@ -201,6 +208,15 @@ reject invalid cross-type operations rather than silently accepting them.
 
 Legacy Course and generic file endpoints still exist. Confirm frontend usage
 before removing them. Prefer canonical nested routes for new integrations.
+
+Product marketing media uses raw-body owner/Admin endpoints for a thumbnail,
+up to 20 ordered gallery images, and one promo video. The backend streams the
+body to DigitalOcean Spaces and persists independent `product_media` metadata
+because Product inheritance is table-per-class. Product responses expose
+`imageUrl`, ordered `galleryImages`, and `promoVideo`. Images accept JPEG, PNG,
+WebP, and GIF up to 10 MB; promo video accepts MP4 and WebM up to 100 MB. Limits
+are configurable. Replacements, removals, and Product deletion remove active
+metadata and make best-effort object deletions.
 
 Membership authoring uses the aggregate rooted at
 `/api/products/{productId}/membership`, with nested content endpoints and a
@@ -283,9 +299,14 @@ Current commerce endpoints are:
 - `POST /api/commerce/checkout-sessions` with an `Idempotency-Key` header
 - `GET /api/commerce/orders/{orderId}` for the buyer or an Admin
 
-`PaymentGateway` is the provider boundary. The current implementation includes
-only a fake gateway under the `dev` and `test` profiles. Commerce and fake
-simulation are disabled by default. When explicitly enabled for development,
+`PaymentGateway` is the provider boundary. The fake gateway is available in any
+profile when `COMMERCE_PROVIDER=fake`. With
+`COMMERCE_FAKE_AUTO_SUCCESS=true`, checkout persists the Order and attempt and
+then sends a deterministic `PAID` event through the normal event processor in
+the same request. The returned Order is already `PAID`, purchase entitlements
+are real, and Sales, Customers, Dashboard, and Analytics include the records.
+Every paid Product is effectively free while this mode is active. Commerce and
+fake simulation are disabled by default. When explicitly enabled for development,
 an Admin can simulate `PAID`, `FAILED`, and `REFUNDED` outcomes through
 `POST /api/dev/commerce/orders/{orderId}/simulate`.
 
@@ -331,7 +352,8 @@ because Products use table-per-class storage. Services validate ownership and
 visibility. Product deletion removes its landing configuration, ordering
 references, and featured-Product reference.
 
-This is not production payment processing yet. A future Stripe adapter must
+This is not real payment processing. The current deployed test environment may
+use automatic fake success without Stripe. A future Stripe adapter must
 create hosted sessions, verify webhook signatures, normalize provider events,
 and then call the existing payment-event processor. Subscriptions, partial
 refunds, taxes, payouts, and coupons remain outside this foundation.
@@ -372,6 +394,8 @@ numbered SQL migrations for:
   tokens
 - user profile and social-link data
 - Course, Download, Consultation, and Membership Product tables
+- normalized Consultation availability days and ordered windows
+- Product marketing-media metadata with owner/Product-scoped Spaces object keys
 - Course and Download sections and their child content
 - Quiz definitions, options, and attempts
 - connected calendars
@@ -416,8 +440,9 @@ still giving developers the context Swagger cannot express well.
 ## External Services and Deployment
 
 DigitalOcean Spaces stores uploaded assets. Presigned upload and confirmation
-flows exist for files, and protected Download delivery creates an authorized
-download URL.
+flows exist for protected learning/download files. Product marketing-media raw
+bodies are proxied through the backend to owner/Product-scoped public CDN keys;
+protected Download delivery still creates an authorized download URL.
 
 SendGrid is used for email flows such as account verification. Google sign-in
 uses Google's token verification libraries.
@@ -439,6 +464,9 @@ Implemented and server-backed:
 - authenticated user profile and social-link updates
 - single-role user model and Admin role management
 - Course, Download, Consultation, and Membership Product CRUD
+- persisted seven-day Consultation weekly availability
+- Spaces-backed Product thumbnail, gallery, and promo-video lifecycle
+- server-authoritative Product publication readiness validation
 - Membership Creator/Admin config, content-metadata, included-Product, and feed
   authoring
 - Product ownership and Admin cross-owner rules
@@ -451,7 +479,8 @@ Implemented and server-backed:
   responses, and authorized Download delivery
 - Springdoc-generated OpenAPI under the `docs` profile
 - provider-neutral one-time commerce Order persistence, idempotent checkout
-  orchestration, fake dev/test payment transitions, paid entitlement creation,
+  orchestration, automatic fake payment completion in any configured profile,
+  paid entitlement creation,
   and full-refund entitlement revocation
 - Creator-only Sales summary, Order ledger/detail, Customer list/detail, and
   Analytics overview read APIs backed by Commerce and entitlements
@@ -464,8 +493,7 @@ Not currently implemented as complete backend capabilities:
 
 - Membership binary media upload/delivery, Product publishing, subscriptions,
   checkout, entitlements, or member access
-- production checkout through Stripe or another real payment provider
-- public paid purchase completion in the frontend
+- real charged checkout through Stripe or another payment provider
 - partial refunds, payment retries, taxes, coupons, marketplace payouts, or
   provider-driven dispute handling
 - an exposed Admin entitlement grant/revoke workflow

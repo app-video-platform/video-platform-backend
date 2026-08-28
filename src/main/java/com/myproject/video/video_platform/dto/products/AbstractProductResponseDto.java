@@ -12,6 +12,9 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.List;
+import com.myproject.video.video_platform.dto.products.media.ProductGalleryImageDto;
+import com.myproject.video.video_platform.dto.products.media.ProductPromoVideoDto;
 
 @Data
 @Schema(
@@ -57,4 +60,10 @@ public abstract class AbstractProductResponseDto {
     private LocalDateTime createdAt;
     @Schema(description = "Last product activity timestamp (includes child updates)", example = "2024-04-02T09:15:30")
     private LocalDateTime updatedAt;
+    @Schema(description = "Public Product thumbnail URL")
+    private String imageUrl;
+    @Schema(description = "Ordered public gallery images")
+    private List<ProductGalleryImageDto> galleryImages;
+    @Schema(description = "Public promotional video, when configured", nullable = true)
+    private ProductPromoVideoDto promoVideo;
 }

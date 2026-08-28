@@ -609,6 +609,59 @@ class ProductControllerIntegrationTest {
     }
 
     @Test
+    void consultationAvailability_persistsReloadsPreservesAndExplicitlyClears() throws Exception {
+        User owner = persistUser("availability-owner@example.com");
+        currentUser.set(owner.getUserId());
+
+        ConsultationProductDetailsDto.AvailabilityWindowDto window = new ConsultationProductDetailsDto.AvailabilityWindowDto();
+        window.setStartTime("09:00");
+        window.setEndTime("17:00");
+        ConsultationProductDetailsDto.AvailabilityDayDto monday = new ConsultationProductDetailsDto.AvailabilityDayDto();
+        monday.setDay(ConsultationProductDetailsDto.Weekday.MONDAY);
+        monday.setEnabled(true);
+        monday.setWindows(List.of(window));
+        ConsultationProductDetailsDto details = new ConsultationProductDetailsDto();
+        details.setWeeklyAvailability(List.of(monday));
+
+        ConsultationProductRequestDto create = new ConsultationProductRequestDto();
+        create.setType("CONSULTATION");
+        create.setName("Office hours");
+        create.setStatus("DRAFT");
+        create.setPrice("25");
+        create.setUserId(owner.getUserId().toString());
+        create.setDetails(details);
+
+        MvcResult result = mockMvc.perform(post("/api/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(create)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.details.weeklyAvailability", hasSize(7)))
+                .andExpect(jsonPath("$.details.weeklyAvailability[0].day").value("MONDAY"))
+                .andExpect(jsonPath("$.details.weeklyAvailability[0].windows[0].startTime").value("09:00"))
+                .andReturn();
+        UUID id = UUID.fromString(objectMapper.readTree(result.getResponse().getContentAsString()).get("id").asText());
+
+        consultationProductRepository.flush();
+        mockMvc.perform(get("/api/products/{id}", id))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.details.weeklyAvailability[0].enabled").value(true));
+
+        mockMvc.perform(patch("/api/products/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"description\":\"preserved\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.details.weeklyAvailability[0].windows", hasSize(1)));
+
+        mockMvc.perform(patch("/api/products/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"consultationDetails\":{\"weeklyAvailability\":[]}}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.details.weeklyAvailability", hasSize(7)))
+                .andExpect(jsonPath("$.details.weeklyAvailability[0].enabled").value(false))
+                .andExpect(jsonPath("$.details.weeklyAvailability[0].windows", hasSize(0)));
+    }
+
+    @Test
     void getAllProductsForUser_returnsFullDetails_includingNewSectionsAndLessons() throws Exception {
         User owner = persistUser("owner@example.com");
         currentUser.set(owner.getUserId());

@@ -10,7 +10,6 @@ import com.myproject.video.video_platform.dto.products.membership.MembershipProd
 import com.myproject.video.video_platform.dto.products.membership.MembershipProductResponseDto;
 import com.myproject.video.video_platform.entity.products.membership.MembershipProduct;
 import com.myproject.video.video_platform.entity.user.User;
-import com.myproject.video.video_platform.exception.product.UnsupportedProductOperationException;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -92,11 +91,6 @@ public class MembershipProductConverter {
             status = ProductStatus.valueOf(value.trim().toUpperCase());
         } catch (IllegalArgumentException exception) {
             throw new IllegalArgumentException("Unknown Product status: " + value);
-        }
-        if (status == ProductStatus.PUBLISHED) {
-            throw new UnsupportedProductOperationException(
-                    "Membership publishing is unavailable until subscriptions, media delivery, and member access are implemented"
-            );
         }
         return status;
     }
