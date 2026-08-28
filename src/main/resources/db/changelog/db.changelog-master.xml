@@ -42,5 +42,7 @@
     <include file="db/changelog/scripts/36-add-public-email.sql" />
     <include file="db/changelog/scripts/37-create-storefront-config.sql" />
     <include file="db/changelog/scripts/38-create-product-landing-page-config.sql" />
+    <include file="db/changelog/scripts/39-create-consultation-availability.sql" />
+    <include file="db/changelog/scripts/40-create-product-media.sql" />
 
 </databaseChangeLog>

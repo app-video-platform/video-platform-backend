@@ -52,7 +52,12 @@ app:
     session-expiry-minutes: 30
     expiration-scan-ms: 60000
     fake:
-      enabled: false
+      enabled: ${COMMERCE_FAKE_ENABLED:false}
+      auto-success: ${COMMERCE_FAKE_AUTO_SUCCESS:false}
+  product-media:
+    image-max-bytes: ${PRODUCT_MEDIA_IMAGE_MAX_BYTES:10485760}
+    video-max-bytes: ${PRODUCT_MEDIA_VIDEO_MAX_BYTES:104857600}
+    gallery-max-items: ${PRODUCT_MEDIA_GALLERY_MAX_ITEMS:20}
   dev-role-switch:
     enabled: ${DEV_ROLE_SWITCH_ENABLED:true}
   frontend:

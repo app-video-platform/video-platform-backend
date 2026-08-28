@@ -183,4 +183,51 @@ class ConsultationProductConverterTest {
         assertThrows(IllegalArgumentException.class,
                 () -> ConsultationProductDetailsDto.MeetingMethod.fromJson("TEAMS"));
     }
+
+    @Test
+    void weeklyAvailability_roundTripsSevenDaysAndSupportsPreserveAndClear() {
+        User owner = new User();
+        owner.setUserId(UUID.randomUUID());
+        ConsultationProductDetailsDto.AvailabilityWindowDto slot = new ConsultationProductDetailsDto.AvailabilityWindowDto();
+        slot.setStartTime("09:00"); slot.setEndTime("17:00");
+        ConsultationProductDetailsDto.AvailabilityDayDto monday = new ConsultationProductDetailsDto.AvailabilityDayDto();
+        monday.setDay(ConsultationProductDetailsDto.Weekday.MONDAY); monday.setEnabled(true); monday.setWindows(List.of(slot));
+        ConsultationProductDetailsDto details = new ConsultationProductDetailsDto();
+        details.setWeeklyAvailability(List.of(monday));
+        ConsultationProductRequestDto create = new ConsultationProductRequestDto();
+        create.setName("Consult"); create.setDetails(details);
+
+        ConsultationProduct entity = converter.fromDto(create, owner);
+        ConsultationProductResponseDto response = converter.toDto(entity);
+        assertEquals(7, response.getDetails().getWeeklyAvailability().size());
+        assertEquals(true, response.getDetails().getWeeklyAvailability().get(0).getEnabled());
+        assertEquals("09:00", response.getDetails().getWeeklyAvailability().get(0).getWindows().get(0).getStartTime());
+
+        ConsultationProductRequestDto preserve = new ConsultationProductRequestDto();
+        preserve.setDetails(new ConsultationProductDetailsDto());
+        converter.updateEntityFromDto(preserve, entity);
+        assertEquals(1, entity.getWeeklyAvailability().size());
+
+        ConsultationProductDetailsDto clearDetails = new ConsultationProductDetailsDto();
+        clearDetails.setWeeklyAvailability(List.of());
+        ConsultationProductRequestDto clear = new ConsultationProductRequestDto(); clear.setDetails(clearDetails);
+        converter.updateEntityFromDto(clear, entity);
+        assertEquals(0, entity.getWeeklyAvailability().size());
+        assertEquals(7, converter.toDto(entity).getDetails().getWeeklyAvailability().size());
+    }
+
+    @Test
+    void weeklyAvailability_rejectsDuplicateDaysAndInvalidTimes() {
+        User owner = new User(); owner.setUserId(UUID.randomUUID());
+        ConsultationProductDetailsDto.AvailabilityDayDto first = new ConsultationProductDetailsDto.AvailabilityDayDto();
+        first.setDay(ConsultationProductDetailsDto.Weekday.MONDAY); first.setEnabled(false);
+        ConsultationProductDetailsDto details = new ConsultationProductDetailsDto(); details.setWeeklyAvailability(List.of(first, first));
+        ConsultationProductRequestDto request = new ConsultationProductRequestDto(); request.setDetails(details);
+        assertThrows(IllegalArgumentException.class, () -> converter.fromDto(request, owner));
+
+        ConsultationProductDetailsDto.AvailabilityWindowDto bad = new ConsultationProductDetailsDto.AvailabilityWindowDto();
+        bad.setStartTime("9am"); bad.setEndTime("10:00"); first.setWindows(List.of(bad));
+        details.setWeeklyAvailability(List.of(first));
+        assertThrows(IllegalArgumentException.class, () -> converter.fromDto(request, owner));
+    }
 }

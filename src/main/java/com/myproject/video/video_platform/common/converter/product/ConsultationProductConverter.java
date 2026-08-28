@@ -6,13 +6,22 @@ import com.myproject.video.video_platform.dto.products.consultation.Consultation
 import com.myproject.video.video_platform.dto.products.consultation.ConsultationProductRequestDto;
 import com.myproject.video.video_platform.dto.products.consultation.ConsultationProductResponseDto;
 import com.myproject.video.video_platform.entity.products.consultation.ConnectedCalendar;
+import com.myproject.video.video_platform.entity.products.consultation.ConsultationAvailabilityDay;
+import com.myproject.video.video_platform.entity.products.consultation.ConsultationAvailabilityWindow;
 import com.myproject.video.video_platform.entity.products.consultation.ConsultationProduct;
 import com.myproject.video.video_platform.entity.user.User;
 import com.myproject.video.video_platform.repository.products.consultation.ConnectedCalendarRepository;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -50,6 +59,7 @@ public class ConsultationProductConverter {
             entity.setMaxSessionsPerDay(details.getMaxSessionsPerDay());
             entity.setConfirmationMessage(details.getConfirmationMessage());
             entity.setCancellationPolicy(details.getCancellationPolicy());
+            applyAvailability(entity, details.getWeeklyAvailability());
         }
 
         return entity;
@@ -93,6 +103,7 @@ public class ConsultationProductConverter {
                         .map(this::toCalendarDto)
                         .collect(Collectors.toList())
         );
+        details.setWeeklyAvailability(toAvailabilityDto(entity));
 
         dto.setDetails(details);
         return dto;
@@ -144,6 +155,62 @@ public class ConsultationProductConverter {
         if (details.getCancellationPolicy() != null) {
             entity.setCancellationPolicy(details.getCancellationPolicy());
         }
+        if (details.getWeeklyAvailability() != null) {
+            applyAvailability(entity, details.getWeeklyAvailability());
+        }
+    }
+
+    private void applyAvailability(ConsultationProduct entity,
+                                   List<ConsultationProductDetailsDto.AvailabilityDayDto> requested) {
+        if (requested == null) return;
+        Set<ConsultationProductDetailsDto.Weekday> seen = new HashSet<>();
+        List<ConsultationAvailabilityDay> replacement = new java.util.ArrayList<>();
+        for (ConsultationProductDetailsDto.AvailabilityDayDto source : requested) {
+            if (source == null || source.getDay() == null || !seen.add(source.getDay())) {
+                throw new IllegalArgumentException("Weekly availability contains a missing or duplicate weekday");
+            }
+            ConsultationAvailabilityDay day = new ConsultationAvailabilityDay();
+            day.setConsultation(entity);
+            day.setWeekday(ConsultationAvailabilityDay.Weekday.valueOf(source.getDay().name()));
+            day.setEnabled(Boolean.TRUE.equals(source.getEnabled()));
+            List<ConsultationProductDetailsDto.AvailabilityWindowDto> slots = source.getWindows() == null
+                    ? List.of() : source.getWindows();
+            int position = 0;
+            for (ConsultationProductDetailsDto.AvailabilityWindowDto slot : slots) {
+                try {
+                    ConsultationAvailabilityWindow window = new ConsultationAvailabilityWindow();
+                    window.setDay(day);
+                    window.setStartTime(LocalTime.parse(slot.getStartTime(), DateTimeFormatter.ofPattern("HH:mm")));
+                    window.setEndTime(LocalTime.parse(slot.getEndTime(), DateTimeFormatter.ofPattern("HH:mm")));
+                    window.setPosition(position++);
+                    day.getWindows().add(window);
+                } catch (NullPointerException | DateTimeParseException ex) {
+                    throw new IllegalArgumentException("Weekly availability times must use HH:mm syntax");
+                }
+            }
+            replacement.add(day);
+        }
+        entity.getWeeklyAvailability().clear();
+        entity.getWeeklyAvailability().addAll(replacement);
+    }
+
+    private List<ConsultationProductDetailsDto.AvailabilityDayDto> toAvailabilityDto(ConsultationProduct entity) {
+        Map<ConsultationAvailabilityDay.Weekday, ConsultationAvailabilityDay> persisted =
+                new EnumMap<>(ConsultationAvailabilityDay.Weekday.class);
+        entity.getWeeklyAvailability().forEach(day -> persisted.put(day.getWeekday(), day));
+        return java.util.Arrays.stream(ConsultationAvailabilityDay.Weekday.values()).map(weekday -> {
+            ConsultationAvailabilityDay day = persisted.get(weekday);
+            ConsultationProductDetailsDto.AvailabilityDayDto dto = new ConsultationProductDetailsDto.AvailabilityDayDto();
+            dto.setDay(ConsultationProductDetailsDto.Weekday.valueOf(weekday.name()));
+            dto.setEnabled(day != null && day.isEnabled());
+            dto.setWindows(day == null ? List.of() : day.getWindows().stream().map(window -> {
+                ConsultationProductDetailsDto.AvailabilityWindowDto slot = new ConsultationProductDetailsDto.AvailabilityWindowDto();
+                slot.setStartTime(window.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")));
+                slot.setEndTime(window.getEndTime().format(DateTimeFormatter.ofPattern("HH:mm")));
+                return slot;
+            }).toList());
+            return dto;
+        }).toList();
     }
 
     private ConsultationProductDetailsDto.ConnectedCalendarDto toCalendarDto(ConnectedCalendar cal) {

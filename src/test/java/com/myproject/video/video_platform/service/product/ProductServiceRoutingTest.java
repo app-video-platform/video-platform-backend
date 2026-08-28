@@ -78,6 +78,8 @@ class ProductServiceRoutingTest {
     private ProductTypeHandler downloadHandler;
     @Mock
     private ProductTypeHandler consultationHandler;
+    @Mock
+    private ProductMediaService productMediaService;
 
     private ProductService service;
 
@@ -101,7 +103,8 @@ class ProductServiceRoutingTest {
                 commerceOrderRepository,
                 membershipFeedEntryRepository,
                 membershipProductRepository,
-                presentationCleanupService
+                presentationCleanupService,
+                productMediaService
         );
 
         Mockito.clearInvocations(courseHandler, downloadHandler, consultationHandler);
@@ -259,7 +262,8 @@ class ProductServiceRoutingTest {
                 commerceOrderRepository,
                 membershipFeedEntryRepository,
                 membershipProductRepository,
-                presentationCleanupService
+                presentationCleanupService,
+                productMediaService
         );
         Mockito.clearInvocations(courseHandler, downloadHandler, consultationHandler);
 

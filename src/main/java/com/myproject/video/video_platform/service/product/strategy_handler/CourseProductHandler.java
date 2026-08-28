@@ -10,6 +10,7 @@ import com.myproject.video.video_platform.entity.user.User;
 import com.myproject.video.video_platform.exception.product.ResourceNotFoundException;
 import com.myproject.video.video_platform.repository.products.course.CourseProductRepository;
 import com.myproject.video.video_platform.service.product.ProductAuthorizationService;
+import com.myproject.video.video_platform.service.product.ProductPublicationValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -26,6 +27,7 @@ public class CourseProductHandler implements ProductTypeHandler {
     private final CourseProductRepository courseRepo;
     private final CourseProductConverter converter;
     private final ProductAuthorizationService productAuthorizationService;
+    private final ProductPublicationValidator publicationValidator;
 
     @Override
     public ProductType getSupportedType() {
@@ -50,6 +52,7 @@ public class CourseProductHandler implements ProductTypeHandler {
         User owner = productAuthorizationService.resolveOwnerForCreate(dto);
 
         CourseProduct courseEntity = converter.mapCourseCreateDtoToEntity(dto, owner);
+        publicationValidator.validate(courseEntity);
         CourseProduct saved = courseRepo.save(courseEntity);
         return converter.mapCourseToResponse(saved);
     }
@@ -67,6 +70,7 @@ public class CourseProductHandler implements ProductTypeHandler {
         productAuthorizationService.requireOwnerOrAdmin(existing);
 
         converter.applyCourseUpdateDto(existing, dto);
+        publicationValidator.validate(existing);
         CourseProduct saved = courseRepo.save(existing);
         return converter.mapCourseToResponse(saved);
     }

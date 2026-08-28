@@ -2,6 +2,8 @@ package com.myproject.video.video_platform.service.commerce;
 
 import com.myproject.video.video_platform.common.enums.commerce.CommerceOrderStatus;
 import com.myproject.video.video_platform.common.enums.commerce.PaymentAttemptStatus;
+import com.myproject.video.video_platform.common.enums.commerce.PaymentEventType;
+import com.myproject.video.video_platform.common.enums.commerce.PaymentProvider;
 import com.myproject.video.video_platform.common.enums.entitlement.EntitlementStatus;
 import com.myproject.video.video_platform.common.enums.products.ProductStatus;
 import com.myproject.video.video_platform.common.enums.products.ProductPricingModel;
@@ -23,6 +25,7 @@ import com.myproject.video.video_platform.repository.products.ProductRepository;
 import com.myproject.video.video_platform.service.commerce.payment.CheckoutGatewayCommand;
 import com.myproject.video.video_platform.service.commerce.payment.CheckoutGatewaySession;
 import com.myproject.video.video_platform.service.commerce.payment.PaymentGateway;
+import com.myproject.video.video_platform.service.commerce.payment.NormalizedPaymentEvent;
 import com.myproject.video.video_platform.service.user.CurrentUserService;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,6 +61,8 @@ public class CommerceCheckoutService {
     private final boolean commerceEnabled;
     private final String currency;
     private final Duration sessionExpiry;
+    private final CommercePaymentEventService paymentEventService;
+    private final boolean fakeAutoSuccess;
 
     public CommerceCheckoutService(
             CommerceOrderRepository orderRepository,
@@ -67,10 +72,12 @@ public class CommerceCheckoutService {
             UserRepository userRepository,
             CurrentUserService currentUserService,
             CommerceOrderMapper orderMapper,
+            CommercePaymentEventService paymentEventService,
             ObjectProvider<PaymentGateway> paymentGatewayProvider,
             @Value("${app.commerce.enabled:false}") boolean commerceEnabled,
             @Value("${app.commerce.currency:EUR}") String currency,
-            @Value("${app.commerce.session-expiry-minutes:30}") long sessionExpiryMinutes
+            @Value("${app.commerce.session-expiry-minutes:30}") long sessionExpiryMinutes,
+            @Value("${app.commerce.fake.auto-success:false}") boolean fakeAutoSuccess
     ) {
         this.orderRepository = orderRepository;
         this.paymentAttemptRepository = paymentAttemptRepository;
@@ -79,6 +86,7 @@ public class CommerceCheckoutService {
         this.userRepository = userRepository;
         this.currentUserService = currentUserService;
         this.orderMapper = orderMapper;
+        this.paymentEventService = paymentEventService;
         this.paymentGateway = paymentGatewayProvider.getIfAvailable();
         this.commerceEnabled = commerceEnabled;
         String normalizedCurrency = currency == null
@@ -92,6 +100,7 @@ public class CommerceCheckoutService {
         }
         this.currency = normalizedCurrency;
         this.sessionExpiry = Duration.ofMinutes(sessionExpiryMinutes);
+        this.fakeAutoSuccess = fakeAutoSuccess;
     }
 
     @Transactional
@@ -176,7 +185,19 @@ public class CommerceCheckoutService {
         attempt.setCheckoutUrl(session.checkoutUrl());
         attempt.setAmountMinor(total);
         attempt.setCurrency(currency);
-        paymentAttemptRepository.save(attempt);
+        paymentAttemptRepository.saveAndFlush(attempt);
+
+        if (fakeAutoSuccess && paymentGateway.provider() == PaymentProvider.FAKE) {
+            paymentEventService.process(new NormalizedPaymentEvent(
+                    PaymentProvider.FAKE,
+                    "fake-paid-" + order.getId(),
+                    order.getId(),
+                    PaymentEventType.PAID,
+                    "fake-payment-" + order.getId(),
+                    total,
+                    currency
+            ));
+        }
 
         return orderMapper.toResponse(order);
     }

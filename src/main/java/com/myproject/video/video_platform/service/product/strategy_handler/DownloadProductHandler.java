@@ -10,6 +10,7 @@ import com.myproject.video.video_platform.entity.user.User;
 import com.myproject.video.video_platform.exception.product.ResourceNotFoundException;
 import com.myproject.video.video_platform.repository.products.download.DownloadProductRepository;
 import com.myproject.video.video_platform.service.product.ProductAuthorizationService;
+import com.myproject.video.video_platform.service.product.ProductPublicationValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -25,6 +26,7 @@ public class DownloadProductHandler implements ProductTypeHandler {
     private final DownloadProductRepository downloadProductRepository;
     private final DownloadProductConverter downloadProductConverter;
     private final ProductAuthorizationService productAuthorizationService;
+    private final ProductPublicationValidator publicationValidator;
 
 
     @Override
@@ -48,6 +50,7 @@ public class DownloadProductHandler implements ProductTypeHandler {
 
         DownloadProduct product = downloadProductConverter
                 .mapDownloadProductRequestDtoToEntity((DownloadProductRequestDto) dto, owner);
+        publicationValidator.validate(product);
         DownloadProduct saved = downloadProductRepository.save(product);
 
         log.info("Created succesfully a DownloadProduct: {}", dto.getName());
@@ -70,6 +73,7 @@ public class DownloadProductHandler implements ProductTypeHandler {
                     downloadProduct,
                     (DownloadProductRequestDto) dto
             );
+            publicationValidator.validate(updatedProduct);
 
             updatedProduct = downloadProductRepository.save(updatedProduct);
 

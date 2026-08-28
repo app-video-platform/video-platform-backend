@@ -11,6 +11,8 @@ import com.myproject.video.video_platform.exception.commerce.CommerceException;
 import com.myproject.video.video_platform.exception.email.EmailSendingException;
 import com.myproject.video.video_platform.exception.product.InvalidProductTypeException;
 import com.myproject.video.video_platform.exception.product.PaymentRequiredException;
+import com.myproject.video.video_platform.exception.product.ProductPublicationValidationException;
+import com.myproject.video.video_platform.exception.product.ProductMediaException;
 import com.myproject.video.video_platform.exception.product.QuizValidationException;
 import com.myproject.video.video_platform.exception.product.ResourceNotFoundException;
 import com.myproject.video.video_platform.exception.product.UnsupportedProductOperationException;
@@ -130,6 +132,21 @@ public class GlobalExceptionHandler {
                 ex.getErrors()
         );
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ProductPublicationValidationException.class)
+    public ResponseEntity<ValidationErrorResponse> handlePublicationValidation(
+            ProductPublicationValidationException ex
+    ) {
+        return new ResponseEntity<>(
+                new ValidationErrorResponse(ex.getMessage(), ex.getErrors()),
+                HttpStatus.UNPROCESSABLE_ENTITY
+        );
+    }
+
+    @ExceptionHandler(ProductMediaException.class)
+    public ResponseEntity<ErrorResponse> handleProductMediaException(ProductMediaException ex) {
+        return new ResponseEntity<>(new ErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST.value()), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(UnsupportedProductOperationException.class)

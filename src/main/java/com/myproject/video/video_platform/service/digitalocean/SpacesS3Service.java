@@ -8,6 +8,9 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
@@ -17,6 +20,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 
 import java.net.URI;
 import java.time.Duration;
+import java.io.InputStream;
 
 @Service
 @Slf4j
@@ -37,6 +41,7 @@ public class SpacesS3Service {
     private String bucketMedia;
 
     private S3Presigner s3Presigner;
+    private S3Client s3Client;
 
     @PostConstruct
     public void init() {
@@ -44,6 +49,11 @@ public class SpacesS3Service {
 
 
         this.s3Presigner = S3Presigner.builder()
+                .endpointOverride(URI.create(endpoint))
+                .region(Region.of(region))
+                .credentialsProvider(StaticCredentialsProvider.create(credentials))
+                .build();
+        this.s3Client = S3Client.builder()
                 .endpointOverride(URI.create(endpoint))
                 .region(Region.of(region))
                 .credentialsProvider(StaticCredentialsProvider.create(credentials))
@@ -79,5 +89,15 @@ public class SpacesS3Service {
                 .build();
         PresignedGetObjectRequest presigned = s3Presigner.presignGetObject(presignRequest);
         return presigned.url().toString();
+    }
+
+    public void upload(String key, InputStream stream, long contentLength, String contentType) {
+        PutObjectRequest request = PutObjectRequest.builder()
+                .bucket(bucketMedia).key(key).contentType(contentType).build();
+        s3Client.putObject(request, RequestBody.fromInputStream(stream, contentLength));
+    }
+
+    public void delete(String key) {
+        s3Client.deleteObject(DeleteObjectRequest.builder().bucket(bucketMedia).key(key).build());
     }
 }

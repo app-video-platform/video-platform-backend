@@ -6,11 +6,16 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -45,6 +50,9 @@ public class ConsultationProduct extends Product {
 
     @Column(name = "cancellation_policy", columnDefinition = "TEXT")
     private String cancellationPolicy;
+
+    @OneToMany(mappedBy = "consultation", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ConsultationAvailabilityDay> weeklyAvailability = new ArrayList<>();
 
 
     public enum MeetingMethod {

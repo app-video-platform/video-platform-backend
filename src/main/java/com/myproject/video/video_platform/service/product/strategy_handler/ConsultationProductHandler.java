@@ -10,6 +10,7 @@ import com.myproject.video.video_platform.entity.user.User;
 import com.myproject.video.video_platform.exception.product.ResourceNotFoundException;
 import com.myproject.video.video_platform.repository.products.consultation.ConsultationProductRepository;
 import com.myproject.video.video_platform.service.product.ProductAuthorizationService;
+import com.myproject.video.video_platform.service.product.ProductPublicationValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -26,6 +27,7 @@ public class ConsultationProductHandler implements ProductTypeHandler {
     private final ConsultationProductRepository repo;
     private final ConsultationProductConverter converter;
     private final ProductAuthorizationService productAuthorizationService;
+    private final ProductPublicationValidator publicationValidator;
 
     @Override
     public ProductType getSupportedType() {
@@ -38,6 +40,7 @@ public class ConsultationProductHandler implements ProductTypeHandler {
         User owner = productAuthorizationService.resolveOwnerForCreate(dto);
 
         ConsultationProduct entity = converter.fromDto((ConsultationProductRequestDto) dto, owner);
+        publicationValidator.validate(entity);
         ConsultationProduct saved = repo.save(entity);
 
         return converter.toDto(saved);
@@ -64,6 +67,7 @@ public class ConsultationProductHandler implements ProductTypeHandler {
                 (ConsultationProductRequestDto) dto,
                 existing
         );
+        publicationValidator.validate(existing);
 
         ConsultationProduct updated = repo.save(existing);
         return converter.toDto(updated);
