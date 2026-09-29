@@ -180,6 +180,11 @@ Dokku uses the host’s Nginx to route traffic to your Docker containers.
   ```
 2. Access at http://localhost:8080.
 
+For read-only access to deployment logs and PostgreSQL during testing, see the
+[test diagnostics runbook](https://github.com/app-video-platform/video-platform-docs/blob/main/docs/developer/backend/testing-and-deployment.md#read-only-test-diagnostics).
+Keep SSH private keys, database passwords, and populated password files out of
+this repository.
+
 ---
 
 ## License
